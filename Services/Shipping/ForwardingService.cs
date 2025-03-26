@@ -136,6 +136,9 @@ namespace FastyBoxWeb.Services.Shipping
                 .Include(r => r.User)
                 .AsSplitQuery();
 
+
+
+
             if (!isAdmin)
             {
                 query = query.Where(r => r.UserId == userId);

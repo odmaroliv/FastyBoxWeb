@@ -1,0 +1,461 @@
+﻿@page "/request/{Id:int}/documents"
+@using System.Security.Claims
+@using FastyBoxWeb.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject IFileService FileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["UploadDocuments"] - FastyBox</PageTitle>
+
+@if (IsLoading)
+{
+    <div class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+}
+else if (Request == null)
+{
+    <div class="max-w-3xl mx-auto py-12 text-center">
+        <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">@Localizer["RequestNotFound"]</h2>
+            <p>@Localizer["RequestNotFoundDescription"]</p>
+        </div>
+        <a href="/dashboard" class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            @Localizer["BackToDashboard"]
+        </a>
+    </div>
+}
+else
+{
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6">
+            <div class="flex items-center">
+                <a href="/request/@Request.Id" class="text-blue-500 hover:underline flex items-center mr-2">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    @Localizer["BackToRequest"]
+                </a>
+                <h1 class="text-2xl font-semibold">@Localizer["DocumentsRequiredTitle"]</h1>
+            </div>
+            <div class="flex items-center mt-2">
+                <StatusBadge Status="@Request.Status" />
+            </div>
+        </div>
+
+        <div class="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm">@Localizer["DocumentsRequiredMessage"]</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-medium">@Localizer["RequestedDocuments"]</h2>
+            </div>
+            <div class="p-6">
+                @if (!RequiredDocuments.Any())
+                {
+                    <div class="text-center py-4 text-gray-500">
+                        <p>@Localizer["NoDocumentsRequested"]</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="space-y-4">
+                        @foreach (var doc in RequiredDocuments)
+                        {
+                            <div class="border rounded-md p-4 @(doc.IsSubmitted ? "border-green-200 bg-green-50" : "border-gray-200")">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-medium">@GetDocumentTypeName(doc.DocumentType)</h3>
+                                        @if (!string.IsNullOrEmpty(doc.Description))
+                                        {
+                                            <p class="text-sm text-gray-600">@doc.Description</p>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (doc.IsSubmitted)
+                                        {
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                @Localizer["DocumentSubmitted"]
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                                @Localizer["DocumentPending"]
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+
+                                @if (doc.IsSubmitted && doc.Attachment != null)
+                                {
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                        </svg>
+                                        <span class="truncate max-w-xs">@doc.Attachment.FileName</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="mt-2">
+                                        <button @onclick="() => PrepareUpload(doc)" class="px-3 py-1.5 bg-blue-500 text-white rounded text-sm">
+                                            @Localizer["UploadDocument"]
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (ShowUploadForm)
+        {
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["UploadNewDocument"]</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                @Localizer["DocumentType"] <span class="text-red-500">*</span>
+                            </label>
+                            <div class="text-gray-700 font-medium">
+                                @GetDocumentTypeName(SelectedDocument!.DocumentType)
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="document-description" class="block text-sm font-medium text-gray-700 mb-1">
+                                @Localizer["DocumentDescription"]
+                            </label>
+                            <input type="text" id="document-description" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                   @bind="DocumentDescription" 
+                                   placeholder="@Localizer["DescriptionPlaceholder"]" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                @Localizer["ChooseFile"] <span class="text-red-500">*</span>
+                            </label>
+                            <InputFile OnChange="HandleFileSelection" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            <p class="mt-1 text-xs text-gray-500">@Localizer["AcceptedFileTypes"]</p>
+                            @if (IsFileSelected)
+                            {
+                                <div class="mt-2 flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                    </svg>
+                                    <span>@SelectedFileName</span>
+                                    <span class="ml-2 text-gray-500">(@FormatFileSize(SelectedFileSize))</span>
+                                </div>
+                            }
+                            @if (FileValidationError != null)
+                            {
+                                <p class="mt-1 text-sm text-red-600">@FileValidationError</p>
+                            }
+                        </div>
+
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button @onclick="CancelUpload" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                                @Localizer["Cancel"]
+                            </button>
+                            <button @onclick="UploadDocument" disabled="@(IsUploading || !IsFileSelected)" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                                @if (IsUploading)
+                                {
+                                    <span class="flex items-center">
+                                        <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                        @Localizer["UploadingDocument"]
+                                    </span>
+                                }
+                                else
+                                {
+                                    @Localizer["UploadDocument"]
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (SuccessMessage != null)
+        {
+            <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm">@SuccessMessage</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (ErrorMessage != null)
+        {
+            <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm">@ErrorMessage</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ForwardRequest? Request { get; set; }
+    private List<RequiredDocument> RequiredDocuments { get; set; } = new();
+    private string UserId { get; set; } = string.Empty;
+    private bool IsLoading { get; set; } = true;
+    private bool ShowUploadForm { get; set; } = false;
+    private bool IsUploading { get; set; } = false;
+    private RequiredDocument? SelectedDocument { get; set; }
+    private string DocumentDescription { get; set; } = string.Empty;
+    private IBrowserFile? SelectedFile { get; set; }
+    private string SelectedFileName { get; set; } = string.Empty;
+    private long SelectedFileSize { get; set; } = 0;
+    private bool IsFileSelected { get; set; } = false;
+    private string? FileValidationError { get; set; }
+    private string? SuccessMessage { get; set; }
+    private string? ErrorMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener ID del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        await LoadRequest();
+    }
+
+    private async Task LoadRequest()
+    {
+        IsLoading = true;
+
+        try
+        {
+            // Cargar la solicitud con los documentos requeridos
+            Request = await DbContext.ForwardRequests
+                .Include(r => r.RequiredDocuments)
+                .ThenInclude(d => d.Attachment)
+                .FirstOrDefaultAsync(r => r.Id == Id && r.UserId == UserId);
+
+            if (Request != null)
+            {
+                RequiredDocuments = Request.RequiredDocuments.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void PrepareUpload(RequiredDocument document)
+    {
+        SelectedDocument = document;
+        DocumentDescription = document.Description ?? string.Empty;
+        SelectedFile = null;
+        SelectedFileName = string.Empty;
+        SelectedFileSize = 0;
+        IsFileSelected = false;
+        FileValidationError = null;
+        ShowUploadForm = true;
+        SuccessMessage = null;
+        ErrorMessage = null;
+    }
+
+    private void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        FileValidationError = null;
+
+        // Validación básica
+        var file = e.File;
+        if (file.Size > 10 * 1024 * 1024) // 10MB limit
+        {
+            FileValidationError = Localizer["FileTooBig"];
+            IsFileSelected = false;
+            return;
+        }
+
+        string extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        if (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".pdf")
+        {
+            FileValidationError = Localizer["FileTypeNotAllowed"];
+            IsFileSelected = false;
+            return;
+        }
+
+        SelectedFile = file;
+        SelectedFileName = file.Name;
+        SelectedFileSize = file.Size;
+        IsFileSelected = true;
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double size = bytes;
+
+        while (size >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            size /= 1024;
+        }
+
+        return $"{size:0.##} {sizes[order]}";
+    }
+
+    private async Task UploadDocument()
+    {
+        if (SelectedFile == null || SelectedDocument == null || Request == null)
+        {
+            return;
+        }
+
+        IsUploading = true;
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        try
+        {
+            // Obtener el ítem correspondiente al documento requerido
+            var item = await DbContext.ForwardItems
+                .FirstOrDefaultAsync(i => i.ForwardRequestId == Request.Id);
+
+            if (item == null)
+            {
+                ErrorMessage = "No se encontró el artículo asociado a la solicitud";
+                return;
+            }
+
+            // Guardar el archivo
+            var filePath = await FileService.SaveFileAsync(SelectedFile, Request.Id, item.Id);
+
+            // Crear el adjunto en la base de datos
+            var attachment = new Attachment
+                {
+                    ForwardItemId = item.Id,
+                    FileName = SelectedFile.Name,
+                    ContentType = SelectedFile.ContentType,
+                    FilePath = filePath,
+                    FileSize = SelectedFile.Size,
+                    Description = DocumentDescription
+                };
+
+            await DbContext.Attachments.AddAsync(attachment);
+            await DbContext.SaveChangesAsync();
+
+            // Actualizar el documento requerido
+            SelectedDocument.IsSubmitted = true;
+            SelectedDocument.AttachmentId = attachment.Id;
+            SelectedDocument.Description = DocumentDescription;
+
+            DbContext.RequiredDocuments.Update(SelectedDocument);
+            await DbContext.SaveChangesAsync();
+
+            // Verificar si todos los documentos requeridos han sido enviados
+            var allDocumentsSubmitted = await DbContext.RequiredDocuments
+                .Where(d => d.ForwardRequestId == Request.Id)
+                .AllAsync(d => d.IsSubmitted);
+
+            // Si todos los documentos han sido enviados, actualizar el estado de la solicitud
+            if (allDocumentsSubmitted && Request.Status == ForwardRequestStatus.DocumentsRequired)
+            {
+                Request.Status = ForwardRequestStatus.InReview;
+                Request.StatusHistory.Add(new RequestStatusHistory
+                    {
+                        Status = ForwardRequestStatus.InReview,
+                        Notes = "Todos los documentos requeridos han sido enviados"
+                    });
+
+                DbContext.ForwardRequests.Update(Request);
+                await DbContext.SaveChangesAsync();
+            }
+
+            SuccessMessage = Localizer["DocumentUploaded"];
+            ShowUploadForm = false;
+
+            // Recargar la lista de documentos
+            await LoadRequest();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"{Localizer["DocumentUploadError"]} {ex.Message}";
+        }
+        finally
+        {
+            IsUploading = false;
+        }
+    }
+
+    private void CancelUpload()
+    {
+        ShowUploadForm = false;
+        SelectedDocument = null;
+        SelectedFile = null;
+        FileValidationError = null;
+    }
+
+    private string GetDocumentTypeName(string documentType)
+    {
+        return documentType switch
+        {
+            "Invoice" => Localizer["Invoice"],
+            "CustomsDeclaration" => Localizer["CustomsDeclaration"],
+            "ProofOfPurchase" => Localizer["ProofOfPurchase"],
+            "ItemDescription" => Localizer["ItemDescription"],
+            "Other" => Localizer["Other"],
+            _ => documentType
+        };
+    }
+    
+        }
+
+
+
+

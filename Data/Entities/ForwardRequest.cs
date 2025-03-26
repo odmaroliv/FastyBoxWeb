@@ -40,5 +40,8 @@ namespace FastyBoxWeb.Data.Entities
 
         [MaxLength(100)]
         public string? OriginalTrackingNumber { get; set; }
+
+
+        public virtual ICollection<RequiredDocument> RequiredDocuments { get; set; } = new HashSet<RequiredDocument>();
     }
 }

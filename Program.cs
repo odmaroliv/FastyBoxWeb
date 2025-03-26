@@ -1,5 +1,6 @@
 using FastyBoxWeb.Data;
 using FastyBoxWeb.Data.Entities;
+using FastyBoxWeb.Services;
 using FastyBoxWeb.Services.Notification;
 using FastyBoxWeb.Services.Payment;
 using FastyBoxWeb.Services.Shipping;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +55,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
 // Configuración de localization
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddLocalization();
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new[]
@@ -62,11 +64,11 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         new CultureInfo("en")
     };
 
-    options.DefaultRequestCulture = new RequestCulture("es");
+    options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 
-    // Agregar proveedores de resolución de cultura
+    // Add culture resolution providers
     options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
     options.RequestCultureProviders.Insert(1, new CookieRequestCultureProvider());
 });
@@ -75,6 +77,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddScoped<IForwardingService, ForwardingService>();
 builder.Services.AddScoped<IShippingCalculatorService, ShippingCalculatorService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 // Configurar opciones de Stripe
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -98,6 +101,7 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+
 // Configuración del pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
@@ -112,8 +116,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Configuración de localización
-app.UseRequestLocalization();
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 
 app.UseRouting();
 

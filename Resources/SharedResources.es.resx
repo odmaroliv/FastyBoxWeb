@@ -1,63 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-		<xsd:element name="root" msdata:IsDataSet="true">
-			<xsd:complexType>
-				<xsd:choice maxOccurs="unbounded">
-					<xsd:element name="metadata">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" />
-							</xsd:sequence>
-							<xsd:attribute name="name" use="required" type="xsd:string" />
-							<xsd:attribute name="type" type="xsd:string" />
-							<xsd:attribute name="mimetype" type="xsd:string" />
-							<xsd:attribute ref="xml:space" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="assembly">
-						<xsd:complexType>
-							<xsd:attribute name="alias" type="xsd:string" />
-							<xsd:attribute name="name" type="xsd:string" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="data">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-							<xsd:attribute ref="xml:space" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="resheader">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" />
-						</xsd:complexType>
-					</xsd:element>
-				</xsd:choice>
-			</xsd:complexType>
-		</xsd:element>
-	</xsd:schema>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>2.0</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
+	
 	<!-- Layout y navegación -->
 	<data name="SiteTitle" xml:space="preserve">
     <value>FastyBox - Reenvío de paquetes de EE.UU. a México</value>
@@ -897,6 +840,313 @@
     <value>Pago adicional requerido debido a cambio en las dimensiones o peso.</value>
   </data>
 
+	<!-- Detalles de solicitud Documentos -->
+
+	<data name="StatusDocumentsRequired" xml:space="preserve">
+    <value>Documentos Requeridos</value>
+</data>
+<data name="DocumentsRequiredMessage" xml:space="preserve">
+    <value>Se requieren documentos adicionales para tu envío. Por favor, sube los documentos solicitados para continuar con el procesamiento.</value>
+</data>
+<data name="UploadDocuments" xml:space="preserve">
+    <value>Subir Documentos</value>
+</data>
+<data name="DocumentsRequiredTitle" xml:space="preserve">
+    <value>Documentos Requeridos</value>
+</data>
+<data name="DocumentsRequiredDescription" xml:space="preserve">
+    <value>Por favor, sube los documentos solicitados para continuar con el procesamiento de tu envío.</value>
+</data>
+<data name="RequestedDocuments" xml:space="preserve">
+    <value>Documentos Solicitados</value>
+</data>
+<data name="NoDocumentsRequested" xml:space="preserve">
+    <value>Aún no se han solicitado documentos.</value>
+</data>
+<data name="UploadNewDocument" xml:space="preserve">
+    <value>Subir Nuevo Documento</value>
+</data>
+<data name="DocumentType" xml:space="preserve">
+    <value>Tipo de Documento</value>
+</data>
+<data name="SelectDocumentType" xml:space="preserve">
+    <value>Selecciona el tipo de documento</value>
+</data>
+<data name="Invoice" xml:space="preserve">
+    <value>Factura</value>
+</data>
+<data name="CustomsDeclaration" xml:space="preserve">
+    <value>Declaración de Aduana</value>
+</data>
+<data name="ProofOfPurchase" xml:space="preserve">
+    <value>Comprobante de Compra</value>
+</data>
+<data name="ItemDescription" xml:space="preserve">
+    <value>Descripción del Artículo</value>
+</data>
+<data name="Other" xml:space="preserve">
+    <value>Otro</value>
+</data>
+<data name="DocumentDescription" xml:space="preserve">
+    <value>Descripción del Documento</value>
+</data>
+<data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>Breve descripción del documento...</value>
+</data>
+<data name="ChooseFile" xml:space="preserve">
+    <value>Elegir Archivo</value>
+</data>
+<data name="UploadDocument" xml:space="preserve">
+    <value>Subir Documento</value>
+</data>
+<data name="UploadingDocument" xml:space="preserve">
+    <value>Subiendo Documento...</value>
+</data>
+<data name="DocumentUploaded" xml:space="preserve">
+    <value>Documento Subido Exitosamente</value>
+</data>
+<data name="DocumentUploadError" xml:space="preserve">
+    <value>Error al subir el documento. Por favor, intenta de nuevo.</value>
+</data>
+<data name="AcceptedFileTypes" xml:space="preserve">
+    <value>Tipos de archivo aceptados: JPG, PNG, PDF (Máx 10MB)</value>
+</data>
+<data name="RequiredDocuments" xml:space="preserve">
+    <value>Documentos Requeridos</value>
+</data>
+<data name="DocumentSubmitted" xml:space="preserve">
+    <value>Enviado</value>
+</data>
+<data name="DocumentPending" xml:space="preserve">
+    <value>Pendiente</value>
+</data>
+<data name="RequestDocuments" xml:space="preserve">
+    <value>Solicitar Documentos</value>
+</data>
+
+	<!-- Detalles de solicitud FAQ -->
+
+	# Agrega estas entradas a Resources/SharedResources.es.resx
+
+	<data name="FrequentlyAskedQuestions" xml:space="preserve">
+    <value>Preguntas Frecuentes</value>
+</data>
+	<data name="FAQPageDescription" xml:space="preserve">
+    <value>Encuentra respuestas a las preguntas más comunes sobre nuestro servicio.</value>
+</data>
+	<data name="GeneralQuestions" xml:space="preserve">
+    <value>Preguntas Generales</value>
+</data>
+	<data name="WhatIsFastyBox" xml:space="preserve">
+    <value>¿Qué es FastyBox?</value>
+</data>
+	<data name="WhatIsFastyBoxAnswer1" xml:space="preserve">
+    <value>FastyBox es un servicio de reenvío de paquetes que te proporciona una dirección en Estados Unidos para recibir paquetes de tiendas que no envían directamente a México.</value>
+</data>
+	<data name="WhatIsFastyBoxAnswer2" xml:space="preserve">
+    <value>Recibimos tus paquetes en nuestro almacén en Estados Unidos, los procesamos y los reenviamos a tu dirección en México.</value>
+</data>
+	<data name="HowDoesItWork" xml:space="preserve">
+    <value>¿Cómo funciona?</value>
+</data>
+	<data name="HowDoesItWorkStep1" xml:space="preserve">
+    <value>Regístrate para obtener una cuenta y recibe tu dirección única en EE.UU.</value>
+</data>
+	<data name="HowDoesItWorkStep2" xml:space="preserve">
+    <value>Compra en línea en tiendas de EE.UU. y usa tu dirección de FastyBox para el envío.</value>
+</data>
+	<data name="HowDoesItWorkStep3" xml:space="preserve">
+    <value>Recibimos tus paquetes en nuestro almacén y te notificamos.</value>
+</data>
+	<data name="HowDoesItWorkStep4" xml:space="preserve">
+    <value>Paga la tarifa de envío y reenviaremos tus paquetes a tu dirección en México.</value>
+</data>
+	<data name="WhyUseFastyBox" xml:space="preserve">
+    <value>¿Por qué debería usar FastyBox?</value>
+</data>
+	<data name="WhyUseFastyBoxReason1" xml:space="preserve">
+    <value>Acceso a tiendas de EE.UU. que no realizan envíos internacionales.</value>
+</data>
+	<data name="WhyUseFastyBoxReason2" xml:space="preserve">
+    <value>Costos de envío más bajos en comparación con el envío internacional desde minoristas.</value>
+</data>
+	<data name="WhyUseFastyBoxReason3" xml:space="preserve">
+    <value>Consolidación de paquetes para ahorrar en costos de envío.</value>
+</data>
+	<data name="WhyUseFastyBoxReason4" xml:space="preserve">
+    <value>Seguimiento confiable y soporte al cliente.</value>
+</data>
+	<data name="WhatCanISend" xml:space="preserve">
+    <value>¿Qué tipo de artículos puedo enviar con FastyBox?</value>
+</data>
+	<data name="WhatCanISendAnswer1" xml:space="preserve">
+    <value>Puedes enviar la mayoría de los bienes de consumo, incluyendo ropa, electrónicos, libros, artículos para el hogar y más.</value>
+</data>
+	<data name="WhatCanISendAnswer2" xml:space="preserve">
+    <value>Todos los artículos deben cumplir con las regulaciones aduaneras tanto de EE.UU. como de México.</value>
+</data>
+	<data name="WhatCannotSend" xml:space="preserve">
+    <value>¿Qué artículos están prohibidos?</value>
+</data>
+	<data name="WhatCannotSendAnswer" xml:space="preserve">
+    <value>Los siguientes artículos están prohibidos para envío a través de nuestro servicio:</value>
+</data>
+	<data name="ProhibitedItem1" xml:space="preserve">
+    <value>Sustancias ilegales, drogas y narcóticos</value>
+</data>
+	<data name="ProhibitedItem2" xml:space="preserve">
+    <value>Armas, municiones y explosivos</value>
+</data>
+	<data name="ProhibitedItem3" xml:space="preserve">
+    <value>Alimentos perecederos</value>
+</data>
+	<data name="ProhibitedItem4" xml:space="preserve">
+    <value>Materiales peligrosos</value>
+</data>
+	<data name="ProhibitedItem5" xml:space="preserve">
+    <value>Productos falsificados</value>
+</data>
+	<data name="ProhibitedItem6" xml:space="preserve">
+    <value>Animales vivos o plantas</value>
+</data>
+	<data name="ShippingAndDelivery" xml:space="preserve">
+    <value>Envío y Entrega</value>
+</data>
+	<data name="HowLongShipping" xml:space="preserve">
+    <value>¿Cuánto tarda el envío?</value>
+</data>
+	<data name="HowLongShippingAnswer" xml:space="preserve">
+    <value>Los tiempos de envío varían dependiendo de varios factores:</value>
+</data>
+	<data name="ShippingTime1" xml:space="preserve">
+    <value>Tiempo de procesamiento en nuestro almacén: 1-2 días hábiles después de la recepción</value>
+</data>
+	<data name="ShippingTime2" xml:space="preserve">
+    <value>Tiempo de tránsito a México: 5-10 días hábiles</value>
+</data>
+	<data name="ShippingTime3" xml:space="preserve">
+    <value>Despacho de aduana: 1-3 días hábiles (puede variar según los procedimientos aduaneros)</value>
+</data>
+	<data name="TrackPackage" xml:space="preserve">
+    <value>¿Puedo hacer seguimiento a mi paquete?</value>
+</data>
+	<data name="TrackPackageAnswer1" xml:space="preserve">
+    <value>Sí, puedes rastrear tu paquete en cada paso del proceso a través del panel de control de tu cuenta FastyBox.</value>
+</data>
+	<data name="TrackPackageAnswer2" xml:space="preserve">
+    <value>Proporcionamos actualizaciones regulares del estado y la información de seguimiento una vez que tu paquete está en tránsito.</value>
+</data>
+	<data name="ShippingCost" xml:space="preserve">
+    <value>¿Cuánto cuesta el envío?</value>
+</data>
+	<data name="ShippingCostAnswer1" xml:space="preserve">
+    <value>Los costos de envío se calculan en función del peso, las dimensiones y el destino de tu paquete.</value>
+</data>
+	<data name="ShippingCostAnswer2" xml:space="preserve">
+    <value>Puedes usar nuestra calculadora de envío para obtener un estimado antes de realizar una compra.</value>
+</data>
+	<data name="DeliveryAreas" xml:space="preserve">
+    <value>¿A qué áreas de México realizan envíos?</value>
+</data>
+	<data name="DeliveryAreasAnswer" xml:space="preserve">
+    <value>Entregamos a todas las ciudades principales y la mayoría de las áreas en todo México. Las áreas remotas o rurales pueden requerir tiempo adicional de entrega.</value>
+</data>
+	<data name="PaymentsAndFees" xml:space="preserve">
+    <value>Pagos y Tarifas</value>
+</data>
+	<data name="PaymentMethods" xml:space="preserve">
+    <value>¿Qué métodos de pago aceptan?</value>
+</data>
+	<data name="PaymentMethodsAnswer" xml:space="preserve">
+    <value>Aceptamos los siguientes métodos de pago:</value>
+</data>
+	<data name="PaymentMethod1" xml:space="preserve">
+    <value>Tarjetas de crédito/débito (Visa, Mastercard, American Express)</value>
+</data>
+	<data name="PaymentMethod2" xml:space="preserve">
+    <value>PayPal</value>
+</data>
+	<data name="PaymentMethod3" xml:space="preserve">
+    <value>Transferencia bancaria (para cuentas mexicanas)</value>
+</data>
+	<data name="CustomsFees" xml:space="preserve">
+    <value>¿Hay tarifas aduaneras?</value>
+</data>
+	<data name="CustomsFeesAnswer1" xml:space="preserve">
+    <value>Sí, todos los bienes importados están sujetos a aranceles e impuestos aduaneros según las regulaciones mexicanas.</value>
+</data>
+	<data name="CustomsFeesAnswer2" xml:space="preserve">
+    <value>Estas tarifas se calculan en función del valor declarado de tus artículos y se incluyen en nuestra cotización de precio final.</value>
+</data>
+	<data name="AdditionalFees" xml:space="preserve">
+    <value>¿Hay tarifas adicionales?</value>
+</data>
+	<data name="AdditionalFeesAnswer" xml:space="preserve">
+    <value>Además de la tarifa base de envío y los aranceles aduaneros, puede haber tarifas adicionales por:</value>
+</data>
+	<data name="AdditionalFee1" xml:space="preserve">
+    <value>Consolidación de paquetes (combinación de múltiples paquetes)</value>
+</data>
+	<data name="AdditionalFee2" xml:space="preserve">
+    <value>Manejo especial para artículos frágiles o de gran tamaño</value>
+</data>
+	<data name="AdditionalFee3" xml:space="preserve">
+    <value>Almacenamiento de paquetes por más de 30 días</value>
+</data>
+	<data name="Refunds" xml:space="preserve">
+    <value>¿Cuál es su política de reembolso?</value>
+</data>
+	<data name="RefundsAnswer" xml:space="preserve">
+    <value>Ofrecemos reembolsos por las tarifas de envío solo si no logramos entregar tu paquete o si llega dañado debido a nuestro manejo. Los aranceles e impuestos aduaneros no son reembolsables ya que se pagan a las autoridades gubernamentales.</value>
+</data>
+	<data name="AccountAndSupport" xml:space="preserve">
+    <value>Cuenta y Soporte</value>
+</data>
+	<data name="CreateAccount" xml:space="preserve">
+    <value>¿Cómo creo una cuenta?</value>
+</data>
+	<data name="CreateAccountAnswer" xml:space="preserve">
+    <value>Puedes crear una cuenta haciendo clic en el botón "Registrarse" en la parte superior de nuestro sitio web y siguiendo el proceso de registro. Deberás proporcionar tu correo electrónico, nombre y dirección de envío en México.</value>
+</data>
+	<data name="ForgotPassword" xml:space="preserve">
+    <value>Olvidé mi contraseña. ¿Qué debo hacer?</value>
+</data>
+	<data name="ForgotPasswordAnswer" xml:space="preserve">
+    <value>Haz clic en el botón "Iniciar sesión" y luego selecciona "Olvidé mi contraseña". Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.</value>
+</data>
+	<data name="ContactSupport" xml:space="preserve">
+    <value>¿Cómo puedo contactar al soporte al cliente?</value>
+</data>
+	<data name="ContactSupportAnswer" xml:space="preserve">
+    <value>Puedes contactar a nuestro equipo de soporte al cliente a través de los siguientes canales:</value>
+</data>
+	<data name="SupportContact1" xml:space="preserve">
+    <value>Correo electrónico: support@fastybox.com</value>
+</data>
+	<data name="SupportContact2" xml:space="preserve">
+    <value>Teléfono: +52 55 1234 5678</value>
+</data>
+	<data name="SupportContact3" xml:space="preserve">
+    <value>Chat en vivo: Disponible en nuestro sitio web durante horas laborables</value>
+</data>
+	<data name="BusinessHours" xml:space="preserve">
+    <value>¿Cuáles son sus horarios de atención?</value>
+</data>
+	<data name="BusinessHoursAnswer" xml:space="preserve">
+    <value>Nuestro equipo de soporte al cliente está disponible de lunes a viernes, de 9:00 AM a 6:00 PM (hora de la Ciudad de México). Las operaciones del almacén funcionan de lunes a sábado, de 8:00 AM a 7:00 PM (hora del Este de EE.UU.).</value>
+</data>
+	<data name="StillHaveQuestions" xml:space="preserve">
+    <value>¿Aún tienes preguntas?</value>
+</data>
+	<data name="ContactMessage" xml:space="preserve">
+    <value>Si no encontraste la respuesta a tu pregunta, por favor contacta a nuestro equipo de soporte al cliente.</value>
+</data>
+	<data name="EmailSupport" xml:space="preserve">
+    <value>Contactar por Email</value>
+</data>
+	<data name="CallSupport" xml:space="preserve">
+    <value>Llamar a Soporte</value>
+</data>
 	
 	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
 		<xsd:element name="root" msdata:IsDataSet="true">

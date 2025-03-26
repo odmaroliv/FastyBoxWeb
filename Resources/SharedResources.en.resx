@@ -1,63 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-		<xsd:element name="root" msdata:IsDataSet="true">
-			<xsd:complexType>
-				<xsd:choice maxOccurs="unbounded">
-					<xsd:element name="metadata">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" />
-							</xsd:sequence>
-							<xsd:attribute name="name" use="required" type="xsd:string" />
-							<xsd:attribute name="type" type="xsd:string" />
-							<xsd:attribute name="mimetype" type="xsd:string" />
-							<xsd:attribute ref="xml:space" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="assembly">
-						<xsd:complexType>
-							<xsd:attribute name="alias" type="xsd:string" />
-							<xsd:attribute name="name" type="xsd:string" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="data">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-							<xsd:attribute ref="xml:space" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="resheader">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" />
-						</xsd:complexType>
-					</xsd:element>
-				</xsd:choice>
-			</xsd:complexType>
-		</xsd:element>
-	</xsd:schema>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>2.0</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
+	
 	<!-- Layout and Navigation -->
 	<data name="SiteTitle" xml:space="preserve">
     <value>FastyBox - Package Forwarding from USA to Mexico</value>
@@ -897,6 +840,312 @@
     <value>Additional payment required due to changes in dimensions or weight.</value>
   </data>
 
+
+	<!-- Detalles de solicitud Documentos -->
+	<data name="StatusDocumentsRequired" xml:space="preserve">
+    <value>Documents Required</value>
+</data>
+	<data name="DocumentsRequiredMessage" xml:space="preserve">
+    <value>Additional documents are required for your shipment. Please upload the requested documents to continue processing.</value>
+</data>
+	<data name="UploadDocuments" xml:space="preserve">
+    <value>Upload Documents</value>
+</data>
+	<data name="DocumentsRequiredTitle" xml:space="preserve">
+    <value>Documents Required</value>
+</data>
+	<data name="DocumentsRequiredDescription" xml:space="preserve">
+    <value>Please upload the requested documents to continue processing your shipment.</value>
+</data>
+	<data name="RequestedDocuments" xml:space="preserve">
+    <value>Requested Documents</value>
+</data>
+	<data name="NoDocumentsRequested" xml:space="preserve">
+    <value>No documents have been requested yet.</value>
+</data>
+	<data name="UploadNewDocument" xml:space="preserve">
+    <value>Upload New Document</value>
+</data>
+	<data name="DocumentType" xml:space="preserve">
+    <value>Document Type</value>
+</data>
+	<data name="SelectDocumentType" xml:space="preserve">
+    <value>Select document type</value>
+</data>
+	<data name="Invoice" xml:space="preserve">
+    <value>Invoice</value>
+</data>
+	<data name="CustomsDeclaration" xml:space="preserve">
+    <value>Customs Declaration</value>
+</data>
+	<data name="ProofOfPurchase" xml:space="preserve">
+    <value>Proof of Purchase</value>
+</data>
+	<data name="ItemDescription" xml:space="preserve">
+    <value>Item Description</value>
+</data>
+	<data name="Other" xml:space="preserve">
+    <value>Other</value>
+</data>
+	<data name="DocumentDescription" xml:space="preserve">
+    <value>Document Description</value>
+</data>
+	<data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>Brief description of the document...</value>
+</data>
+	<data name="ChooseFile" xml:space="preserve">
+    <value>Choose File</value>
+</data>
+	<data name="UploadDocument" xml:space="preserve">
+    <value>Upload Document</value>
+</data>
+	<data name="UploadingDocument" xml:space="preserve">
+    <value>Uploading Document...</value>
+</data>
+	<data name="DocumentUploaded" xml:space="preserve">
+    <value>Document Uploaded Successfully</value>
+</data>
+	<data name="DocumentUploadError" xml:space="preserve">
+    <value>Error uploading document. Please try again.</value>
+</data>
+	<data name="AcceptedFileTypes" xml:space="preserve">
+    <value>Accepted file types: JPG, PNG, PDF (Max 10MB)</value>
+</data>
+	<data name="RequiredDocuments" xml:space="preserve">
+    <value>Required Documents</value>
+</data>
+	<data name="DocumentSubmitted" xml:space="preserve">
+    <value>Submitted</value>
+</data>
+	<data name="DocumentPending" xml:space="preserve">
+    <value>Pending</value>
+</data>
+	<data name="RequestDocuments" xml:space="preserve">
+    <value>Request Documents</value>
+</data>
+
+	<!-- Detalles de solicitud FAQ -->
+	# Agrega estas entradas a Resources/SharedResources.en.resx
+
+	<data name="FrequentlyAskedQuestions" xml:space="preserve">
+    <value>Frequently Asked Questions</value>
+</data>
+	<data name="FAQPageDescription" xml:space="preserve">
+    <value>Find answers to the most common questions about our service.</value>
+</data>
+	<data name="GeneralQuestions" xml:space="preserve">
+    <value>General Questions</value>
+</data>
+	<data name="WhatIsFastyBox" xml:space="preserve">
+    <value>What is FastyBox?</value>
+</data>
+	<data name="WhatIsFastyBoxAnswer1" xml:space="preserve">
+    <value>FastyBox is a package forwarding service that provides you with a US address to receive packages from stores that don't ship directly to Mexico.</value>
+</data>
+	<data name="WhatIsFastyBoxAnswer2" xml:space="preserve">
+    <value>We receive your packages at our warehouse in the United States, process them, and forward them to your address in Mexico.</value>
+</data>
+	<data name="HowDoesItWork" xml:space="preserve">
+    <value>How does it work?</value>
+</data>
+	<data name="HowDoesItWorkStep1" xml:space="preserve">
+    <value>Sign up for an account and get your unique US address.</value>
+</data>
+	<data name="HowDoesItWorkStep2" xml:space="preserve">
+    <value>Shop online at US stores and use your FastyBox address for shipping.</value>
+</data>
+	<data name="HowDoesItWorkStep3" xml:space="preserve">
+    <value>We receive your packages at our warehouse and notify you.</value>
+</data>
+	<data name="HowDoesItWorkStep4" xml:space="preserve">
+    <value>Pay the shipping fee and we'll forward your packages to your address in Mexico.</value>
+</data>
+	<data name="WhyUseFastyBox" xml:space="preserve">
+    <value>Why should I use FastyBox?</value>
+</data>
+	<data name="WhyUseFastyBoxReason1" xml:space="preserve">
+    <value>Access to US stores that don't ship internationally.</value>
+</data>
+	<data name="WhyUseFastyBoxReason2" xml:space="preserve">
+    <value>Lower shipping costs compared to international shipping from retailers.</value>
+</data>
+	<data name="WhyUseFastyBoxReason3" xml:space="preserve">
+    <value>Package consolidation to save on shipping costs.</value>
+</data>
+	<data name="WhyUseFastyBoxReason4" xml:space="preserve">
+    <value>Reliable tracking and customer support.</value>
+</data>
+	<data name="WhatCanISend" xml:space="preserve">
+    <value>What kinds of items can I ship with FastyBox?</value>
+</data>
+	<data name="WhatCanISendAnswer1" xml:space="preserve">
+    <value>You can ship most consumer goods including clothing, electronics, books, household items, and more.</value>
+</data>
+	<data name="WhatCanISendAnswer2" xml:space="preserve">
+    <value>All items must comply with both US and Mexican customs regulations.</value>
+</data>
+	<data name="WhatCannotSend" xml:space="preserve">
+    <value>What items are prohibited?</value>
+</data>
+	<data name="WhatCannotSendAnswer" xml:space="preserve">
+    <value>The following items are prohibited from shipping through our service:</value>
+</data>
+	<data name="ProhibitedItem1" xml:space="preserve">
+    <value>Illegal substances, drugs, and narcotics</value>
+</data>
+	<data name="ProhibitedItem2" xml:space="preserve">
+    <value>Weapons, ammunition, and explosives</value>
+</data>
+	<data name="ProhibitedItem3" xml:space="preserve">
+    <value>Perishable food items</value>
+</data>
+	<data name="ProhibitedItem4" xml:space="preserve">
+    <value>Hazardous materials</value>
+</data>
+	<data name="ProhibitedItem5" xml:space="preserve">
+    <value>Counterfeit goods</value>
+</data>
+	<data name="ProhibitedItem6" xml:space="preserve">
+    <value>Live animals or plants</value>
+</data>
+	<data name="ShippingAndDelivery" xml:space="preserve">
+    <value>Shipping and Delivery</value>
+</data>
+	<data name="HowLongShipping" xml:space="preserve">
+    <value>How long does shipping take?</value>
+</data>
+	<data name="HowLongShippingAnswer" xml:space="preserve">
+    <value>Shipping times vary depending on several factors:</value>
+</data>
+	<data name="ShippingTime1" xml:space="preserve">
+    <value>Processing time at our warehouse: 1-2 business days after receipt</value>
+</data>
+	<data name="ShippingTime2" xml:space="preserve">
+    <value>Transit time to Mexico: 5-10 business days</value>
+</data>
+	<data name="ShippingTime3" xml:space="preserve">
+    <value>Customs clearance: 1-3 business days (may vary based on customs procedures)</value>
+</data>
+	<data name="TrackPackage" xml:space="preserve">
+    <value>Can I track my package?</value>
+</data>
+	<data name="TrackPackageAnswer1" xml:space="preserve">
+    <value>Yes, you can track your package at every step of the process through your FastyBox account dashboard.</value>
+</data>
+	<data name="TrackPackageAnswer2" xml:space="preserve">
+    <value>We provide regular status updates and tracking information once your package is in transit.</value>
+</data>
+	<data name="ShippingCost" xml:space="preserve">
+    <value>How much does shipping cost?</value>
+</data>
+	<data name="ShippingCostAnswer1" xml:space="preserve">
+    <value>Shipping costs are calculated based on the weight, dimensions, and destination of your package.</value>
+</data>
+	<data name="ShippingCostAnswer2" xml:space="preserve">
+    <value>You can use our shipping calculator to get an estimate before making a purchase.</value>
+</data>
+	<data name="DeliveryAreas" xml:space="preserve">
+    <value>Which areas do you deliver to in Mexico?</value>
+</data>
+	<data name="DeliveryAreasAnswer" xml:space="preserve">
+    <value>We deliver to all major cities and most areas throughout Mexico. Remote or rural areas may require additional delivery time.</value>
+</data>
+	<data name="PaymentsAndFees" xml:space="preserve">
+    <value>Payments and Fees</value>
+</data>
+	<data name="PaymentMethods" xml:space="preserve">
+    <value>What payment methods do you accept?</value>
+</data>
+	<data name="PaymentMethodsAnswer" xml:space="preserve">
+    <value>We accept the following payment methods:</value>
+</data>
+	<data name="PaymentMethod1" xml:space="preserve">
+    <value>Credit/Debit cards (Visa, Mastercard, American Express)</value>
+</data>
+	<data name="PaymentMethod2" xml:space="preserve">
+    <value>PayPal</value>
+</data>
+	<data name="PaymentMethod3" xml:space="preserve">
+    <value>Bank transfer (for Mexican accounts)</value>
+</data>
+	<data name="CustomsFees" xml:space="preserve">
+    <value>Are there any customs fees?</value>
+</data>
+	<data name="CustomsFeesAnswer1" xml:space="preserve">
+    <value>Yes, all imported goods are subject to customs duties and taxes as per Mexican regulations.</value>
+</data>
+	<data name="CustomsFeesAnswer2" xml:space="preserve">
+    <value>These fees are calculated based on the declared value of your items and are included in our final price quote.</value>
+</data>
+	<data name="AdditionalFees" xml:space="preserve">
+    <value>Are there any additional fees?</value>
+</data>
+	<data name="AdditionalFeesAnswer" xml:space="preserve">
+    <value>In addition to the base shipping rate and customs fees, there may be additional fees for:</value>
+</data>
+	<data name="AdditionalFee1" xml:space="preserve">
+    <value>Package consolidation (combining multiple packages)</value>
+</data>
+	<data name="AdditionalFee2" xml:space="preserve">
+    <value>Special handling for fragile or oversized items</value>
+</data>
+	<data name="AdditionalFee3" xml:space="preserve">
+    <value>Package storage beyond 30 days</value>
+</data>
+	<data name="Refunds" xml:space="preserve">
+    <value>What is your refund policy?</value>
+</data>
+	<data name="RefundsAnswer" xml:space="preserve">
+    <value>We offer refunds for shipping fees only if we fail to deliver your package or if it arrives damaged due to our handling. Customs fees and taxes are non-refundable as they are paid to government authorities.</value>
+</data>
+	<data name="AccountAndSupport" xml:space="preserve">
+    <value>Account and Support</value>
+</data>
+	<data name="CreateAccount" xml:space="preserve">
+    <value>How do I create an account?</value>
+</data>
+	<data name="CreateAccountAnswer" xml:space="preserve">
+    <value>You can create an account by clicking on the "Register" button at the top of our website and following the registration process. You'll need to provide your email, name, and shipping address in Mexico.</value>
+</data>
+	<data name="ForgotPassword" xml:space="preserve">
+    <value>I forgot my password. What should I do?</value>
+</data>
+	<data name="ForgotPasswordAnswer" xml:space="preserve">
+    <value>Click on the "Login" button and then select "Forgot Password". Enter your email address, and we'll send you instructions to reset your password.</value>
+</data>
+	<data name="ContactSupport" xml:space="preserve">
+    <value>How can I contact customer support?</value>
+</data>
+	<data name="ContactSupportAnswer" xml:space="preserve">
+    <value>You can contact our customer support team through the following channels:</value>
+</data>
+	<data name="SupportContact1" xml:space="preserve">
+    <value>Email: support@fastybox.com</value>
+</data>
+	<data name="SupportContact2" xml:space="preserve">
+    <value>Phone: +52 55 1234 5678</value>
+</data>
+	<data name="SupportContact3" xml:space="preserve">
+    <value>Live chat: Available on our website during business hours</value>
+</data>
+	<data name="BusinessHours" xml:space="preserve">
+    <value>What are your business hours?</value>
+</data>
+	<data name="BusinessHoursAnswer" xml:space="preserve">
+    <value>Our customer support team is available Monday through Friday, 9:00 AM to 6:00 PM (Mexico City time). Warehouse operations run Monday through Saturday, 8:00 AM to 7:00 PM (US Eastern Time).</value>
+</data>
+	<data name="StillHaveQuestions" xml:space="preserve">
+    <value>Still Have Questions?</value>
+</data>
+	<data name="ContactMessage" xml:space="preserve">
+    <value>If you couldn't find the answer to your question, please contact our customer support team.</value>
+</data>
+	<data name="EmailSupport" xml:space="preserve">
+    <value>Email Support</value>
+</data>
+	<data name="CallSupport" xml:space="preserve">
+    <value>Call Support</value>
+</data>
 
 	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
 		<xsd:element name="root" msdata:IsDataSet="true">

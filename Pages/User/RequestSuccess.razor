@@ -1,0 +1,85 @@
+﻿@page "/request/{Id:int}/success"
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@Localizer["RequestCreated"] - FastyBox</PageTitle>
+
+<div class="max-w-3xl mx-auto py-12">
+    <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-6 mb-6 flex flex-col items-center">
+        <div class="rounded-full bg-green-100 p-3 mb-4">
+            <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <h2 class="text-2xl font-semibold mb-2">@Localizer["RequestCreatedSuccessfully"]</h2>
+        <p class="text-center mb-4">@Localizer["RequestCreatedDescription"]</p>
+        @if (Request != null)
+        {
+            <div class="bg-white p-4 rounded mb-4 text-center">
+                <p class="font-medium">@Localizer["TrackingCode"]</p>
+                <p class="text-xl font-bold">@Request.TrackingCode</p>
+            </div>
+        }
+    </div>
+
+    <div class="flex flex-col md:flex-row justify-center gap-4">
+        <a href="/dashboard" class="px-6 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 text-center">
+            @Localizer["BackToDashboard"]
+        </a>
+        @if (Request != null)
+        {
+            <a href="/request/@Request.Id" class="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-center">
+                @Localizer["ViewRequestDetails"]
+            </a>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ForwardRequest? Request { get; set; }
+    private string UserId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get authenticated user ID
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        await LoadRequest();
+    }
+
+    private async Task LoadRequest()
+    {
+        try
+        {
+            // Load the request
+            Request = await DbContext.ForwardRequests
+                .FirstOrDefaultAsync(r => r.Id == Id && r.UserId == UserId);
+
+            if (Request == null)
+            {
+                // Redirect if request not found
+                NavigationManager.NavigateTo("/dashboard");
+            }
+        }
+        catch (Exception)
+        {
+            // Handle errors
+            NavigationManager.NavigateTo("/dashboard");
+        }
+    }
+}

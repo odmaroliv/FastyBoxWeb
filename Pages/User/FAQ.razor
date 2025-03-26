@@ -1,0 +1,264 @@
+﻿@page "/faq"
+@using Microsoft.AspNetCore.Components.Rendering
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+
+<PageTitle>@Localizer["FAQ"] - FastyBox</PageTitle>
+
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold mb-2">@Localizer["FrequentlyAskedQuestions"]</h1>
+        <p class="text-gray-600">@Localizer["FAQPageDescription"]</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["GeneralQuestions"]</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                <FaqItem Question="@Localizer["WhatIsFastyBox"]">
+                    <p>@Localizer["WhatIsFastyBoxAnswer1"]</p>
+                    <p class="mt-2">@Localizer["WhatIsFastyBoxAnswer2"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["HowDoesItWork"]">
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li>@Localizer["HowDoesItWorkStep1"]</li>
+                        <li>@Localizer["HowDoesItWorkStep2"]</li>
+                        <li>@Localizer["HowDoesItWorkStep3"]</li>
+                        <li>@Localizer["HowDoesItWorkStep4"]</li>
+                    </ol>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["WhyUseFastyBox"]">
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>@Localizer["WhyUseFastyBoxReason1"]</li>
+                        <li>@Localizer["WhyUseFastyBoxReason2"]</li>
+                        <li>@Localizer["WhyUseFastyBoxReason3"]</li>
+                        <li>@Localizer["WhyUseFastyBoxReason4"]</li>
+                    </ul>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["WhatCanISend"]">
+                    <p>@Localizer["WhatCanISendAnswer1"]</p>
+                    <p class="mt-2">@Localizer["WhatCanISendAnswer2"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["WhatCannotSend"]">
+                    <p>@Localizer["WhatCannotSendAnswer"]</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>@Localizer["ProhibitedItem1"]</li>
+                        <li>@Localizer["ProhibitedItem2"]</li>
+                        <li>@Localizer["ProhibitedItem3"]</li>
+                        <li>@Localizer["ProhibitedItem4"]</li>
+                        <li>@Localizer["ProhibitedItem5"]</li>
+                        <li>@Localizer["ProhibitedItem6"]</li>
+                    </ul>
+                </FaqItem>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["ShippingAndDelivery"]</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                <FaqItem Question="@Localizer["HowLongShipping"]">
+                    <p>@Localizer["HowLongShippingAnswer"]</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>@Localizer["ShippingTime1"]</li>
+                        <li>@Localizer["ShippingTime2"]</li>
+                        <li>@Localizer["ShippingTime3"]</li>
+                    </ul>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["TrackPackage"]">
+                    <p>@Localizer["TrackPackageAnswer1"]</p>
+                    <p class="mt-2">@Localizer["TrackPackageAnswer2"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["ShippingCost"]">
+                    <p>@Localizer["ShippingCostAnswer1"]</p>
+                    <p class="mt-2">@Localizer["ShippingCostAnswer2"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["DeliveryAreas"]">
+                    <p>@Localizer["DeliveryAreasAnswer"]</p>
+                </FaqItem>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["PaymentsAndFees"]</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                <FaqItem Question="@Localizer["PaymentMethods"]">
+                    <p>@Localizer["PaymentMethodsAnswer"]</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>@Localizer["PaymentMethod1"]</li>
+                        <li>@Localizer["PaymentMethod2"]</li>
+                        <li>@Localizer["PaymentMethod3"]</li>
+                    </ul>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["CustomsFees"]">
+                    <p>@Localizer["CustomsFeesAnswer1"]</p>
+                    <p class="mt-2">@Localizer["CustomsFeesAnswer2"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["AdditionalFees"]">
+                    <p>@Localizer["AdditionalFeesAnswer"]</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>@Localizer["AdditionalFee1"]</li>
+                        <li>@Localizer["AdditionalFee2"]</li>
+                        <li>@Localizer["AdditionalFee3"]</li>
+                    </ul>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["Refunds"]">
+                    <p>@Localizer["RefundsAnswer"]</p>
+                </FaqItem>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["AccountAndSupport"]</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                <FaqItem Question="@Localizer["CreateAccount"]">
+                    <p>@Localizer["CreateAccountAnswer"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["ForgotPassword"]">
+                    <p>@Localizer["ForgotPasswordAnswer"]</p>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["ContactSupport"]">
+                    <p>@Localizer["ContactSupportAnswer"]</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>@Localizer["SupportContact1"]</li>
+                        <li>@Localizer["SupportContact2"]</li>
+                        <li>@Localizer["SupportContact3"]</li>
+                    </ul>
+                </FaqItem>
+
+                <FaqItem Question="@Localizer["BusinessHours"]">
+                    <p>@Localizer["BusinessHoursAnswer"]</p>
+                </FaqItem>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-100 rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3">@Localizer["StillHaveQuestions"]</h2>
+        <p class="mb-4">@Localizer["ContactMessage"]</p>
+        <div class="flex flex-wrap gap-4">
+            <a href="mailto:support@fastybox.com" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                @Localizer["EmailSupport"]
+            </a>
+            <a href="tel:+525512345678" class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                </svg>
+                @Localizer["CallSupport"]
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class FaqItem : ComponentBase
+    {
+        [Parameter]
+        public string Question { get; set; } = string.Empty;
+        
+        [Parameter]
+        public RenderFragment ChildContent { get; set; } = null!;
+        
+        private bool IsExpanded { get; set; } = false;
+        
+        private void ToggleExpand()
+        {
+            IsExpanded = !IsExpanded;
+        }
+        
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "border border-gray-200 rounded-md overflow-hidden");
+            
+            // Header/Question
+            builder.OpenElement(10, "div");
+            builder.AddAttribute(11, "class", "px-4 py-3 bg-gray-50 flex justify-between items-center cursor-pointer");
+            builder.AddAttribute(12, "onclick", EventCallback.Factory.Create(this, ToggleExpand));
+            
+            builder.OpenElement(13, "h3");
+            builder.AddAttribute(14, "class", "font-medium");
+            builder.AddContent(15, Question);
+            builder.CloseElement(); // h3
+            
+            builder.OpenElement(16, "span");
+            if (IsExpanded)
+            {
+                builder.AddAttribute(17, "class", "transform rotate-180 transition-transform duration-200");
+                builder.OpenElement(18, "svg");
+                builder.AddAttribute(19, "class", "w-5 h-5");
+                builder.AddAttribute(20, "fill", "none");
+                builder.AddAttribute(21, "stroke", "currentColor");
+                builder.AddAttribute(22, "viewBox", "0 0 24 24");
+                builder.AddAttribute(23, "xmlns", "http://www.w3.org/2000/svg");
+                builder.OpenElement(24, "path");
+                builder.AddAttribute(25, "stroke-linecap", "round");
+                builder.AddAttribute(26, "stroke-linejoin", "round");
+                builder.AddAttribute(27, "stroke-width", "2");
+                builder.AddAttribute(28, "d", "M19 9l-7 7-7-7");
+                builder.CloseElement(); // path
+                builder.CloseElement(); // svg
+            }
+            else
+            {
+                builder.AddAttribute(17, "class", "transition-transform duration-200");
+                builder.OpenElement(18, "svg");
+                builder.AddAttribute(19, "class", "w-5 h-5");
+                builder.AddAttribute(20, "fill", "none");
+                builder.AddAttribute(21, "stroke", "currentColor");
+                builder.AddAttribute(22, "viewBox", "0 0 24 24");
+                builder.AddAttribute(23, "xmlns", "http://www.w3.org/2000/svg");
+                builder.OpenElement(24, "path");
+                builder.AddAttribute(25, "stroke-linecap", "round");
+                builder.AddAttribute(26, "stroke-linejoin", "round");
+                builder.AddAttribute(27, "stroke-width", "2");
+                builder.AddAttribute(28, "d", "M19 9l-7 7-7-7");
+                builder.CloseElement(); // path
+                builder.CloseElement(); // svg
+            }
+            builder.CloseElement(); // span
+            
+            builder.CloseElement(); // header div
+            
+            // Content/Answer
+            if (IsExpanded)
+            {
+                builder.OpenElement(30, "div");
+                builder.AddAttribute(31, "class", "px-4 py-3 border-t border-gray-200");
+                builder.AddContent(32, ChildContent);
+                builder.CloseElement(); // content div
+            }
+            
+            builder.CloseElement(); // main div
+        }
+    }
+}

@@ -1,6 +1,6 @@
 ﻿namespace FastyBoxWeb.Resources
 {
-    public class SharedResources
+    public partial class SharedResources
     {
     }
 }

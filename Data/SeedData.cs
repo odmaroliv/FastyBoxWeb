@@ -16,6 +16,9 @@ namespace FastyBoxWeb.Data
             // Crear usuario administrador si no existe
             await CreateAdminUserAsync(userManager);
 
+            //Crea usuario standar
+            await CreateClientUserAsync(userManager);
+
             // Configuraciones del sistema
             await CreateSystemConfigurationsAsync(context);
 
@@ -63,6 +66,32 @@ namespace FastyBoxWeb.Data
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Administrator");
+                }
+            }
+        }
+
+        private static async Task CreateClientUserAsync(UserManager<ApplicationUser> userManager)
+        {
+            var clientEmail = "user@fastybox.com";
+            var clientUser = await userManager.FindByEmailAsync(clientEmail);
+
+            if (clientUser == null)
+            {
+                clientUser = new ApplicationUser
+                {
+                    UserName = clientEmail,
+                    Email = clientEmail,
+                    FirstName = "Client",
+                    LastName = "User",
+                    EmailConfirmed = true,
+                    PreferredLanguage = "en"
+                };
+
+                var result = await userManager.CreateAsync(clientUser, "Admin123!");
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(clientUser, "User");
                 }
             }
         }

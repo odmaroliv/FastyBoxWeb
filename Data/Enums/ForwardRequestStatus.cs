@@ -6,6 +6,7 @@
         AwaitingArrival,
         ReceivedInWarehouse,
         InReview,
+        DocumentsRequired,
         AwaitingPayment,
         Processing,
         InTransitToMexico,

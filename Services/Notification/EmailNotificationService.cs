@@ -212,6 +212,7 @@ namespace FastyBoxWeb.Services.Notification
                 ForwardRequestStatus.AwaitingArrival => ("Esperando Llegada", "Estamos esperando que su paquete llegue a nuestro almacén en EE.UU."),
                 ForwardRequestStatus.ReceivedInWarehouse => ("Recibido en Almacén", "¡Buenas noticias! Su paquete ha llegado a nuestro almacén en EE.UU."),
                 ForwardRequestStatus.InReview => ("En Revisión", "Estamos revisando su paquete y verificando las dimensiones y peso."),
+                ForwardRequestStatus.DocumentsRequired => ("Documentos Requeridos", "Se requieren documentos adicionales para su envío. Por favor revise su cuenta para subir los documentos solicitados."),
                 ForwardRequestStatus.AwaitingPayment => ("Esperando Pago", "Por favor complete el pago para continuar con el proceso de envío."),
                 ForwardRequestStatus.Processing => ("En Procesamiento", "Su paquete está siendo procesado para envío."),
                 ForwardRequestStatus.InTransitToMexico => ("En Tránsito a México", "Su paquete está en camino a México."),

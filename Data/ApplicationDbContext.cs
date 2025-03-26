@@ -26,6 +26,7 @@ namespace FastyBoxWeb.Data
         public DbSet<RequestStatusHistory> RequestStatusHistories => Set<RequestStatusHistory>();
         public DbSet<Attachment> Attachments => Set<Attachment>();
         public DbSet<SystemConfiguration> SystemConfigurations => Set<SystemConfiguration>();
+        public DbSet<RequiredDocument> RequiredDocuments => Set<RequiredDocument>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -152,6 +153,18 @@ namespace FastyBoxWeb.Data
                 .WithMany(fi => fi.Attachments)
             .HasForeignKey(a => a.ForwardItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<RequiredDocument>()
+            .HasOne(rd => rd.ForwardRequest)
+            .WithMany(fr => fr.RequiredDocuments)
+            .HasForeignKey(rd => rd.ForwardRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<RequiredDocument>()
+                .HasOne(rd => rd.Attachment)
+                .WithOne()
+                .HasForeignKey<RequiredDocument>(rd => rd.AttachmentId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         private void ConfigurePaymentEntity(ModelBuilder builder)

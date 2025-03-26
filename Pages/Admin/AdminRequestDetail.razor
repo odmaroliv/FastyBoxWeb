@@ -3,6 +3,7 @@
 @using FastyBoxWeb.Data.Enums
 @using FastyBoxWeb.Services.Payment
 @using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @attribute [Authorize(Roles = "Administrator")]
 @inject IStringLocalizer<SharedResources> Localizer
 @inject NavigationManager NavigationManager
@@ -10,6 +11,7 @@
 @inject IForwardingService ForwardingService
 @inject IShippingCalculatorService ShippingCalculator
 @inject IPaymentService PaymentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
 
 <PageTitle>@Localizer["RequestDetails"] - FastyBox</PageTitle>
@@ -65,6 +67,16 @@ else
                         </svg>
                         @Localizer["UpdateStatus"]
                     </button>
+                    @if (Request.Status != ForwardRequestStatus.DocumentsRequired)
+                    {
+                        <button @onclick="ShowDocumentRequestModal" class="px-3 py-1.5 border border-orange-300 rounded-md shadow-sm text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            @Localizer["RequestDocuments"]
+                        </button>
+                    }
+
                     @if (Request.Status == ForwardRequestStatus.InReview)
                     {
                         <button @onclick="ShowPriceUpdateModal" class="px-3 py-1.5 border border-blue-500 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 flex items-center">
@@ -601,9 +613,73 @@ else
     }
 }
 
+
+
+@if (IsDocumentRequestModalVisible)
+{
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium">@Localizer["RequestDocuments"]</h3>
+                <button @onclick="HideDocumentRequestModal" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <h4 class="font-medium mb-2">@Localizer["RequiredDocuments"]</h4>
+                    
+                    <div class="space-y-3">
+                        @foreach (var docType in DocumentTypes)
+                        {
+                            <div class="flex items-center">
+                                <input type="checkbox" id="doc-@docType" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                       @bind="RequestedDocuments[docType]" />
+                                <label for="doc-@docType" class="ml-2 block text-sm text-gray-700">
+                                    @GetDocumentTypeName(docType)
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="documents-notes" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["Notes"]</label>
+                    <textarea id="documents-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              @bind="DocumentRequestNotes" placeholder="@Localizer["StatusNotesPlaceholder"]"></textarea>
+                </div>
+                
+            <div class="flex justify-end space-x-3">
+                    <button @onclick="HideDocumentRequestModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        @Localizer["Cancel"]
+                    </button>
+                    <button @onclick="RequestDocuments" disabled="@(IsRequesting || !AnyDocumentsSelected())" 
+                            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                        @if (IsRequesting)
+                        {
+                            <span class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                @Localizer["Requesting"]...
+                            </span>
+                        }
+                        else
+                        {
+                            @Localizer["RequestDocuments"]
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
 @code {
     [Parameter]
-    public string Id { get; set; } = string.Empty;
+    public int Id { get; set; }
 
     private ForwardRequest? Request { get; set; }
     private bool IsLoading { get; set; } = true;
@@ -617,17 +693,35 @@ else
     private decimal NewFinalTotal { get; set; } = 0;
     private decimal CalculatedTotal { get; set; } = 0;
     private List<ItemMeasurement> ItemMeasurements { get; set; } = new();
+    private bool IsDocumentRequestModalVisible { get; set; } = false;
+    private bool IsRequesting { get; set; } = false;
+    private Dictionary<string, bool> RequestedDocuments { get; set; } = new();
+    private string DocumentRequestNotes { get; set; } = string.Empty;
+    private string UserId { get; set; } = string.Empty;
+    private List<string> DocumentTypes { get; } = new List<string>
+{
+    "Invoice",
+    "CustomsDeclaration",
+    "ProofOfPurchase",
+    "ItemDescription",
+    "Other"
+};
+
 
     protected override async Task OnInitializedAsync()
     {
-        if (int.TryParse(Id, out var requestId))
+        // Obtain authenticated user ID
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
         {
-            await LoadRequest(requestId);
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
         }
-        else
-        {
-            IsLoading = false;
-        }
+
+        // Load the request with the integer ID
+        await LoadRequest(Id);
     }
 
     private async Task LoadRequest(int requestId)
@@ -892,6 +986,84 @@ else
         // En una implementación real, aquí se descargaría el archivo
         // Para esta demo, solo mostramos un mensaje
         await JSRuntime.InvokeVoidAsync("alert", $"Downloading {attachment.FileName}");
+    }
+
+    private void ShowDocumentRequestModal()
+    {
+        // Inicializar todos los tipos de documento como no seleccionados
+        RequestedDocuments = DocumentTypes.ToDictionary(dt => dt, dt => false);
+        DocumentRequestNotes = string.Empty;
+        IsDocumentRequestModalVisible = true;
+    }
+
+    private void HideDocumentRequestModal()
+    {
+        IsDocumentRequestModalVisible = false;
+    }
+
+    private bool AnyDocumentsSelected()
+    {
+        return RequestedDocuments.Any(d => d.Value);
+    }
+
+    private string GetDocumentTypeName(string documentType)
+    {
+        return documentType switch
+        {
+            "Invoice" => Localizer["Invoice"],
+            "CustomsDeclaration" => Localizer["CustomsDeclaration"],
+            "ProofOfPurchase" => Localizer["ProofOfPurchase"],
+            "ItemDescription" => Localizer["ItemDescription"],
+            "Other" => Localizer["Other"],
+            _ => documentType
+        };
+    }
+
+    private async Task RequestDocuments()
+    {
+        if (Request == null || !AnyDocumentsSelected())
+            return;
+
+        IsRequesting = true;
+
+        try
+        {
+            // Cambiar el estado de la solicitud a DocumentsRequired
+            await ForwardingService.UpdateRequestStatusAsync(
+                Request.Id,
+                ForwardRequestStatus.DocumentsRequired,
+                DocumentRequestNotes,
+                UserId);
+
+            // Crear los documentos requeridos en la base de datos
+            foreach (var doc in RequestedDocuments.Where(d => d.Value))
+            {
+                var requiredDoc = new RequiredDocument
+                    {
+                        ForwardRequestId = Request.Id,
+                        DocumentType = doc.Key,
+                        Description = doc.Key == "Other" ? DocumentRequestNotes : null,
+                        IsSubmitted = false
+                    };
+
+                await DbContext.RequiredDocuments.AddAsync(requiredDoc);
+            }
+
+            await DbContext.SaveChangesAsync();
+
+            // Recargar la solicitud para mostrar los cambios
+            await LoadRequest(Request.Id);
+            HideDocumentRequestModal();
+        }
+        catch (Exception ex)
+        {
+            // Manejar errores
+            Console.WriteLine($"Error requesting documents: {ex.Message}");
+        }
+        finally
+        {
+            IsRequesting = false;
+        }
     }
 
     private class ItemMeasurement
