@@ -104,7 +104,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Verificar si es un enlace que debe forzar recarga
         if (target.hasAttribute('data-force-load')) {
-            return; // Permitir comportamiento normal
+            e.preventDefault();
+            window.location.href = href; // Forzar recarga completa
+            return;
         }
 
         // Si llegamos aquí, es un enlace interno que debe usar la navegación de Blazor

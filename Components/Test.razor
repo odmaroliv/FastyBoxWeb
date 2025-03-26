@@ -1,0 +1,8 @@
+﻿@page "/test"
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResources> Localizer
+
+<h1>Test Localization</h1>
+
+<p>Site Title: @Localizer["SiteTitle"]</p>
+<p>Dashboard: @Localizer["Dashboard"]</p>

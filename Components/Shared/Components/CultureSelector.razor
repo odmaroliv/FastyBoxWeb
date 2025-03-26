@@ -1,129 +1,36 @@
-﻿@using FastyBoxWeb.Resources
-@using Microsoft.Extensions.Localization
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-@inject IStringLocalizer<SharedResources> Localizer
+﻿@inject NavigationManager Navigation
+@using System.Globalization
 
-<div class="relative" data-menu-container>
-    <button @onclick="ToggleLanguageDropdown" data-menu-button class="flex items-center">
-        <span class="mr-1 text-sm">@(CurrentCulture == "es" ? "ES" : "EN")</span>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
-    @if (IsOpen)
-    {
-        <div class="absolute z-10 mt-2 w-32 rounded-md shadow-lg bg-white">
-            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="language-menu">
-                <a href="#" @onclick="@(() => ChangeLanguage("es"))" @onclick:preventDefault class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
-                    <div class="flex items-center">
-                        <span class="mr-2">🇲🇽</span>
-                        <span>Español</span>
-                    </div>
-                </a>
-                <a href="#" @onclick="@(() => ChangeLanguage("en"))" @onclick:preventDefault class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
-                    <div class="flex items-center">
-                        <span class="mr-2">🇺🇸</span>
-                        <span>English</span>
-                    </div>
-                </a>
-            </div>
-        </div>
-    }
+<div>
+    <select @bind="Culture">
+        <option value="en-US">English</option>
+        <option value="es-MX">Espanol</option>
+    </select>
 </div>
 
-@code {
-    private bool IsOpen { get; set; }
-    private string CurrentCulture { get; set; } = "es"; // Default to Spanish
-    private DotNetObjectReference<CultureSelector>? objRef;
-    private bool _isInitialized = false;
-
-    protected override async Task OnInitializedAsync()
+@code
+{
+    protected override void OnInitialized()
     {
-        // Establecer culturta predeterminada sin usar JSRuntime
-        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-
-        if (query.AllKeys.Contains("culture"))
-        {
-            CurrentCulture = query["culture"] ?? "es";
-        }
+        Culture = CultureInfo.CurrentCulture;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private CultureInfo Culture
     {
-        if (firstRender)
+        get
         {
-            try
+            return CultureInfo.CurrentCulture;
+        }
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
             {
-                // Mover el código de localStorage aquí
-                var storedCulture = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "culture");
-                if (!string.IsNullOrEmpty(storedCulture))
-                {
-                    CurrentCulture = storedCulture;
-                    StateHasChanged();
-                }
-                else
-                {
-                    // Si no hay cultura guardada, intentar determinar la cultura del navegador
-                    var browserCulture = await JSRuntime.InvokeAsync<string>("navigator.language");
-                    if (!string.IsNullOrEmpty(browserCulture))
-                    {
-                        CurrentCulture = browserCulture?.StartsWith("es", StringComparison.OrdinalIgnoreCase) == true ? "es" : "en";
-                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "culture", CurrentCulture);
-                        StateHasChanged();
-                    }
-                }
+                var uri = new Uri(Navigation.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
 
-                // Configurar el click listener
-                objRef = DotNetObjectReference.Create(this);
-                await JSRuntime.InvokeVoidAsync("setupClickListener", objRef);
-            }
-            catch (Exception)
-            {
-                // Manejar error si JSRuntime no está disponible
+                Navigation.NavigateTo($"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}", forceLoad: true);
             }
         }
-    }
-
-    public void Dispose()
-    {
-        objRef?.Dispose();
-    }
-
-    [JSInvokable]
-    public void CloseMenu()
-    {
-        if (IsOpen)
-        {
-            IsOpen = false;
-            StateHasChanged();
-        }
-    }
-
-    private void ToggleLanguageDropdown()
-    {
-        IsOpen = !IsOpen;
-    }
-
-    private async Task ChangeLanguage(string culture)
-    {
-        if (CurrentCulture != culture)
-        {
-            CurrentCulture = culture;
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "culture", culture);
-
-            // Construir URL con el parámetro de cultura
-            var uri = NavigationManager.Uri;
-            var uriBuilder = new UriBuilder(uri);
-            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
-            query["culture"] = culture;
-            uriBuilder.Query = query.ToString() ?? string.Empty;
-
-            // Recargar la página con la nueva cultura
-            NavigationManager.NavigateTo(uriBuilder.Uri.ToString(), forceLoad: true);
-        }
-
-        IsOpen = false;
     }
 }

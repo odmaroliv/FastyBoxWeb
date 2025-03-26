@@ -15,6 +15,16 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+       
+        document.addEventListener('click', function (e) {
+            const target = e.target.closest('[data-force-load]');
+            if (target && target.getAttribute('href')) {
+                e.preventDefault();
+                window.location.href = target.getAttribute('href');
+            }
+        });
+    </script>
+    <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -40,7 +50,7 @@
 </head>
 <body>
     @RenderBody()
-
+   
     <div id="blazor-error-ui" class="hidden fixed bottom-0 right-0 m-4 p-4 z-50 bg-red-50 rounded-lg shadow-lg border border-red-100">
         <div class="flex">
             <div class="flex-shrink-0">

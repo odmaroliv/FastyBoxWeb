@@ -1,1150 +1,1151 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-	
-	<!-- Layout and Navigation -->
+
+	<!-- Layout y navegación -->
 	<data name="SiteTitle" xml:space="preserve">
-    <value>FastyBox - Package Forwarding from USA to Mexico</value>
+    <value>FastyBox - Reenvío de paquetes de EE.UU. a México</value>
   </data>
 	<data name="Dashboard" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Panel principal</value>
   </data>
 	<data name="Admin" xml:space="preserve">
-    <value>Administration</value>
+    <value>Administración</value>
   </data>
 	<data name="Profile" xml:space="preserve">
-    <value>Profile</value>
+    <value>Perfil</value>
   </data>
 	<data name="Account" xml:space="preserve">
-    <value>Account</value>
+    <value>Cuenta</value>
   </data>
 	<data name="LogOut" xml:space="preserve">
-    <value>Log Out</value>
+    <value>Cerrar sesión</value>
   </data>
 	<data name="Login" xml:space="preserve">
-    <value>Log In</value>
+    <value>Iniciar sesión</value>
   </data>
 	<data name="Register" xml:space="preserve">
-    <value>Register</value>
+    <value>Registrarse</value>
   </data>
 	<data name="AllRightsReserved" xml:space="preserve">
-    <value>All Rights Reserved</value>
+    <value>Todos los derechos reservados</value>
   </data>
 	<data name="ToggleTheme" xml:space="preserve">
-    <value>Toggle Theme</value>
+    <value>Cambiar tema</value>
   </data>
 	<data name="AccessDenied" xml:space="preserve">
-    <value>Access Denied</value>
+    <value>Acceso denegado</value>
   </data>
 	<data name="AccessDeniedMessage" xml:space="preserve">
-    <value>You do not have permission to access this page.</value>
+    <value>No tienes permisos para acceder a esta página.</value>
   </data>
 	<data name="ReturnToDashboard" xml:space="preserve">
-    <value>Return to Dashboard</value>
+    <value>Volver al panel principal</value>
   </data>
 	<data name="NotFound" xml:space="preserve">
-    <value>Page Not Found</value>
+    <value>Página no encontrada</value>
   </data>
 	<data name="PageNotFound" xml:space="preserve">
-    <value>Oops! Page Not Found</value>
+    <value>¡Oops! Página no encontrada</value>
   </data>
 	<data name="PageNotFoundMessage" xml:space="preserve">
-    <value>The page you are looking for does not exist or has been moved.</value>
+    <value>La página que estás buscando no existe o ha sido movida.</value>
   </data>
 	<data name="AuthenticationRequired" xml:space="preserve">
-    <value>Authentication Required</value>
+    <value>Autenticación requerida</value>
   </data>
 	<data name="PleaseLoginMessage" xml:space="preserve">
-    <value>Please log in to access this page.</value>
+    <value>Por favor inicia sesión para acceder a esta página.</value>
   </data>
 
-	<!-- Client Dashboard -->
+	<!-- Dashboard del cliente -->
 	<data name="GoodMorning" xml:space="preserve">
-    <value>Good Morning!</value>
+    <value>¡Buenos días!</value>
   </data>
 	<data name="GoodAfternoon" xml:space="preserve">
-    <value>Good Afternoon!</value>
+    <value>¡Buenas tardes!</value>
   </data>
 	<data name="GoodEvening" xml:space="preserve">
-    <value>Good Evening!</value>
+    <value>¡Buenas noches!</value>
   </data>
 	<data name="YourUSAddress" xml:space="preserve">
-    <value>Your US Address</value>
+    <value>Tu dirección en Estados Unidos</value>
   </data>
 	<data name="CustomerID" xml:space="preserve">
-    <value>Customer ID</value>
+    <value>ID de Cliente</value>
   </data>
 	<data name="CopyAddress" xml:space="preserve">
-    <value>Copy Address</value>
+    <value>Copiar dirección</value>
   </data>
 	<data name="AddressCopied" xml:space="preserve">
-    <value>Address copied to clipboard!</value>
+    <value>¡Dirección copiada al portapapeles!</value>
   </data>
 	<data name="RecentRequests" xml:space="preserve">
-    <value>Recent Requests</value>
+    <value>Solicitudes recientes</value>
   </data>
 	<data name="ViewAllRequests" xml:space="preserve">
-    <value>View All Requests</value>
+    <value>Ver todas las solicitudes</value>
   </data>
 	<data name="TrackingCode" xml:space="preserve">
-    <value>Tracking Code</value>
+    <value>Código de seguimiento</value>
   </data>
 	<data name="Date" xml:space="preserve">
-    <value>Date</value>
+    <value>Fecha</value>
   </data>
 	<data name="Status" xml:space="preserve">
-    <value>Status</value>
+    <value>Estado</value>
   </data>
 	<data name="Actions" xml:space="preserve">
-    <value>Actions</value>
+    <value>Acciones</value>
   </data>
 	<data name="Details" xml:space="preserve">
-    <value>Details</value>
+    <value>Detalles</value>
   </data>
 	<data name="NoRequestsYet" xml:space="preserve">
-    <value>You have no requests yet</value>
+    <value>Aún no tienes solicitudes</value>
   </data>
 	<data name="CreateFirstRequest" xml:space="preserve">
-    <value>Create Your First Request</value>
+    <value>Crear primera solicitud</value>
   </data>
 	<data name="HowItWorks" xml:space="preserve">
-    <value>How It Works</value>
+    <value>Cómo funciona</value>
   </data>
 	<data name="ShopOnline" xml:space="preserve">
-    <value>Shop Online</value>
+    <value>Compra en línea</value>
   </data>
 	<data name="ShopOnlineDescription" xml:space="preserve">
-    <value>Shop at any US store and use your FastyBox virtual address.</value>
+    <value>Compra en cualquier tienda de EE.UU. y usa tu dirección virtual de FastyBox.</value>
   </data>
 	<data name="ReceiveAtWarehouse" xml:space="preserve">
-    <value>Receive at Warehouse</value>
+    <value>Recepción en almacén</value>
   </data>
 	<data name="ReceiveAtWarehouseDescription" xml:space="preserve">
-    <value>We receive your package at our US warehouse.</value>
+    <value>Nosotros recibimos tu paquete en nuestro almacén en EE.UU.</value>
   </data>
 	<data name="WeForwardToYou" xml:space="preserve">
-    <value>We Forward It to You</value>
+    <value>Te lo enviamos</value>
   </data>
 	<data name="WeForwardToYouDescription" xml:space="preserve">
-    <value>We process your shipment and deliver it to your address in Mexico.</value>
+    <value>Procesamos tu envío y te lo hacemos llegar a tu dirección en México.</value>
   </data>
 	<data name="StartNow" xml:space="preserve">
-    <value>Start Now</value>
+    <value>Comenzar ahora</value>
   </data>
 	<data name="QuickActions" xml:space="preserve">
-    <value>Quick Actions</value>
+    <value>Acciones rápidas</value>
   </data>
 	<data name="NewRequest" xml:space="preserve">
-    <value>New Request</value>
+    <value>Nueva solicitud</value>
   </data>
 	<data name="NewRequestDescription" xml:space="preserve">
-    <value>Create a new package forwarding request</value>
+    <value>Crea una nueva solicitud de reenvío de paquete</value>
   </data>
 	<data name="ManageAddresses" xml:space="preserve">
-    <value>Manage Addresses</value>
+    <value>Administrar direcciones</value>
   </data>
 	<data name="ManageAddressesDescription" xml:space="preserve">
-    <value>Add or edit your shipping addresses</value>
+    <value>Agrega o edita tus direcciones de envío</value>
   </data>
 	<data name="FAQ" xml:space="preserve">
-    <value>FAQ</value>
+    <value>Preguntas frecuentes</value>
   </data>
 	<data name="FAQDescription" xml:space="preserve">
-    <value>Find answers to common questions</value>
+    <value>Encuentra respuestas a preguntas comunes</value>
   </data>
 
-	<!-- Request Statuses -->
+	<!-- Estados de solicitud -->
 	<data name="StatusDraft" xml:space="preserve">
-    <value>Draft</value>
+    <value>Borrador</value>
   </data>
 	<data name="StatusAwaitingArrival" xml:space="preserve">
-    <value>Awaiting Arrival</value>
+    <value>Esperando llegada</value>
   </data>
 	<data name="StatusReceivedInWarehouse" xml:space="preserve">
-    <value>Received at Warehouse</value>
+    <value>Recibido en almacén</value>
   </data>
 	<data name="StatusInReview" xml:space="preserve">
-    <value>In Review</value>
+    <value>En revisión</value>
   </data>
 	<data name="StatusAwaitingPayment" xml:space="preserve">
-    <value>Awaiting Payment</value>
+    <value>Esperando pago</value>
   </data>
 	<data name="StatusProcessing" xml:space="preserve">
-    <value>Processing</value>
+    <value>En procesamiento</value>
   </data>
 	<data name="StatusInTransitToMexico" xml:space="preserve">
-    <value>In Transit to Mexico</value>
+    <value>En tránsito a México</value>
   </data>
 	<data name="StatusDelivered" xml:space="preserve">
-    <value>Delivered</value>
+    <value>Entregado</value>
   </data>
 	<data name="StatusCancelled" xml:space="preserve">
-    <value>Cancelled</value>
+    <value>Cancelado</value>
   </data>
 
-	<!-- New Request -->
+	<!-- Nueva solicitud -->
 	<data name="NewForwardingRequest" xml:space="preserve">
-    <value>New Forwarding Request</value>
+    <value>Nueva solicitud de reenvío</value>
   </data>
 	<data name="NewRequestDescription" xml:space="preserve">
-    <value>Complete the required information to request a package forwarding from the United States.</value>
+    <value>Completa la información requerida para solicitar un reenvío de paquete desde Estados Unidos.</value>
   </data>
 	<data name="RequestInstructions" xml:space="preserve">
-    <value>Instructions</value>
+    <value>Instrucciones</value>
   </data>
 	<data name="RequestInstructionsDetail" xml:space="preserve">
-    <value>Fill in all the required fields. Providing accurate information will help us process your request faster.</value>
+    <value>Completa todos los datos requeridos. Proporcionar información precisa nos ayudará a procesar tu solicitud más rápido.</value>
   </data>
 	<data name="Step" xml:space="preserve">
-    <value>Step</value>
+    <value>Paso</value>
   </data>
 	<data name="Of" xml:space="preserve">
-    <value>of</value>
+    <value>de</value>
   </data>
 	<data name="ShipmentDetails" xml:space="preserve">
-    <value>Shipment Details</value>
+    <value>Detalles del envío</value>
   </data>
 	<data name="ItemDetails" xml:space="preserve">
-    <value>Item Details</value>
+    <value>Detalles de artículos</value>
   </data>
 	<data name="ShippingAddress" xml:space="preserve">
-    <value>Shipping Address</value>
+    <value>Dirección de entrega</value>
   </data>
 	<data name="ReviewAndConfirm" xml:space="preserve">
-    <value>Review and Confirm</value>
+    <value>Revisar y confirmar</value>
   </data>
 	<data name="Previous" xml:space="preserve">
-    <value>Previous</value>
+    <value>Anterior</value>
   </data>
 	<data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Siguiente</value>
   </data>
 	<data name="OriginalCarrier" xml:space="preserve">
-    <value>Original Carrier</value>
+    <value>Transportista original</value>
   </data>
 	<data name="OriginalCarrierPlaceholder" xml:space="preserve">
-    <value>e.g., USPS, FedEx, UPS, Amazon</value>
+    <value>Ej. USPS, FedEx, UPS, Amazon</value>
   </data>
 	<data name="OriginalCarrierHelp" xml:space="preserve">
-    <value>Indicate which shipping company will deliver the package to our US address.</value>
+    <value>Indica qué empresa transportista enviará el paquete a nuestra dirección en EE.UU.</value>
   </data>
 	<data name="OriginalTrackingNumber" xml:space="preserve">
-    <value>Original Tracking Number</value>
+    <value>Número de seguimiento original</value>
   </data>
 	<data name="OriginalTrackingNumberPlaceholder" xml:space="preserve">
-    <value>e.g., 9400 1000 0000 0000 0000 00</value>
+    <value>Ej. 9400 1000 0000 0000 0000 00</value>
   </data>
 	<data name="OriginalTrackingNumberHelp" xml:space="preserve">
-    <value>Provide the tracking number assigned by the original carrier.</value>
+    <value>Proporciona el número de seguimiento asignado por el transportista original.</value>
   </data>
 	<data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>Notas</value>
   </data>
 	<data name="NotesPlaceholder" xml:space="preserve">
-    <value>Any additional information we should know...</value>
+    <value>Cualquier información adicional que debamos saber...</value>
   </data>
 	<data name="NotesHelp" xml:space="preserve">
-    <value>Special instructions or additional information about your shipment.</value>
+    <value>Instrucciones especiales o información adicional sobre tu envío.</value>
   </data>
 	<data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>Artículos</value>
   </data>
 	<data name="AddItem" xml:space="preserve">
-    <value>Add Item</value>
+    <value>Agregar artículo</value>
   </data>
 	<data name="NoItems" xml:space="preserve">
-    <value>No items</value>
+    <value>No hay artículos</value>
   </data>
 	<data name="NoItemsDescription" xml:space="preserve">
-    <value>Add at least one item to continue.</value>
+    <value>Agrega al menos un artículo para continuar.</value>
   </data>
 	<data name="AddFirstItem" xml:space="preserve">
-    <value>Add Your First Item</value>
+    <value>Agregar primer artículo</value>
   </data>
 	<data name="Item" xml:space="preserve">
-    <value>Item</value>
+    <value>Artículo</value>
   </data>
 	<data name="ItemName" xml:space="preserve">
-    <value>Item Name</value>
+    <value>Nombre del artículo</value>
   </data>
 	<data name="ItemNamePlaceholder" xml:space="preserve">
-    <value>e.g., iPhone 13, Nike Shoes, Book</value>
+    <value>Ej. iPhone 13, Zapatos Nike, Libro</value>
   </data>
 	<data name="Vendor" xml:space="preserve">
-    <value>Vendor</value>
+    <value>Vendedor</value>
   </data>
 	<data name="VendorPlaceholder" xml:space="preserve">
-    <value>e.g., Amazon, eBay, Apple Store</value>
+    <value>Ej. Amazon, eBay, Apple Store</value>
   </data>
 	<data name="ProductURL" xml:space="preserve">
-    <value>Product URL</value>
+    <value>URL del producto</value>
   </data>
 	<data name="ProductURLPlaceholder" xml:space="preserve">
     <value>https://...</value>
   </data>
 	<data name="DeclaredValue" xml:space="preserve">
-    <value>Declared Value</value>
+    <value>Valor declarado</value>
   </data>
 	<data name="DeclaredValueHelp" xml:space="preserve">
-    <value>The USD value of your item, excluding taxes and shipping. This value is used to calculate customs fees.</value>
+    <value>El valor en USD de tu artículo sin impuestos ni envío. Este valor se usa para calcular tarifas de aduana.</value>
   </data>
 	<data name="Dimensions" xml:space="preserve">
-    <value>Dimensions</value>
+    <value>Dimensiones</value>
   </data>
 	<data name="DimensionsHelp" xml:space="preserve">
-    <value>Provide accurate dimensions for a more precise cost estimate.</value>
+    <value>Proporciona dimensiones precisas para recibir una estimación de costos más exacta.</value>
   </data>
 	<data name="Optional" xml:space="preserve">
-    <value>Optional</value>
+    <value>Opcional</value>
   </data>
 	<data name="Weight" xml:space="preserve">
-    <value>Weight</value>
+    <value>Peso</value>
   </data>
 	<data name="Length" xml:space="preserve">
-    <value>Length</value>
+    <value>Largo</value>
   </data>
 	<data name="Width" xml:space="preserve">
-    <value>Width</value>
+    <value>Ancho</value>
   </data>
 	<data name="Height" xml:space="preserve">
-    <value>Height</value>
+    <value>Alto</value>
   </data>
 	<data name="Attachments" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Adjuntos</value>
   </data>
 	<data name="AttachmentsHelp" xml:space="preserve">
-    <value>Attach invoices, purchase screenshots, or other relevant documents.</value>
+    <value>Adjunta facturas, capturas de pantalla de compra u otros documentos relevantes.</value>
   </data>
 	<data name="AddAnotherItem" xml:space="preserve">
-    <value>Add Another Item</value>
+    <value>Agregar otro artículo</value>
   </data>
 	<data name="NoAddresses" xml:space="preserve">
-    <value>You have no saved addresses</value>
+    <value>No tienes direcciones guardadas</value>
   </data>
 	<data name="NoAddressesDescription" xml:space="preserve">
-    <value>Add a delivery address to receive your packages in Mexico.</value>
+    <value>Agrega una dirección de entrega para recibir tus paquetes en México.</value>
   </data>
 	<data name="AddFirstAddress" xml:space="preserve">
-    <value>Add Your First Address</value>
+    <value>Agregar primera dirección</value>
   </data>
 	<data name="SelectAddress" xml:space="preserve">
-    <value>Please select an address</value>
+    <value>Por favor selecciona una dirección</value>
   </data>
 	<data name="AddNewAddress" xml:space="preserve">
-    <value>Add New Address</value>
+    <value>Agregar nueva dirección</value>
   </data>
 	<data name="EstimatedCosts" xml:space="preserve">
-    <value>Estimated Costs</value>
+    <value>Costos estimados</value>
   </data>
 	<data name="CalculatingCosts" xml:space="preserve">
-    <value>Calculating Costs</value>
+    <value>Calculando costos</value>
   </data>
 	<data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
 	<data name="CostDisclaimer" xml:space="preserve">
-    <value>This is only an estimate. The final cost may vary based on the actual weight and dimensions verified at our warehouse.</value>
+    <value>Esta es solo una estimación. El costo final puede variar según el peso y dimensiones reales verificados en nuestro almacén.</value>
   </data>
 	<data name="AcceptTerms" xml:space="preserve">
-    <value>I accept the terms and conditions of service.</value>
+    <value>Acepto los términos y condiciones del servicio.</value>
   </data>
 	<data name="TermsLink" xml:space="preserve">
-    <value>View Terms</value>
+    <value>Ver términos</value>
   </data>
 	<data name="AcceptTermsRequired" xml:space="preserve">
-    <value>You must accept the terms and conditions to continue.</value>
+    <value>Debes aceptar los términos y condiciones para continuar.</value>
   </data>
 	<data name="SubmitRequest" xml:space="preserve">
-    <value>Submit Request</value>
+    <value>Enviar solicitud</value>
   </data>
 	<data name="Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Procesando</value>
   </data>
 	<data name="RequiredField" xml:space="preserve">
-    <value>This field is required</value>
+    <value>Este campo es obligatorio</value>
   </data>
 	<data name="AtLeastOneItem" xml:space="preserve">
-    <value>You must add at least one item</value>
+    <value>Debes agregar al menos un artículo</value>
   </data>
 	<data name="ValueMustBePositive" xml:space="preserve">
-    <value>The value must be greater than zero</value>
+    <value>El valor debe ser mayor que cero</value>
   </data>
 	<data name="RequestCreationError" xml:space="preserve">
-    <value>An error occurred while creating the request. Please try again.</value>
+    <value>Ocurrió un error al crear la solicitud. Por favor, intenta de nuevo.</value>
   </data>
 
-	<!-- Request Details -->
+	<!-- Detalles de solicitud -->
 	<data name="RequestDetails" xml:space="preserve">
-    <value>Request Details</value>
+    <value>Detalles de la solicitud</value>
   </data>
 	<data name="BackToDashboard" xml:space="preserve">
-    <value>Back to Dashboard</value>
+    <value>Volver al panel</value>
   </data>
 	<data name="Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Creado</value>
   </data>
 	<data name="Print" xml:space="preserve">
-    <value>Print</value>
+    <value>Imprimir</value>
   </data>
 	<data name="MakePayment" xml:space="preserve">
-    <value>Make Payment</value>
+    <value>Realizar pago</value>
   </data>
 	<data name="TrackingInformation" xml:space="preserve">
-    <value>Tracking Information</value>
+    <value>Información de seguimiento</value>
   </data>
 	<data name="ShipmentStatus" xml:space="preserve">
-    <value>Shipment Status</value>
+    <value>Estado del envío</value>
   </data>
 	<data name="ItemsList" xml:space="preserve">
-    <value>Items List</value>
+    <value>Lista de artículos</value>
   </data>
 	<data name="StatusHistory" xml:space="preserve">
-    <value>Status History</value>
+    <value>Historial de estados</value>
   </data>
 	<data name="NoStatusHistory" xml:space="preserve">
-    <value>No status history available</value>
+    <value>No hay historial de estados disponible</value>
   </data>
 	<data name="NoShippingAddressSelected" xml:space="preserve">
-    <value>No shipping address selected</value>
+    <value>No se ha seleccionado dirección de entrega</value>
   </data>
 	<data name="PaymentInformation" xml:space="preserve">
-    <value>Payment Information</value>
+    <value>Información de pago</value>
   </data>
 	<data name="EstimatedTotal" xml:space="preserve">
-    <value>Estimated Total</value>
+    <value>Total estimado</value>
   </data>
 	<data name="FinalTotal" xml:space="preserve">
-    <value>Final Total</value>
+    <value>Total final</value>
   </data>
 	<data name="TotalPaid" xml:space="preserve">
-    <value>Total Paid</value>
+    <value>Total pagado</value>
   </data>
 	<data name="AmountDue" xml:space="preserve">
-    <value>Amount Due</value>
+    <value>Importe pendiente</value>
   </data>
 	<data name="PaymentStatus" xml:space="preserve">
-    <value>Payment Status</value>
+    <value>Estado del pago</value>
   </data>
 	<data name="PaidInFull" xml:space="preserve">
-    <value>Paid in Full</value>
+    <value>Pagado completamente</value>
   </data>
 	<data name="PartiallyPaid" xml:space="preserve">
-    <value>Partially Paid</value>
+    <value>Parcialmente pagado</value>
   </data>
 	<data name="Unpaid" xml:space="preserve">
-    <value>Unpaid</value>
+    <value>Sin pagar</value>
   </data>
 	<data name="PaymentHistory" xml:space="preserve">
-    <value>Payment History</value>
+    <value>Historial de pagos</value>
   </data>
 	<data name="RequestNotFound" xml:space="preserve">
-    <value>Request Not Found</value>
+    <value>Solicitud no encontrada</value>
   </data>
 	<data name="RequestNotFoundDescription" xml:space="preserve">
-    <value>The request you are looking for does not exist or you do not have permission to view it.</value>
+    <value>La solicitud que estás buscando no existe o no tienes permiso para verla.</value>
   </data>
 	<data name="NeedHelp" xml:space="preserve">
-    <value>Need Help?</value>
+    <value>¿Necesitas ayuda?</value>
   </data>
 	<data name="NeedHelpDescription" xml:space="preserve">
-    <value>If you have any questions about your request, contact us via email.</value>
+    <value>Si tienes alguna pregunta sobre tu solicitud, contáctanos por correo electrónico.</value>
   </data>
 	<data name="Files" xml:space="preserve">
-    <value>Files</value>
+    <value>archivos</value>
   </data>
 
-	<!-- Payment Statuses -->
+	<!-- Estados de pago -->
 	<data name="PaymentPending" xml:space="preserve">
-    <value>Pending</value>
+    <value>Pendiente</value>
   </data>
 	<data name="PaymentProcessing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Procesando</value>
   </data>
 	<data name="PaymentSucceeded" xml:space="preserve">
-    <value>Completed</value>
+    <value>Completado</value>
   </data>
 	<data name="PaymentFailed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Fallido</value>
   </data>
 	<data name="PaymentRefunded" xml:space="preserve">
-    <value>Refunded</value>
+    <value>Reembolsado</value>
   </data>
 
-	<!-- Address Management -->
+	<!-- Administración de direcciones -->
 	<data name="MyAddresses" xml:space="preserve">
-    <value>My Addresses</value>
+    <value>Mis direcciones</value>
   </data>
 	<data name="AddressesDescription" xml:space="preserve">
-    <value>Manage the addresses where you want to receive your packages.</value>
+    <value>Administra las direcciones donde quieres recibir tus paquetes.</value>
   </data>
 	<data name="AddNewAddress" xml:space="preserve">
-    <value>Add New Address</value>
+    <value>Agregar nueva dirección</value>
   </data>
 	<data name="DefaultAddress" xml:space="preserve">
-    <value>Default Address</value>
+    <value>Dirección predeterminada</value>
   </data>
 	<data name="SetAsDefault" xml:space="preserve">
-    <value>Set as Default</value>
+    <value>Establecer como predeterminada</value>
   </data>
 	<data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Editar</value>
   </data>
 	<data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Eliminar</value>
   </data>
 	<data name="ConfirmDelete" xml:space="preserve">
-    <value>Confirm Deletion</value>
+    <value>Confirmar eliminación</value>
   </data>
 	<data name="DeleteAddressConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this address? This action cannot be undone.</value>
+    <value>¿Estás seguro de que deseas eliminar esta dirección? Esta acción no se puede deshacer.</value>
   </data>
 	<data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Cancelar</value>
   </data>
 	<data name="Deleting" xml:space="preserve">
-    <value>Deleting</value>
+    <value>Eliminando</value>
   </data>
 	<data name="NewAddress" xml:space="preserve">
-    <value>New Address</value>
+    <value>Nueva dirección</value>
   </data>
 	<data name="EditAddress" xml:space="preserve">
-    <value>Edit Address</value>
+    <value>Editar dirección</value>
   </data>
 	<data name="BackToAddresses" xml:space="preserve">
-    <value>Back to Addresses</value>
+    <value>Volver a direcciones</value>
   </data>
 	<data name="AddressDetails" xml:space="preserve">
-    <value>Address Details</value>
+    <value>Detalles de la dirección</value>
   </data>
 	<data name="AddressName" xml:space="preserve">
-    <value>Address Name</value>
+    <value>Nombre de la dirección</value>
   </data>
 	<data name="AddressNamePlaceholder" xml:space="preserve">
-    <value>e.g., Home, Office, My Parents' House</value>
+    <value>Ej. Casa, Oficina, Casa de mis padres</value>
   </data>
 	<data name="AddressNameHelp" xml:space="preserve">
-    <value>A name to help you identify this address.</value>
+    <value>Un nombre que te ayude a identificar esta dirección.</value>
   </data>
 	<data name="RecipientName" xml:space="preserve">
-    <value>Recipient Name</value>
+    <value>Nombre del destinatario</value>
   </data>
 	<data name="RecipientNamePlaceholder" xml:space="preserve">
-    <value>Full name of the person receiving the package</value>
+    <value>Nombre completo de quien recibirá el paquete</value>
   </data>
 	<data name="Street" xml:space="preserve">
-    <value>Street</value>
+    <value>Calle</value>
   </data>
 	<data name="StreetPlaceholder" xml:space="preserve">
-    <value>Street name</value>
+    <value>Nombre de la calle</value>
   </data>
 	<data name="StreetNumber" xml:space="preserve">
-    <value>Street Number</value>
+    <value>Número exterior</value>
   </data>
 	<data name="StreetNumberPlaceholder" xml:space="preserve">
-    <value>e.g., 123, N/A</value>
+    <value>Ej. 123, S/N</value>
   </data>
 	<data name="Interior" xml:space="preserve">
-    <value>Apartment/Unit Number</value>
+    <value>Número interior</value>
   </data>
 	<data name="InteriorPlaceholder" xml:space="preserve">
-    <value>e.g., Apt 4, Office 2B</value>
+    <value>Ej. Depto. 4, Oficina 2B</value>
   </data>
 	<data name="InteriorHelp" xml:space="preserve">
-    <value>Apartment, suite, unit, building, floor, etc.</value>
+    <value>Apartamento, suite, unidad, edificio, piso, etc.</value>
   </data>
 	<data name="Colony" xml:space="preserve">
-    <value>Neighborhood</value>
+    <value>Colonia</value>
   </data>
 	<data name="ColonyPlaceholder" xml:space="preserve">
-    <value>Name of the neighborhood or subdivision</value>
+    <value>Nombre de la colonia o fraccionamiento</value>
   </data>
 	<data name="City" xml:space="preserve">
-    <value>City</value>
+    <value>Ciudad</value>
   </data>
 	<data name="CityPlaceholder" xml:space="preserve">
-    <value>Name of the city or municipality</value>
+    <value>Nombre de la ciudad o municipio</value>
   </data>
 	<data name="State" xml:space="preserve">
-    <value>State</value>
+    <value>Estado</value>
   </data>
 	<data name="SelectState" xml:space="preserve">
-    <value>Select a state</value>
+    <value>Selecciona un estado</value>
   </data>
 	<data name="PostalCode" xml:space="preserve">
-    <value>Postal Code</value>
+    <value>Código postal</value>
   </data>
 	<data name="PostalCodePlaceholder" xml:space="preserve">
-    <value>5 digits</value>
+    <value>5 dígitos</value>
   </data>
 	<data name="Phone" xml:space="preserve">
-    <value>Phone</value>
+    <value>Teléfono</value>
   </data>
 	<data name="PhonePlaceholder" xml:space="preserve">
-    <value>Contact phone number</value>
+    <value>Número de teléfono para contacto</value>
   </data>
 	<data name="PhoneHelp" xml:space="preserve">
-    <value>A phone number where we can contact you for delivery.</value>
+    <value>Un número donde podamos contactarte para la entrega.</value>
   </data>
 	<data name="AdditionalInstructions" xml:space="preserve">
-    <value>Additional Instructions</value>
+    <value>Instrucciones adicionales</value>
   </data>
 	<data name="AdditionalInstructionsPlaceholder" xml:space="preserve">
-    <value>e.g., White house, ring doorbell twice, leave with concierge...</value>
+    <value>Ej. Casa blanca, tocar el timbre 2 veces, dejar con el portero...</value>
   </data>
 	<data name="AdditionalInstructionsHelp" xml:space="preserve">
-    <value>Provide specific instructions to facilitate delivery.</value>
+    <value>Proporciona instrucciones específicas para facilitar la entrega.</value>
   </data>
 	<data name="SetAsDefaultHelp" xml:space="preserve">
-    <value>This address will be used automatically for future shipments.</value>
+    <value>Esta dirección se usará automáticamente para futuros envíos.</value>
   </data>
 	<data name="SaveAddress" xml:space="preserve">
-    <value>Save Address</value>
+    <value>Guardar dirección</value>
   </data>
 	<data name="UpdateAddress" xml:space="preserve">
-    <value>Update Address</value>
+    <value>Actualizar dirección</value>
   </data>
 	<data name="Saving" xml:space="preserve">
-    <value>Saving</value>
+    <value>Guardando</value>
   </data>
 
-	<!-- Admin Panel -->
+	<!-- Panel de administración -->
 	<data name="AdminDashboard" xml:space="preserve">
-    <value>Admin Dashboard</value>
+    <value>Panel de administración</value>
   </data>
 	<data name="AdminDashboardDescription" xml:space="preserve">
-    <value>Manage all forwarding requests and system settings.</value>
+    <value>Administra todas las solicitudes de reenvío y la configuración del sistema.</value>
   </data>
 	<data name="PendingRequests" xml:space="preserve">
-    <value>Pending Requests</value>
+    <value>Solicitudes pendientes</value>
   </data>
 	<data name="TotalRevenue" xml:space="preserve">
-    <value>Total Revenue</value>
+    <value>Ingresos totales</value>
   </data>
 	<data name="TotalUsers" xml:space="preserve">
-    <value>Total Users</value>
+    <value>Usuarios totales</value>
   </data>
 	<data name="ViewReports" xml:space="preserve">
-    <value>View Reports</value>
+    <value>Ver reportes</value>
   </data>
 	<data name="ManageUsers" xml:space="preserve">
-    <value>Manage Users</value>
+    <value>Administrar usuarios</value>
   </data>
 	<data name="Code" xml:space="preserve">
-    <value>Code</value>
+    <value>Código</value>
   </data>
 	<data name="Customer" xml:space="preserve">
-    <value>Customer</value>
+    <value>Cliente</value>
   </data>
 	<data name="NoRequests" xml:space="preserve">
-    <value>No Requests</value>
+    <value>No hay solicitudes</value>
   </data>
 	<data name="ManageRates" xml:space="preserve">
-    <value>Manage Rates</value>
+    <value>Administrar tarifas</value>
   </data>
 	<data name="ManageRatesDescription" xml:space="preserve">
-    <value>Set up shipping and customs rates</value>
+    <value>Configura las tarifas de envío y de aduana</value>
   </data>
 	<data name="Settings" xml:space="preserve">
-    <value>Settings</value>
+    <value>Configuración</value>
   </data>
 	<data name="SettingsDescription" xml:space="preserve">
-    <value>Adjust the system's general settings</value>
+    <value>Ajusta la configuración general del sistema</value>
   </data>
 	<data name="Reports" xml:space="preserve">
-    <value>Reports</value>
+    <value>Reportes</value>
   </data>
 	<data name="ReportsDescription" xml:space="preserve">
-    <value>View sales and operations reports</value>
+    <value>Visualiza reportes de ventas y operaciones</value>
   </data>
 	<data name="Users" xml:space="preserve">
-    <value>Users</value>
+    <value>Usuarios</value>
   </data>
 	<data name="UsersDescription" xml:space="preserve">
-    <value>Manage user accounts</value>
+    <value>Administra las cuentas de usuarios</value>
   </data>
 	<data name="QuickSearch" xml:space="preserve">
-    <value>Quick Search</value>
+    <value>Búsqueda rápida</value>
   </data>
 	<data name="SearchBy" xml:space="preserve">
-    <value>Search by</value>
+    <value>Buscar por</value>
   </data>
 	<data name="CustomerName" xml:space="preserve">
-    <value>Customer Name</value>
+    <value>Nombre del cliente</value>
   </data>
 	<data name="CustomerEmail" xml:space="preserve">
-    <value>Customer Email</value>
+    <value>Correo del cliente</value>
   </data>
 	<data name="SearchQuery" xml:space="preserve">
-    <value>Search Term</value>
+    <value>Término de búsqueda</value>
   </data>
 	<data name="SearchPlaceholder" xml:space="preserve">
-    <value>Type to search...</value>
+    <value>Escribe para buscar...</value>
   </data>
 	<data name="NoSearchResults" xml:space="preserve">
-    <value>No results found</value>
+    <value>No se encontraron resultados</value>
   </data>
 
-	<!-- Admin Requests List -->
+	<!-- Lista de solicitudes de administrador -->
 	<data name="ForwardingRequests" xml:space="preserve">
-    <value>Forwarding Requests</value>
+    <value>Solicitudes de reenvío</value>
   </data>
 	<data name="RequestsDescription" xml:space="preserve">
-    <value>Manage all customer forwarding requests.</value>
+    <value>Administra todas las solicitudes de reenvío de los clientes.</value>
   </data>
 	<data name="ExportCSV" xml:space="preserve">
-    <value>Export CSV</value>
+    <value>Exportar CSV</value>
   </data>
 	<data name="Filters" xml:space="preserve">
-    <value>Filters</value>
+    <value>Filtros</value>
   </data>
 	<data name="ClearFilters" xml:space="preserve">
-    <value>Clear Filters</value>
+    <value>Limpiar filtros</value>
   </data>
 	<data name="AllStatuses" xml:space="preserve">
-    <value>All Statuses</value>
+    <value>Todos los estados</value>
   </data>
 	<data name="DateRange" xml:space="preserve">
-    <value>Date Range</value>
+    <value>Rango de fechas</value>
   </data>
 	<data name="AllDates" xml:space="preserve">
-    <value>All Dates</value>
+    <value>Todas las fechas</value>
   </data>
 	<data name="Today" xml:space="preserve">
-    <value>Today</value>
+    <value>Hoy</value>
   </data>
 	<data name="Yesterday" xml:space="preserve">
-    <value>Yesterday</value>
+    <value>Ayer</value>
   </data>
 	<data name="ThisWeek" xml:space="preserve">
-    <value>This Week</value>
+    <value>Esta semana</value>
   </data>
 	<data name="LastWeek" xml:space="preserve">
-    <value>Last Week</value>
+    <value>Semana pasada</value>
   </data>
 	<data name="ThisMonth" xml:space="preserve">
-    <value>This Month</value>
+    <value>Este mes</value>
   </data>
 	<data name="LastMonth" xml:space="preserve">
-    <value>Last Month</value>
+    <value>Mes pasado</value>
   </data>
 	<data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Buscar</value>
   </data>
 	<data name="RequestsList" xml:space="preserve">
-    <value>Requests List</value>
+    <value>Lista de solicitudes</value>
   </data>
 	<data name="Results" xml:space="preserve">
-    <value>results</value>
+    <value>resultados</value>
   </data>
 	<data name="Page" xml:space="preserve">
-    <value>Page</value>
+    <value>Página</value>
   </data>
 	<data name="Showing" xml:space="preserve">
-    <value>Showing</value>
+    <value>Mostrando</value>
   </data>
 	<data name="To" xml:space="preserve">
-    <value>to</value>
+    <value>a</value>
   </data>
 	<data name="Paid" xml:space="preserve">
-    <value>Paid</value>
+    <value>Pagado</value>
   </data>
 
-	<!-- Admin Request Details -->
+	<!-- Detalles de solicitud de administrador -->
 	<data name="BackToRequests" xml:space="preserve">
-    <value>Back to Requests</value>
+    <value>Volver a solicitudes</value>
   </data>
 	<data name="UpdateStatus" xml:space="preserve">
-    <value>Update Status</value>
+    <value>Actualizar estado</value>
   </data>
 	<data name="UpdatePricing" xml:space="preserve">
-    <value>Update Pricing</value>
+    <value>Actualizar precios</value>
   </data>
 	<data name="RequestID" xml:space="preserve">
-    <value>Request ID</value>
+    <value>ID de solicitud</value>
   </data>
 	<data name="CustomerInfo" xml:space="preserve">
-    <value>Customer Information</value>
+    <value>Información del cliente</value>
   </data>
 	<data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Nombre</value>
   </data>
 	<data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>Correo electrónico</value>
   </data>
 	<data name="CustomerSince" xml:space="preserve">
-    <value>Customer Since</value>
+    <value>Cliente desde</value>
   </data>
 	<data name="ViewCustomerDetails" xml:space="preserve">
-    <value>View Customer Details</value>
+    <value>Ver detalles del cliente</value>
   </data>
 	<data name="CustomerNotFound" xml:space="preserve">
-    <value>Customer Not Found</value>
+    <value>Cliente no encontrado</value>
   </data>
 	<data name="NewStatus" xml:space="preserve">
-    <value>New Status</value>
+    <value>Nuevo estado</value>
   </data>
 	<data name="StatusNotesPlaceholder" xml:space="preserve">
-    <value>Reason for the status change or additional information...</value>
+    <value>Razón del cambio de estado o información adicional...</value>
   </data>
 	<data name="Updating" xml:space="preserve">
-    <value>Updating</value>
+    <value>Actualizando</value>
   </data>
 	<data name="UpdatePricingDescription" xml:space="preserve">
-    <value>Update the actual measurements and final price for this shipment.</value>
+    <value>Actualiza las medidas reales y el precio final para este envío.</value>
   </data>
 	<data name="UpdateMeasurements" xml:space="preserve">
-    <value>Update Measurements</value>
+    <value>Actualizar medidas</value>
   </data>
 	<data name="ActualWeight" xml:space="preserve">
-    <value>Actual Weight</value>
+    <value>Peso real</value>
   </data>
 	<data name="ActualLength" xml:space="preserve">
-    <value>Actual Length</value>
+    <value>Largo real</value>
   </data>
 	<data name="ActualWidth" xml:space="preserve">
-    <value>Actual Width</value>
+    <value>Ancho real</value>
   </data>
 	<data name="ActualHeight" xml:space="preserve">
-    <value>Actual Height</value>
+    <value>Alto real</value>
   </data>
 	<data name="CalculateNewTotal" xml:space="preserve">
-    <value>Calculate New Total</value>
+    <value>Calcular nuevo total</value>
   </data>
 	<data name="Calculating" xml:space="preserve">
-    <value>Calculating</value>
+    <value>Calculando</value>
   </data>
 	<data name="NewCalculatedTotal" xml:space="preserve">
-    <value>New Calculated Total</value>
+    <value>Nuevo total calculado</value>
   </data>
 	<data name="Difference" xml:space="preserve">
-    <value>Difference</value>
+    <value>Diferencia</value>
   </data>
 	<data name="PricingNotesPlaceholder" xml:space="preserve">
-    <value>Explanation for the price change or additional information...</value>
+    <value>Explicación del cambio de precio o información adicional...</value>
   </data>
 	<data name="DeclaredWeight" xml:space="preserve">
-    <value>Declared Weight</value>
+    <value>Peso declarado</value>
   </data>
 	<data name="DeclaredLength" xml:space="preserve">
-    <value>Declared Length</value>
+    <value>Largo declarado</value>
   </data>
 	<data name="DeclaredWidth" xml:space="preserve">
-    <value>Declared Width</value>
+    <value>Ancho declarado</value>
   </data>
 	<data name="DeclaredHeight" xml:space="preserve">
-    <value>Declared Height</value>
+    <value>Alto declarado</value>
   </data>
 	<data name="PriceUpdatedNote" xml:space="preserve">
-    <value>Price updated from ${0} to ${1} USD based on actual measurements.</value>
+    <value>Precio actualizado de ${0} a ${1} USD basado en medidas reales.</value>
   </data>
 	<data name="AdditionalPaymentRequiredNote" xml:space="preserve">
-    <value>Additional payment required due to changes in dimensions or weight.</value>
+    <value>Pago adicional requerido debido a cambio en las dimensiones o peso.</value>
   </data>
 
-
 	<!-- Detalles de solicitud Documentos -->
+
 	<data name="StatusDocumentsRequired" xml:space="preserve">
-    <value>Documents Required</value>
+    <value>Documentos Requeridos</value>
 </data>
 	<data name="DocumentsRequiredMessage" xml:space="preserve">
-    <value>Additional documents are required for your shipment. Please upload the requested documents to continue processing.</value>
+    <value>Se requieren documentos adicionales para tu envío. Por favor, sube los documentos solicitados para continuar con el procesamiento.</value>
 </data>
 	<data name="UploadDocuments" xml:space="preserve">
-    <value>Upload Documents</value>
+    <value>Subir Documentos</value>
 </data>
 	<data name="DocumentsRequiredTitle" xml:space="preserve">
-    <value>Documents Required</value>
+    <value>Documentos Requeridos</value>
 </data>
 	<data name="DocumentsRequiredDescription" xml:space="preserve">
-    <value>Please upload the requested documents to continue processing your shipment.</value>
+    <value>Por favor, sube los documentos solicitados para continuar con el procesamiento de tu envío.</value>
 </data>
 	<data name="RequestedDocuments" xml:space="preserve">
-    <value>Requested Documents</value>
+    <value>Documentos Solicitados</value>
 </data>
 	<data name="NoDocumentsRequested" xml:space="preserve">
-    <value>No documents have been requested yet.</value>
+    <value>Aún no se han solicitado documentos.</value>
 </data>
 	<data name="UploadNewDocument" xml:space="preserve">
-    <value>Upload New Document</value>
+    <value>Subir Nuevo Documento</value>
 </data>
 	<data name="DocumentType" xml:space="preserve">
-    <value>Document Type</value>
+    <value>Tipo de Documento</value>
 </data>
 	<data name="SelectDocumentType" xml:space="preserve">
-    <value>Select document type</value>
+    <value>Selecciona el tipo de documento</value>
 </data>
 	<data name="Invoice" xml:space="preserve">
-    <value>Invoice</value>
+    <value>Factura</value>
 </data>
 	<data name="CustomsDeclaration" xml:space="preserve">
-    <value>Customs Declaration</value>
+    <value>Declaración de Aduana</value>
 </data>
 	<data name="ProofOfPurchase" xml:space="preserve">
-    <value>Proof of Purchase</value>
+    <value>Comprobante de Compra</value>
 </data>
 	<data name="ItemDescription" xml:space="preserve">
-    <value>Item Description</value>
+    <value>Descripción del Artículo</value>
 </data>
 	<data name="Other" xml:space="preserve">
-    <value>Other</value>
+    <value>Otro</value>
 </data>
 	<data name="DocumentDescription" xml:space="preserve">
-    <value>Document Description</value>
+    <value>Descripción del Documento</value>
 </data>
 	<data name="DescriptionPlaceholder" xml:space="preserve">
-    <value>Brief description of the document...</value>
+    <value>Breve descripción del documento...</value>
 </data>
 	<data name="ChooseFile" xml:space="preserve">
-    <value>Choose File</value>
+    <value>Elegir Archivo</value>
 </data>
 	<data name="UploadDocument" xml:space="preserve">
-    <value>Upload Document</value>
+    <value>Subir Documento</value>
 </data>
 	<data name="UploadingDocument" xml:space="preserve">
-    <value>Uploading Document...</value>
+    <value>Subiendo Documento...</value>
 </data>
 	<data name="DocumentUploaded" xml:space="preserve">
-    <value>Document Uploaded Successfully</value>
+    <value>Documento Subido Exitosamente</value>
 </data>
 	<data name="DocumentUploadError" xml:space="preserve">
-    <value>Error uploading document. Please try again.</value>
+    <value>Error al subir el documento. Por favor, intenta de nuevo.</value>
 </data>
 	<data name="AcceptedFileTypes" xml:space="preserve">
-    <value>Accepted file types: JPG, PNG, PDF (Max 10MB)</value>
+    <value>Tipos de archivo aceptados: JPG, PNG, PDF (Máx 10MB)</value>
 </data>
 	<data name="RequiredDocuments" xml:space="preserve">
-    <value>Required Documents</value>
+    <value>Documentos Requeridos</value>
 </data>
 	<data name="DocumentSubmitted" xml:space="preserve">
-    <value>Submitted</value>
+    <value>Enviado</value>
 </data>
 	<data name="DocumentPending" xml:space="preserve">
-    <value>Pending</value>
+    <value>Pendiente</value>
 </data>
 	<data name="RequestDocuments" xml:space="preserve">
-    <value>Request Documents</value>
+    <value>Solicitar Documentos</value>
 </data>
 
 	<!-- Detalles de solicitud FAQ -->
-	# Agrega estas entradas a Resources/SharedResources.en.resx
+
+	# Agrega estas entradas a Resources/SharedResources.es.resx
 
 	<data name="FrequentlyAskedQuestions" xml:space="preserve">
-    <value>Frequently Asked Questions</value>
+    <value>Preguntas Frecuentes</value>
 </data>
 	<data name="FAQPageDescription" xml:space="preserve">
-    <value>Find answers to the most common questions about our service.</value>
+    <value>Encuentra respuestas a las preguntas más comunes sobre nuestro servicio.</value>
 </data>
 	<data name="GeneralQuestions" xml:space="preserve">
-    <value>General Questions</value>
+    <value>Preguntas Generales</value>
 </data>
 	<data name="WhatIsFastyBox" xml:space="preserve">
-    <value>What is FastyBox?</value>
+    <value>¿Qué es FastyBox?</value>
 </data>
 	<data name="WhatIsFastyBoxAnswer1" xml:space="preserve">
-    <value>FastyBox is a package forwarding service that provides you with a US address to receive packages from stores that don't ship directly to Mexico.</value>
+    <value>FastyBox es un servicio de reenvío de paquetes que te proporciona una dirección en Estados Unidos para recibir paquetes de tiendas que no envían directamente a México.</value>
 </data>
 	<data name="WhatIsFastyBoxAnswer2" xml:space="preserve">
-    <value>We receive your packages at our warehouse in the United States, process them, and forward them to your address in Mexico.</value>
+    <value>Recibimos tus paquetes en nuestro almacén en Estados Unidos, los procesamos y los reenviamos a tu dirección en México.</value>
 </data>
 	<data name="HowDoesItWork" xml:space="preserve">
-    <value>How does it work?</value>
+    <value>¿Cómo funciona?</value>
 </data>
 	<data name="HowDoesItWorkStep1" xml:space="preserve">
-    <value>Sign up for an account and get your unique US address.</value>
+    <value>Regístrate para obtener una cuenta y recibe tu dirección única en EE.UU.</value>
 </data>
 	<data name="HowDoesItWorkStep2" xml:space="preserve">
-    <value>Shop online at US stores and use your FastyBox address for shipping.</value>
+    <value>Compra en línea en tiendas de EE.UU. y usa tu dirección de FastyBox para el envío.</value>
 </data>
 	<data name="HowDoesItWorkStep3" xml:space="preserve">
-    <value>We receive your packages at our warehouse and notify you.</value>
+    <value>Recibimos tus paquetes en nuestro almacén y te notificamos.</value>
 </data>
 	<data name="HowDoesItWorkStep4" xml:space="preserve">
-    <value>Pay the shipping fee and we'll forward your packages to your address in Mexico.</value>
+    <value>Paga la tarifa de envío y reenviaremos tus paquetes a tu dirección en México.</value>
 </data>
 	<data name="WhyUseFastyBox" xml:space="preserve">
-    <value>Why should I use FastyBox?</value>
+    <value>¿Por qué debería usar FastyBox?</value>
 </data>
 	<data name="WhyUseFastyBoxReason1" xml:space="preserve">
-    <value>Access to US stores that don't ship internationally.</value>
+    <value>Acceso a tiendas de EE.UU. que no realizan envíos internacionales.</value>
 </data>
 	<data name="WhyUseFastyBoxReason2" xml:space="preserve">
-    <value>Lower shipping costs compared to international shipping from retailers.</value>
+    <value>Costos de envío más bajos en comparación con el envío internacional desde minoristas.</value>
 </data>
 	<data name="WhyUseFastyBoxReason3" xml:space="preserve">
-    <value>Package consolidation to save on shipping costs.</value>
+    <value>Consolidación de paquetes para ahorrar en costos de envío.</value>
 </data>
 	<data name="WhyUseFastyBoxReason4" xml:space="preserve">
-    <value>Reliable tracking and customer support.</value>
+    <value>Seguimiento confiable y soporte al cliente.</value>
 </data>
 	<data name="WhatCanISend" xml:space="preserve">
-    <value>What kinds of items can I ship with FastyBox?</value>
+    <value>¿Qué tipo de artículos puedo enviar con FastyBox?</value>
 </data>
 	<data name="WhatCanISendAnswer1" xml:space="preserve">
-    <value>You can ship most consumer goods including clothing, electronics, books, household items, and more.</value>
+    <value>Puedes enviar la mayoría de los bienes de consumo, incluyendo ropa, electrónicos, libros, artículos para el hogar y más.</value>
 </data>
 	<data name="WhatCanISendAnswer2" xml:space="preserve">
-    <value>All items must comply with both US and Mexican customs regulations.</value>
+    <value>Todos los artículos deben cumplir con las regulaciones aduaneras tanto de EE.UU. como de México.</value>
 </data>
 	<data name="WhatCannotSend" xml:space="preserve">
-    <value>What items are prohibited?</value>
+    <value>¿Qué artículos están prohibidos?</value>
 </data>
 	<data name="WhatCannotSendAnswer" xml:space="preserve">
-    <value>The following items are prohibited from shipping through our service:</value>
+    <value>Los siguientes artículos están prohibidos para envío a través de nuestro servicio:</value>
 </data>
 	<data name="ProhibitedItem1" xml:space="preserve">
-    <value>Illegal substances, drugs, and narcotics</value>
+    <value>Sustancias ilegales, drogas y narcóticos</value>
 </data>
 	<data name="ProhibitedItem2" xml:space="preserve">
-    <value>Weapons, ammunition, and explosives</value>
+    <value>Armas, municiones y explosivos</value>
 </data>
 	<data name="ProhibitedItem3" xml:space="preserve">
-    <value>Perishable food items</value>
+    <value>Alimentos perecederos</value>
 </data>
 	<data name="ProhibitedItem4" xml:space="preserve">
-    <value>Hazardous materials</value>
+    <value>Materiales peligrosos</value>
 </data>
 	<data name="ProhibitedItem5" xml:space="preserve">
-    <value>Counterfeit goods</value>
+    <value>Productos falsificados</value>
 </data>
 	<data name="ProhibitedItem6" xml:space="preserve">
-    <value>Live animals or plants</value>
+    <value>Animales vivos o plantas</value>
 </data>
 	<data name="ShippingAndDelivery" xml:space="preserve">
-    <value>Shipping and Delivery</value>
+    <value>Envío y Entrega</value>
 </data>
 	<data name="HowLongShipping" xml:space="preserve">
-    <value>How long does shipping take?</value>
+    <value>¿Cuánto tarda el envío?</value>
 </data>
 	<data name="HowLongShippingAnswer" xml:space="preserve">
-    <value>Shipping times vary depending on several factors:</value>
+    <value>Los tiempos de envío varían dependiendo de varios factores:</value>
 </data>
 	<data name="ShippingTime1" xml:space="preserve">
-    <value>Processing time at our warehouse: 1-2 business days after receipt</value>
+    <value>Tiempo de procesamiento en nuestro almacén: 1-2 días hábiles después de la recepción</value>
 </data>
 	<data name="ShippingTime2" xml:space="preserve">
-    <value>Transit time to Mexico: 5-10 business days</value>
+    <value>Tiempo de tránsito a México: 5-10 días hábiles</value>
 </data>
 	<data name="ShippingTime3" xml:space="preserve">
-    <value>Customs clearance: 1-3 business days (may vary based on customs procedures)</value>
+    <value>Despacho de aduana: 1-3 días hábiles (puede variar según los procedimientos aduaneros)</value>
 </data>
 	<data name="TrackPackage" xml:space="preserve">
-    <value>Can I track my package?</value>
+    <value>¿Puedo hacer seguimiento a mi paquete?</value>
 </data>
 	<data name="TrackPackageAnswer1" xml:space="preserve">
-    <value>Yes, you can track your package at every step of the process through your FastyBox account dashboard.</value>
+    <value>Sí, puedes rastrear tu paquete en cada paso del proceso a través del panel de control de tu cuenta FastyBox.</value>
 </data>
 	<data name="TrackPackageAnswer2" xml:space="preserve">
-    <value>We provide regular status updates and tracking information once your package is in transit.</value>
+    <value>Proporcionamos actualizaciones regulares del estado y la información de seguimiento una vez que tu paquete está en tránsito.</value>
 </data>
 	<data name="ShippingCost" xml:space="preserve">
-    <value>How much does shipping cost?</value>
+    <value>¿Cuánto cuesta el envío?</value>
 </data>
 	<data name="ShippingCostAnswer1" xml:space="preserve">
-    <value>Shipping costs are calculated based on the weight, dimensions, and destination of your package.</value>
+    <value>Los costos de envío se calculan en función del peso, las dimensiones y el destino de tu paquete.</value>
 </data>
 	<data name="ShippingCostAnswer2" xml:space="preserve">
-    <value>You can use our shipping calculator to get an estimate before making a purchase.</value>
+    <value>Puedes usar nuestra calculadora de envío para obtener un estimado antes de realizar una compra.</value>
 </data>
 	<data name="DeliveryAreas" xml:space="preserve">
-    <value>Which areas do you deliver to in Mexico?</value>
+    <value>¿A qué áreas de México realizan envíos?</value>
 </data>
 	<data name="DeliveryAreasAnswer" xml:space="preserve">
-    <value>We deliver to all major cities and most areas throughout Mexico. Remote or rural areas may require additional delivery time.</value>
+    <value>Entregamos a todas las ciudades principales y la mayoría de las áreas en todo México. Las áreas remotas o rurales pueden requerir tiempo adicional de entrega.</value>
 </data>
 	<data name="PaymentsAndFees" xml:space="preserve">
-    <value>Payments and Fees</value>
+    <value>Pagos y Tarifas</value>
 </data>
 	<data name="PaymentMethods" xml:space="preserve">
-    <value>What payment methods do you accept?</value>
+    <value>¿Qué métodos de pago aceptan?</value>
 </data>
 	<data name="PaymentMethodsAnswer" xml:space="preserve">
-    <value>We accept the following payment methods:</value>
+    <value>Aceptamos los siguientes métodos de pago:</value>
 </data>
 	<data name="PaymentMethod1" xml:space="preserve">
-    <value>Credit/Debit cards (Visa, Mastercard, American Express)</value>
+    <value>Tarjetas de crédito/débito (Visa, Mastercard, American Express)</value>
 </data>
 	<data name="PaymentMethod2" xml:space="preserve">
     <value>PayPal</value>
 </data>
 	<data name="PaymentMethod3" xml:space="preserve">
-    <value>Bank transfer (for Mexican accounts)</value>
+    <value>Transferencia bancaria (para cuentas mexicanas)</value>
 </data>
 	<data name="CustomsFees" xml:space="preserve">
-    <value>Are there any customs fees?</value>
+    <value>¿Hay tarifas aduaneras?</value>
 </data>
 	<data name="CustomsFeesAnswer1" xml:space="preserve">
-    <value>Yes, all imported goods are subject to customs duties and taxes as per Mexican regulations.</value>
+    <value>Sí, todos los bienes importados están sujetos a aranceles e impuestos aduaneros según las regulaciones mexicanas.</value>
 </data>
 	<data name="CustomsFeesAnswer2" xml:space="preserve">
-    <value>These fees are calculated based on the declared value of your items and are included in our final price quote.</value>
+    <value>Estas tarifas se calculan en función del valor declarado de tus artículos y se incluyen en nuestra cotización de precio final.</value>
 </data>
 	<data name="AdditionalFees" xml:space="preserve">
-    <value>Are there any additional fees?</value>
+    <value>¿Hay tarifas adicionales?</value>
 </data>
 	<data name="AdditionalFeesAnswer" xml:space="preserve">
-    <value>In addition to the base shipping rate and customs fees, there may be additional fees for:</value>
+    <value>Además de la tarifa base de envío y los aranceles aduaneros, puede haber tarifas adicionales por:</value>
 </data>
 	<data name="AdditionalFee1" xml:space="preserve">
-    <value>Package consolidation (combining multiple packages)</value>
+    <value>Consolidación de paquetes (combinación de múltiples paquetes)</value>
 </data>
 	<data name="AdditionalFee2" xml:space="preserve">
-    <value>Special handling for fragile or oversized items</value>
+    <value>Manejo especial para artículos frágiles o de gran tamaño</value>
 </data>
 	<data name="AdditionalFee3" xml:space="preserve">
-    <value>Package storage beyond 30 days</value>
+    <value>Almacenamiento de paquetes por más de 30 días</value>
 </data>
 	<data name="Refunds" xml:space="preserve">
-    <value>What is your refund policy?</value>
+    <value>¿Cuál es su política de reembolso?</value>
 </data>
 	<data name="RefundsAnswer" xml:space="preserve">
-    <value>We offer refunds for shipping fees only if we fail to deliver your package or if it arrives damaged due to our handling. Customs fees and taxes are non-refundable as they are paid to government authorities.</value>
+    <value>Ofrecemos reembolsos por las tarifas de envío solo si no logramos entregar tu paquete o si llega dañado debido a nuestro manejo. Los aranceles e impuestos aduaneros no son reembolsables ya que se pagan a las autoridades gubernamentales.</value>
 </data>
 	<data name="AccountAndSupport" xml:space="preserve">
-    <value>Account and Support</value>
+    <value>Cuenta y Soporte</value>
 </data>
 	<data name="CreateAccount" xml:space="preserve">
-    <value>How do I create an account?</value>
+    <value>¿Cómo creo una cuenta?</value>
 </data>
 	<data name="CreateAccountAnswer" xml:space="preserve">
-    <value>You can create an account by clicking on the "Register" button at the top of our website and following the registration process. You'll need to provide your email, name, and shipping address in Mexico.</value>
+    <value>Puedes crear una cuenta haciendo clic en el botón "Registrarse" en la parte superior de nuestro sitio web y siguiendo el proceso de registro. Deberás proporcionar tu correo electrónico, nombre y dirección de envío en México.</value>
 </data>
 	<data name="ForgotPassword" xml:space="preserve">
-    <value>I forgot my password. What should I do?</value>
+    <value>Olvidé mi contraseña. ¿Qué debo hacer?</value>
 </data>
 	<data name="ForgotPasswordAnswer" xml:space="preserve">
-    <value>Click on the "Login" button and then select "Forgot Password". Enter your email address, and we'll send you instructions to reset your password.</value>
+    <value>Haz clic en el botón "Iniciar sesión" y luego selecciona "Olvidé mi contraseña". Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.</value>
 </data>
 	<data name="ContactSupport" xml:space="preserve">
-    <value>How can I contact customer support?</value>
+    <value>¿Cómo puedo contactar al soporte al cliente?</value>
 </data>
 	<data name="ContactSupportAnswer" xml:space="preserve">
-    <value>You can contact our customer support team through the following channels:</value>
+    <value>Puedes contactar a nuestro equipo de soporte al cliente a través de los siguientes canales:</value>
 </data>
 	<data name="SupportContact1" xml:space="preserve">
-    <value>Email: support@fastybox.com</value>
+    <value>Correo electrónico: support@fastybox.com</value>
 </data>
 	<data name="SupportContact2" xml:space="preserve">
-    <value>Phone: +52 55 1234 5678</value>
+    <value>Teléfono: +52 55 1234 5678</value>
 </data>
 	<data name="SupportContact3" xml:space="preserve">
-    <value>Live chat: Available on our website during business hours</value>
+    <value>Chat en vivo: Disponible en nuestro sitio web durante horas laborables</value>
 </data>
 	<data name="BusinessHours" xml:space="preserve">
-    <value>What are your business hours?</value>
+    <value>¿Cuáles son sus horarios de atención?</value>
 </data>
 	<data name="BusinessHoursAnswer" xml:space="preserve">
-    <value>Our customer support team is available Monday through Friday, 9:00 AM to 6:00 PM (Mexico City time). Warehouse operations run Monday through Saturday, 8:00 AM to 7:00 PM (US Eastern Time).</value>
+    <value>Nuestro equipo de soporte al cliente está disponible de lunes a viernes, de 9:00 AM a 6:00 PM (hora de la Ciudad de México). Las operaciones del almacén funcionan de lunes a sábado, de 8:00 AM a 7:00 PM (hora del Este de EE.UU.).</value>
 </data>
 	<data name="StillHaveQuestions" xml:space="preserve">
-    <value>Still Have Questions?</value>
+    <value>¿Aún tienes preguntas?</value>
 </data>
 	<data name="ContactMessage" xml:space="preserve">
-    <value>If you couldn't find the answer to your question, please contact our customer support team.</value>
+    <value>Si no encontraste la respuesta a tu pregunta, por favor contacta a nuestro equipo de soporte al cliente.</value>
 </data>
 	<data name="EmailSupport" xml:space="preserve">
-    <value>Email Support</value>
+    <value>Contactar por Email</value>
 </data>
 	<data name="CallSupport" xml:space="preserve">
-    <value>Call Support</value>
+    <value>Llamar a Soporte</value>
 </data>
 
 	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">

@@ -1,0 +1,11 @@
+﻿@inject NavigationManager NavigationManager
+@code {
+    protected override void OnInitialized()
+    {
+        // If we're on the home page after login, redirect to dashboard
+        if (NavigationManager.Uri.EndsWith("/"))
+        {
+            NavigationManager.NavigateTo("/dashboard");
+        }
+    }
+}

@@ -4,15 +4,17 @@ using FastyBoxWeb.Services;
 using FastyBoxWeb.Services.Notification;
 using FastyBoxWeb.Services.Payment;
 using FastyBoxWeb.Services.Shipping;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Configuración de localization
+builder.Services.AddLocalization();
 
 // Configuración de servicios
 builder.Services.AddRazorPages();
@@ -54,23 +56,49 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // Configuración de la autenticación para Blazor Server
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
-// Configuración de localization
-builder.Services.AddLocalization();
-builder.Services.Configure<RequestLocalizationOptions>(options =>
+
+
+
+// Configure authentication cookies
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    var supportedCultures = new[]
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+
+    // Handle successful login redirects
+    options.Events = new CookieAuthenticationEvents
     {
-        new CultureInfo("es"),
-        new CultureInfo("en")
+        OnRedirectToLogin = ctx =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/api"))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            }
+            else
+            {
+                ctx.Response.Redirect(ctx.RedirectUri);
+            }
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = ctx =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/api"))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+            }
+            else
+            {
+                ctx.Response.Redirect(ctx.RedirectUri);
+            }
+            return Task.CompletedTask;
+        },
+        OnSignedIn = ctx =>
+        {
+            ctx.Response.Redirect("/dashboard");
+            return Task.CompletedTask;
+        }
     };
-
-    options.DefaultRequestCulture = new RequestCulture("en");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-
-    // Add culture resolution providers
-    options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
-    options.RequestCultureProviders.Insert(1, new CookieRequestCultureProvider());
 });
 
 // Regístrar servicios de la aplicación
@@ -78,6 +106,7 @@ builder.Services.AddScoped<IForwardingService, ForwardingService>();
 builder.Services.AddScoped<IShippingCalculatorService, ShippingCalculatorService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IFileService, FileService>();
+
 
 // Configurar opciones de Stripe
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -100,6 +129,11 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+string[] supportedCultures = ["en-US", "es-MX"];
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
 
 
 // Configuración del pipeline HTTP
@@ -116,8 +150,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
-
+app.UseRequestLocalization(localizationOptions);
 app.UseRouting();
 
 app.UseAuthentication();

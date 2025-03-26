@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Data\EntityConfigurations\" />
-    <Folder Include="wwwroot\css\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,9 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\SharedResources.cs">
-      <Generator></Generator>
-    </Compile>
     <Compile Update="Resources\SharedResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -41,11 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\SharedResources.en.resx">
-      <Generator></Generator>
+    <EmbeddedResource Update="Resources\SharedResources.en-US.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Resources\SharedResources.es.resx">
-      <Generator></Generator>
+    <EmbeddedResource Update="Resources\SharedResources.es-MX.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\SharedResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
