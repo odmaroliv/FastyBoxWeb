@@ -13,7 +13,7 @@
                     <span class="text-blue-500">Fasty</span><span class="@(IsLightTheme ? "text-gray-800" : "text-white")">Box</span>
                 </a>
             </div>
-            
+
             <div class="hidden md:flex items-center space-x-4">
                 <AuthorizeView>
                     <Authorized>
@@ -27,8 +27,8 @@
                                 @Localizer["Admin"]
                             </NavLink>
                         </AuthorizeView>
-                        <div class="relative">
-                            <button @onclick="ToggleUserMenu" class="px-3 py-2 rounded-md @GetHoverClass() flex items-center">
+                        <div class="relative" data-menu-container>
+                            <button @onclick="ToggleUserMenu" data-menu-button class="px-3 py-2 rounded-md @GetHoverClass() flex items-center">
                                 <span class="mr-1">@UserName</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -41,10 +41,10 @@
                                         <NavLink href="/profile" class="@($"block px-4 py-2 text-sm {(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")}")">
                                             @Localizer["Profile"]
                                         </NavLink>
-                                        <a href="/Identity/Account/Manage" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")">
+                                        <a href="/Identity/Account/Manage" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")" data-force-load>
                                             @Localizer["Account"]
                                         </a>
-                                        <a href="/Identity/Account/LogOut" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")">
+                                        <a href="/Identity/Account/LogOut" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")" data-force-load>
                                             @Localizer["LogOut"]
                                         </a>
                                     </div>
@@ -55,19 +55,19 @@
                     <NotAuthorized>
                         <CultureSelector />
                         <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
-                        <a href="/Identity/Account/Login" class="px-3 py-2 rounded-md  @GetHoverClass()">
+                        <a href="/Identity/Account/Login" class="px-3 py-2 rounded-md @GetHoverClass()" data-force-load>
                             @Localizer["Login"]
                         </a>
-                        <a href="/Identity/Account/Register" class="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600">
+                        <a href="/Identity/Account/Register" class="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600" data-force-load>
                             @Localizer["Register"]
                         </a>
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
-            
+
             <!-- Botón de menú móvil -->
-            <div class="md:hidden">
-                <button @onclick="ToggleMobileMenu" class="p-2 rounded-md @(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")">
+            <div class="md:hidden" data-menu-container>
+                <button @onclick="ToggleMobileMenu" data-menu-button class="p-2 rounded-md @(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         @if (IsMobileMenuOpen)
                         {
@@ -81,7 +81,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Menú móvil -->
         @if (IsMobileMenuOpen)
         {
@@ -89,7 +89,7 @@
                 <div class="px-2 pt-2 pb-3 space-y-1">
                     <AuthorizeView>
                         <Authorized>
-                            <NavLink href="/dashboard" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                            <NavLink href="/dashboard" class="@($"block px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
                                 @Localizer["Dashboard"]
                             </NavLink>
                             <AuthorizeView Roles="Administrator" Context="mobileAdminAuth">
@@ -97,13 +97,13 @@
                                     @Localizer["Admin"]
                                 </NavLink>
                             </AuthorizeView>
-                            <NavLink href="/profile" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                            <NavLink href="/profile" class="@($"block px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
                                 @Localizer["Profile"]
                             </NavLink>
-                            <a href="/Identity/Account/Manage" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                            <a href="/Identity/Account/Manage" class="block px-3 py-2 rounded-md @GetHoverClass()" data-force-load>
                                 @Localizer["Account"]
                             </a>
-                            <a href="/Identity/Account/LogOut" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                            <a href="/Identity/Account/LogOut" class="block px-3 py-2 rounded-md @GetHoverClass()" data-force-load>
                                 @Localizer["LogOut"]
                             </a>
                             <div class="flex items-center justify-between px-3 py-2">
@@ -112,10 +112,10 @@
                             </div>
                         </Authorized>
                         <NotAuthorized>
-                            <a href="/Identity/Account/Login" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                            <a href="/Identity/Account/Login" class="block px-3 py-2 rounded-md @GetHoverClass()" data-force-load>
                                 @Localizer["Login"]
                             </a>
-                            <a href="/Identity/Account/Register" class="block px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 text-center">
+                            <a href="/Identity/Account/Register" class="block px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 text-center" data-force-load>
                                 @Localizer["Register"]
                             </a>
                             <div class="flex items-center justify-between px-3 py-2">
@@ -171,34 +171,76 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
-    
+
     private bool IsLightTheme { get; set; } = true;
     private bool IsUserMenuOpen { get; set; }
     private bool IsMobileMenuOpen { get; set; }
     private string UserName { get; set; } = string.Empty;
+    private DotNetObjectReference<MainLayout>? objRef;
+    private bool _isFirstRender = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargar preferencia de tema del localStorage
-        var theme = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "theme");
-        IsLightTheme = string.IsNullOrEmpty(theme) || theme == "light";
+        // No usar JSRuntime aquí cuando ServerPrerendered está activado
+        // IsLightTheme = true; // Valor por defecto
 
         if (authenticationStateTask != null)
         {
             var authState = await authenticationStateTask;
             if (authState.User.Identity?.IsAuthenticated == true)
             {
-                UserName = authState.User.FindFirst(ClaimTypes.Name)?.Value ?? 
-                           authState.User.FindFirst(ClaimTypes.Email)?.Value ?? 
+                UserName = authState.User.FindFirst(ClaimTypes.Name)?.Value ??
+                           authState.User.FindFirst(ClaimTypes.Email)?.Value ??
                            Localizer["User"];
             }
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isFirstRender = false;
+
+            // Mover la lógica de JSRuntime a OnAfterRenderAsync
+            try
+            {
+                var theme = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "theme");
+                IsLightTheme = string.IsNullOrEmpty(theme) || theme == "light";
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                // Manejar excepciones al intentar acceder a localStorage
+                Console.WriteLine($"Error al acceder a localStorage: {ex.Message}");
+            }
+
+            // Configurar el click listener
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupClickListener", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public void CloseMenu()
+    {
+        if (IsUserMenuOpen || IsMobileMenuOpen)
+        {
+            IsUserMenuOpen = false;
+            IsMobileMenuOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+
     private void ToggleTheme()
     {
         IsLightTheme = !IsLightTheme;
-        JSRuntime.InvokeVoidAsync("localStorage.setItem", "theme", IsLightTheme ? "light" : "dark");
+        JSRuntime.InvokeVoidAsync("toggleTheme", !IsLightTheme);
     }
 
     private void ToggleUserMenu()
@@ -211,7 +253,6 @@
     {
         IsMobileMenuOpen = !IsMobileMenuOpen;
     }
-   
 
     private void ReloadPage()
     {

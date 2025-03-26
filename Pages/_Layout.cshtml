@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
-@namespace FastyBox.Pages
+@namespace FastyBoxWeb.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
@@ -10,7 +10,7 @@
     <title>FastyBox - @ViewData["Title"]</title>
     <base href="~/" />
     <link href="css/app.min.css" rel="stylesheet" />
-    <link href="FastyBox.styles.css" rel="stylesheet" />
+    <link href="FastyBoxWeb.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,68 +60,14 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script src="~/js/app.js"></script>
     <script>
-        // Función para alternar el tema
-        window.toggleTheme = function (isDark) {
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
         // Aplicar tema al cargar la página
         if (localStorage.getItem('theme') === 'dark' ||
             (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
-        }
-
-        // Interoperabilidad con Stripe
-        window.initializeStripe = function (publishableKey) {
-            window.stripe = Stripe(publishableKey);
-            return true;
-        }
-
-        window.redirectToStripeCheckout = function (sessionId) {
-            if (window.stripe) {
-                window.stripe.redirectToCheckout({ sessionId: sessionId });
-                return true;
-            }
-            return false;
-        }
-
-        window.handleStripePayment = function (clientSecret, successUrl) {
-            if (window.stripe) {
-                const elements = window.stripe.elements({
-                    clientSecret: clientSecret
-                });
-
-                const paymentElement = elements.create('payment');
-                paymentElement.mount('#payment-element');
-
-                const form = document.getElementById('payment-form');
-                form.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    const { error } = await window.stripe.confirmPayment({
-                        elements,
-                        confirmParams: {
-                            return_url: successUrl,
-                        },
-                    });
-
-                    if (error) {
-                        const messageElement = document.getElementById('payment-message');
-                        messageElement.textContent = error.message;
-                    }
-                });
-                return true;
-            }
-            return false;
         }
     </script>
 </body>

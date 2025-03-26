@@ -1,6 +1,10 @@
-using FastyBox.Extensions;
 using FastyBoxWeb.Data;
 using FastyBoxWeb.Data.Entities;
+using FastyBoxWeb.Services.Notification;
+using FastyBoxWeb.Services.Payment;
+using FastyBoxWeb.Services.Shipping;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -8,26 +12,47 @@ using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuraci�n de servicios
+// Configuración de servicios
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        // Configuración para mejorar la experiencia en caso de errores de conexión
+        options.DetailedErrors = builder.Environment.IsDevelopment();
+        options.DisconnectedCircuitMaxRetained = 100;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
+        options.MaxBufferedUnacknowledgedRenderBatches = 10;
+    });
 
-// Configuraci�n de la base de datos
+// Configuración de la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+// Configuración de Identity con más opciones
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedEmail = false; // Cambiar a true en producción
     options.Password.RequiredLength = 8;
+    options.Password.RequireDigit = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+
+    options.User.RequireUniqueEmail = true;
 })
- .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders()
-    .AddDefaultUI();
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders()
+.AddDefaultUI();
 
+// Configuración de la autenticación para Blazor Server
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
-// Configuraci�n de la localizaci�n
+// Configuración de localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -40,21 +65,45 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.DefaultRequestCulture = new RequestCulture("es");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
+
+    // Agregar proveedores de resolución de cultura
+    options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+    options.RequestCultureProviders.Insert(1, new CookieRequestCultureProvider());
 });
 
-// Registrar servicios personalizados
-builder.Services.AddApplicationServices();
+// Regístrar servicios de la aplicación
+builder.Services.AddScoped<IForwardingService, ForwardingService>();
+builder.Services.AddScoped<IShippingCalculatorService, ShippingCalculatorService>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 
-// Configuraci�n de autenticaci�n y autorizaci�n
-builder.Services.AddAuthorizationWithPolicies();
+// Configurar opciones de Stripe
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddScoped<IPaymentService, StripePaymentService>();
+
+// Configuración de HttpContextAccessor (necesario para algunos servicios)
+builder.Services.AddHttpContextAccessor();
 
 // Registrar HttpClient para servicios externos
 builder.Services.AddHttpClient();
 
+// Configuración de autorización
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdministratorRole", policy =>
+        policy.RequireRole("Administrator"));
+
+    options.AddPolicy("RequireAuthenticatedUser", policy =>
+        policy.RequireAuthenticatedUser());
+});
+
 var app = builder.Build();
 
-// Configuraci�n del pipeline de solicitudes HTTP
-if (!app.Environment.IsDevelopment())
+// Configuración del pipeline HTTP
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
@@ -63,7 +112,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Configuraci�n de localizaci�n
+// Configuración de localización
 app.UseRequestLocalization();
 
 app.UseRouting();
@@ -71,10 +120,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Endpoints
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-// Ejecutar migraciones autom�ticamente en producci�n
+// Aplicar migraciones y sembrar datos iniciales
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

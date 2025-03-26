@@ -4,8 +4,8 @@
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SharedResources> Localizer
 
-<div class="relative">
-    <button @onclick="ToggleLanguageDropdown" class="flex items-center">
+<div class="relative" data-menu-container>
+    <button @onclick="ToggleLanguageDropdown" data-menu-button class="flex items-center">
         <span class="mr-1 text-sm">@(CurrentCulture == "es" ? "ES" : "EN")</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -35,21 +35,69 @@
 @code {
     private bool IsOpen { get; set; }
     private string CurrentCulture { get; set; } = "es"; // Default to Spanish
+    private DotNetObjectReference<CultureSelector>? objRef;
+    private bool _isInitialized = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Intentar obtener la cultura del localStorage
-        var storedCulture = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "culture");
-        if (!string.IsNullOrEmpty(storedCulture))
+        // Establecer culturta predeterminada sin usar JSRuntime
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        if (query.AllKeys.Contains("culture"))
         {
-            CurrentCulture = storedCulture;
+            CurrentCulture = query["culture"] ?? "es";
         }
-        else
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            // Intentar determinar la cultura del navegador
-            var browserCulture = await JSRuntime.InvokeAsync<string>("navigator.language");
-            CurrentCulture = browserCulture?.StartsWith("es", StringComparison.OrdinalIgnoreCase) == true ? "es" : "en";
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "culture", CurrentCulture);
+            try
+            {
+                // Mover el código de localStorage aquí
+                var storedCulture = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "culture");
+                if (!string.IsNullOrEmpty(storedCulture))
+                {
+                    CurrentCulture = storedCulture;
+                    StateHasChanged();
+                }
+                else
+                {
+                    // Si no hay cultura guardada, intentar determinar la cultura del navegador
+                    var browserCulture = await JSRuntime.InvokeAsync<string>("navigator.language");
+                    if (!string.IsNullOrEmpty(browserCulture))
+                    {
+                        CurrentCulture = browserCulture?.StartsWith("es", StringComparison.OrdinalIgnoreCase) == true ? "es" : "en";
+                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "culture", CurrentCulture);
+                        StateHasChanged();
+                    }
+                }
+
+                // Configurar el click listener
+                objRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("setupClickListener", objRef);
+            }
+            catch (Exception)
+            {
+                // Manejar error si JSRuntime no está disponible
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+
+    [JSInvokable]
+    public void CloseMenu()
+    {
+        if (IsOpen)
+        {
+            IsOpen = false;
+            StateHasChanged();
         }
     }
 

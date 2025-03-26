@@ -1,6 +1,32 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+
+<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLoginComponent />
+            </NotAuthorized>
+            <Authorizing>
+                <div class="flex justify-center items-center h-screen">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>No encontrado</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <div class="max-w-3xl mx-auto py-12 text-center">
+                <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Página no encontrada</h2>
+                    <p>Lo sentimos, la página que estás buscando no existe.</p>
+                </div>
+                <a href="/dashboard" class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                    Volver al Dashboard
+                </a>
+            </div>
+        </LayoutView>
+    </NotFound>
 </Router>
