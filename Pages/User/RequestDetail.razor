@@ -1,0 +1,637 @@
+﻿@page "/request/{Id:int}"
+@using System.Security.Claims
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject IForwardingService ForwardingService
+@inject IPaymentService PaymentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["RequestDetails"] - FastyBox</PageTitle>
+
+@if (IsLoading)
+{
+    <div class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+}
+else if (Request == null)
+{
+    <div class="max-w-3xl mx-auto py-12 text-center">
+        <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">@Localizer["RequestNotFound"]</h2>
+            <p>@Localizer["RequestNotFoundDescription"]</p>
+        </div>
+        <a href="/dashboard" class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            @Localizer["BackToDashboard"]
+        </a>
+    </div>
+}
+else
+{
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <div class="flex items-center">
+                        <a href="/dashboard" class="text-blue-500 hover:underline flex items-center mr-2">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            @Localizer["BackToDashboard"]
+                        </a>
+                        <h1 class="text-2xl font-semibold">@Localizer["RequestDetails"]</h1>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <StatusBadge Status="@Request.Status" />
+                        <span class="ml-2 text-sm text-gray-500">@Localizer["Created"]: @Request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
+                    <button @onclick="PrintRequest" class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        @Localizer["Print"]
+                    </button>
+                    @if (Request.Status == ForwardRequestStatus.AwaitingPayment)
+                    {
+                        <button @onclick="MakePayment" class="px-3 py-1.5 border border-blue-500 rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            @Localizer["MakePayment"]
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="md:col-span-2">
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-medium">@Localizer["TrackingInformation"]</h2>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">@Request.TrackingCode</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">@Localizer["OriginalCarrier"]</h3>
+                                <p>@Request.OriginalCarrier</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">@Localizer["OriginalTrackingNumber"]</h3>
+                                <p>@Request.OriginalTrackingNumber</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Request.Notes))
+                            {
+                                <div class="md:col-span-2">
+                                    <h3 class="text-sm font-medium text-gray-500">@Localizer["Notes"]</h3>
+                                    <p>@Request.Notes</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-medium mb-4">@Localizer["ShipmentStatus"]</h3>
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                                    <div class="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div class="relative flex justify-between">
+                                    @foreach (var status in GetStatusSequence())
+                                    {
+                                        var isCompleted = IsStatusCompleted(status);
+                                        var isCurrent = Request.Status == status;
+
+                                        <div class="flex flex-col items-center">
+                                            <div class="@(isCompleted ? "bg-blue-500" : (isCurrent ? "border-2 border-blue-500 bg-white" : "bg-gray-200")) h-12 w-12 rounded-full flex items-center justify-center">
+                                                <svg class="@(isCompleted ? "text-white" : (isCurrent ? "text-blue-500" : "text-gray-400")) h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    @if (isCompleted)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    }
+                                                    else if (status == ForwardRequestStatus.AwaitingArrival)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                                    }
+                                                    else if (status == ForwardRequestStatus.ReceivedInWarehouse)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                    }
+                                                    else if (status == ForwardRequestStatus.Processing)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    }
+                                                    else if (status == ForwardRequestStatus.InTransitToMexico)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    }
+                                                    else if (status == ForwardRequestStatus.Delivered)
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    }
+                                                </svg>
+                                            </div>
+                                            <span class="mt-2 text-xs text-center @(isCompleted || isCurrent ? "font-medium" : "text-gray-500")">
+                                                @GetStatusName(status)
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["ItemsList"]</h2>
+                    </div>
+                    <div class="p-6">
+                        @foreach (var item in Request.Items)
+                        {
+                            <div class="border border-gray-200 rounded-md mb-4 overflow-hidden">
+                                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                                    <h4 class="font-medium">@item.Name</h4>
+                                    @if (!string.IsNullOrEmpty(item.Vendor))
+                                    {
+                                        <span class="text-sm text-gray-500">@item.Vendor</span>
+                                    }
+                                </div>
+                                <div class="p-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <h5 class="text-sm font-medium text-gray-500">@Localizer["DeclaredValue"]</h5>
+                                            <p class="text-sm">$@item.DeclaredValue.ToString("F2") USD</p>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(item.Url))
+                                        {
+                                            <div>
+                                                <h5 class="text-sm font-medium text-gray-500">@Localizer["ProductURL"]</h5>
+                                                <a href="@item.Url" target="_blank" class="text-sm text-blue-500 hover:underline break-all">@item.Url</a>
+                                            </div>
+                                        }
+
+                                        @if (item.DeclaredWeight.HasValue || item.DeclaredLength.HasValue || item.DeclaredWidth.HasValue || item.DeclaredHeight.HasValue)
+                                        {
+                                            <div class="md:col-span-2">
+                                                <h5 class="text-sm font-medium text-gray-500 mb-2">@Localizer["Dimensions"]</h5>
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    @if (item.DeclaredWeight.HasValue)
+                                                    {
+                                                        <div>
+                                                            <p class="text-xs text-gray-500">@Localizer["Weight"]</p>
+                                                            <p class="text-sm">@item.DeclaredWeight.Value.ToString("F2") kg</p>
+                                                        </div>
+                                                    }
+                                                    @if (item.DeclaredLength.HasValue)
+                                                    {
+                                                        <div>
+                                                            <p class="text-xs text-gray-500">@Localizer["Length"]</p>
+                                                            <p class="text-sm">@item.DeclaredLength.Value.ToString("F1") cm</p>
+                                                        </div>
+                                                    }
+                                                    @if (item.DeclaredWidth.HasValue)
+                                                    {
+                                                        <div>
+                                                            <p class="text-xs text-gray-500">@Localizer["Width"]</p>
+                                                            <p class="text-sm">@item.DeclaredWidth.Value.ToString("F1") cm</p>
+                                                        </div>
+                                                    }
+                                                    @if (item.DeclaredHeight.HasValue)
+                                                    {
+                                                        <div>
+                                                            <p class="text-xs text-gray-500">@Localizer["Height"]</p>
+                                                            <p class="text-sm">@item.DeclaredHeight.Value.ToString("F1") cm</p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @if (item.Attachments.Any())
+                                        {
+                                            <div class="md:col-span-2 mt-2">
+                                                <h5 class="text-sm font-medium text-gray-500 mb-2">@Localizer["Attachments"]</h5>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach (var attachment in item.Attachments)
+                                                    {
+                                                        <div class="flex items-center border border-gray-200 rounded px-3 py-1.5 text-sm">
+                                                            <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                                            </svg>
+                                                            <span class="truncate max-w-xs">@attachment.FileName</span>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["StatusHistory"]</h2>
+                    </div>
+                    <div class="p-6">
+                        @if (!Request.StatusHistory.Any())
+                        {
+                            <p class="text-center text-gray-500 py-4">@Localizer["NoStatusHistory"]</p>
+                        }
+                        else
+                        {
+                            <div class="flow-root">
+                                <ul class="-mb-8">
+                                    @foreach (var statusEntry in Request.StatusHistory.OrderByDescending(s => s.CreatedAt))
+                                    {
+                                        <li>
+                                            <div class="relative pb-8">
+                                                @if (!statusEntry.Equals(Request.StatusHistory.OrderByDescending(s => s.CreatedAt).Last()))
+                                                {
+                                                    <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                                }
+                                                <div class="relative flex space-x-3">
+                                                    <div>
+                                                        <span class="h-8 w-8 rounded-full @GetStatusColor(statusEntry.Status) flex items-center justify-center">
+                                                            <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                        <div>
+                                                            <p class="text-sm text-gray-900">@GetStatusName(statusEntry.Status)</p>
+                                                            @if (!string.IsNullOrEmpty(statusEntry.Notes))
+                                                            {
+                                                                <p class="mt-1 text-sm text-gray-500">@statusEntry.Notes</p>
+                                                            }
+                                                        </div>
+                                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                                            <time datetime="@statusEntry.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                                                @statusEntry.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                                            </time>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["ShippingAddress"]</h2>
+                    </div>
+                    <div class="p-6">
+                        @if (Request.ShippingAddress != null)
+                        {
+                            <div class="mb-2">
+                                <h3 class="font-medium">@Request.ShippingAddress.Name</h3>
+                                <p>@Request.ShippingAddress.RecipientName</p>
+                            </div>
+                            <div class="mb-2">
+                                <p>@Request.ShippingAddress.Street @Request.ShippingAddress.StreetNumber @Request.ShippingAddress.Interior</p>
+                                <p>@Request.ShippingAddress.Colony</p>
+                                <p>@Request.ShippingAddress.City, @Request.ShippingAddress.State @Request.ShippingAddress.PostalCode</p>
+                                <p>@Request.ShippingAddress.Country</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Request.ShippingAddress.Phone))
+                            {
+                                <div class="mb-2">
+                                    <p>@Localizer["Phone"]: @Request.ShippingAddress.Phone</p>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Request.ShippingAddress.AdditionalInstructions))
+                            {
+                                <div class="mb-2">
+                                    <h3 class="text-sm font-medium text-gray-500 mb-1">@Localizer["AdditionalInstructions"]</h3>
+                                    <p>@Request.ShippingAddress.AdditionalInstructions</p>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center text-gray-500 py-2">@Localizer["NoShippingAddressSelected"]</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["PaymentInformation"]</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">@Localizer["EstimatedTotal"]</h3>
+                                <span>$@Request.EstimatedTotal.ToString("F2") USD</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">@Localizer["FinalTotal"]</h3>
+                                <span class="font-semibold">$@Request.FinalTotal.ToString("F2") USD</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">@Localizer["TotalPaid"]</h3>
+                                <span>$@Request.TotalPaid.ToString("F2") USD</span>
+                            </div>
+
+                            @if (Request.FinalTotal > 0 && Request.TotalPaid < Request.FinalTotal)
+                            {
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="text-sm font-medium text-gray-500">@Localizer["AmountDue"]</h3>
+                                    <span class="text-red-600 font-medium">$@((Request.FinalTotal - Request.TotalPaid).ToString("F2")) USD</span>
+                                </div>
+                            }
+
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-medium">@Localizer["PaymentStatus"]</h3>
+                                    @if (Request.IsPaidInFull)
+                                    {
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                            @Localizer["PaidInFull"]
+                                        </span>
+                                    }
+                                    else if (Request.TotalPaid > 0)
+                                    {
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                            @Localizer["PartiallyPaid"]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                            @Localizer["Unpaid"]
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Request.Payments.Any())
+                        {
+                            <div class="mt-4">
+                                <h3 class="text-sm font-medium mb-2">@Localizer["PaymentHistory"]</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead>
+                                            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th class="px-2 py-1">@Localizer["Date"]</th>
+                                                <th class="px-2 py-1">@Localizer["Amount"]</th>
+                                                <th class="px-2 py-1">@Localizer["Status"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            @foreach (var payment in Request.Payments.OrderByDescending(p => p.CreatedAt))
+                                            {
+                                                <tr class="text-sm">
+                                                    <td class="px-2 py-1 whitespace-nowrap">
+                                                        @payment.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td class="px-2 py-1 whitespace-nowrap">
+                                                        $@payment.Amount.ToString("F2")
+                                                    </td>
+                                                    <td class="px-2 py-1 whitespace-nowrap">
+                                                        <span class="px-1.5 py-0.5 text-xs font-medium rounded-full @GetPaymentStatusClass(payment.Status)">
+                                                            @GetPaymentStatusName(payment.Status)
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Request.Status == ForwardRequestStatus.AwaitingPayment)
+                        {
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <button @onclick="MakePayment" class="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    @Localizer["MakePayment"]
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["NeedHelp"]</h2>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-gray-600 mb-4">
+                            @Localizer["NeedHelpDescription"]
+                        </p>
+                        <a href="mailto:support@fastybox.com" class="text-blue-500 hover:underline flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            support@fastybox.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private ForwardRequest? Request { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private string UserId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener ID del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        if (int.TryParse(Id, out var requestId))
+        {
+            await LoadRequest(requestId);
+        }
+        else
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadRequest(int requestId)
+    {
+        IsLoading = true;
+
+        try
+        {
+            // Cargar la solicitud con todas sus relaciones
+            Request = await ForwardingService.GetRequestByIdAsync(requestId, UserId);
+
+            if (Request == null)
+            {
+                // Comprobar si el usuario es administrador para potencialmente cargar la solicitud con privilegios de admin
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                if (authState.User.IsInRole("Administrator"))
+                {
+                    Request = await ForwardingService.GetRequestByIdAsync(requestId, UserId, true);
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private List<ForwardRequestStatus> GetStatusSequence()
+    {
+        // Retornar la secuencia de estados relevantes para mostrar en el seguimiento
+        return new List<ForwardRequestStatus>
+        {
+            ForwardRequestStatus.AwaitingArrival,
+            ForwardRequestStatus.ReceivedInWarehouse,
+            ForwardRequestStatus.Processing,
+            ForwardRequestStatus.InTransitToMexico,
+            ForwardRequestStatus.Delivered
+        };
+    }
+
+    private bool IsStatusCompleted(ForwardRequestStatus status)
+    {
+        var sequence = GetStatusSequence();
+        var currentIndex = sequence.IndexOf(Request!.Status);
+        var targetIndex = sequence.IndexOf(status);
+
+        // Si el estado actual es posterior al estado objetivo, el estado objetivo está completado
+        return currentIndex > targetIndex || Request!.Status == status && status == ForwardRequestStatus.Delivered;
+    }
+
+    private string GetStatusName(ForwardRequestStatus status)
+    {
+        return status switch
+        {
+            ForwardRequestStatus.Draft => Localizer["StatusDraft"],
+            ForwardRequestStatus.AwaitingArrival => Localizer["StatusAwaitingArrival"],
+            ForwardRequestStatus.ReceivedInWarehouse => Localizer["StatusReceivedInWarehouse"],
+            ForwardRequestStatus.InReview => Localizer["StatusInReview"],
+            ForwardRequestStatus.AwaitingPayment => Localizer["StatusAwaitingPayment"],
+            ForwardRequestStatus.Processing => Localizer["StatusProcessing"],
+            ForwardRequestStatus.InTransitToMexico => Localizer["StatusInTransitToMexico"],
+            ForwardRequestStatus.Delivered => Localizer["StatusDelivered"],
+            ForwardRequestStatus.Cancelled => Localizer["StatusCancelled"],
+            _ => status.ToString()
+        };
+    }
+
+    private string GetStatusColor(ForwardRequestStatus status)
+    {
+        return status switch
+        {
+            ForwardRequestStatus.Draft => "bg-gray-400",
+            ForwardRequestStatus.AwaitingArrival => "bg-yellow-500",
+            ForwardRequestStatus.ReceivedInWarehouse => "bg-green-500",
+            ForwardRequestStatus.InReview => "bg-blue-500",
+            ForwardRequestStatus.AwaitingPayment => "bg-red-500",
+            ForwardRequestStatus.Processing => "bg-purple-500",
+            ForwardRequestStatus.InTransitToMexico => "bg-indigo-500",
+            ForwardRequestStatus.Delivered => "bg-green-500",
+            ForwardRequestStatus.Cancelled => "bg-red-500",
+            _ => "bg-gray-500"
+        };
+    }
+
+    private string GetPaymentStatusName(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => Localizer["PaymentPending"],
+            PaymentStatus.Processing => Localizer["PaymentProcessing"],
+            PaymentStatus.Succeeded => Localizer["PaymentSucceeded"],
+            PaymentStatus.Failed => Localizer["PaymentFailed"],
+            PaymentStatus.Refunded => Localizer["PaymentRefunded"],
+            _ => status.ToString()
+        };
+    }
+
+    private string GetPaymentStatusClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => "bg-yellow-100 text-yellow-800",
+            PaymentStatus.Processing => "bg-blue-100 text-blue-800",
+            PaymentStatus.Succeeded => "bg-green-100 text-green-800",
+            PaymentStatus.Failed => "bg-red-100 text-red-800",
+            PaymentStatus.Refunded => "bg-purple-100 text-purple-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    private async Task MakePayment()
+    {
+        if (Request == null || Request.Status != ForwardRequestStatus.AwaitingPayment)
+            return;
+
+        try
+        {
+            // Calcular importe pendiente
+            var amountDue = Request.FinalTotal - Request.TotalPaid;
+            if (amountDue <= 0)
+                return;
+
+            // Crear sesión de pago con Stripe
+            var session = await PaymentService.CreateCheckoutSessionAsync(
+                Request.Id,
+                amountDue,
+                PaymentType.Additional,
+                UserId);
+
+            // Inicializar Stripe
+            await JSRuntime.InvokeVoidAsync("initializeStripe", "pk_test_your_publishable_key");
+
+            // Redirigir al checkout
+            await JSRuntime.InvokeVoidAsync("redirectToStripeCheckout", session.Id);
+        }
+        catch (Exception ex)
+        {
+            // Manejar errores
+            Console.WriteLine($"Error creating payment: {ex.Message}");
+        }
+    }
+
+    private void PrintRequest()
+    {
+        JSRuntime.InvokeVoidAsync("window.print");
+    }
+}

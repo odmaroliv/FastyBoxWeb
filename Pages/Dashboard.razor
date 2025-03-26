@@ -1,0 +1,273 @@
+﻿@page "/dashboard"
+@using FastyBoxWeb.Data
+@using FastyBoxWeb.Resources
+@using FastyBoxWeb.Services.Shipping
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using System.Security.Claims
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject IForwardingService ForwardingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["Dashboard"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-2xl font-semibold mb-2">@WelcomeMessage</h1>
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-medium mb-2">@Localizer["YourUSAddress"]</h2>
+            <div class="p-3 bg-white rounded border border-blue-100">
+                <p class="font-medium">@UserFullName</p>
+                <p>@USWarehouseAddress</p>
+                <p class="font-bold">@Localizer["CustomerID"]: @UserIdentifier</p>
+            </div>
+            <button @onclick="CopyAddressToClipboard" class="mt-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded flex items-center text-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                </svg>
+                @Localizer["CopyAddress"]
+            </button>
+            @if (AddressCopied)
+            {
+                <div class="mt-2 text-sm text-green-600">@Localizer["AddressCopied"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-6 mb-8">
+        <div class="w-full md:w-1/2">
+            <div class="bg-white rounded-lg shadow p-6 h-full">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    @Localizer["RecentRequests"]
+                </h2>
+
+                @if (IsLoading)
+                {
+                    <div class="flex justify-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                }
+                else if (Requests.Any())
+                {
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-2">@Localizer["TrackingCode"]</th>
+                                    <th class="px-4 py-2">@Localizer["Date"]</th>
+                                    <th class="px-4 py-2">@Localizer["Status"]</th>
+                                    <th class="px-4 py-2 text-right">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach (var request in Requests)
+                                {
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 font-medium">@request.TrackingCode</td>
+                                        <td class="px-4 py-3 text-sm">@request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                        <td class="px-4 py-3">
+                                            <StatusBadge Status="@request.Status" />
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <a href="/request/@request.Id" class="text-blue-500 hover:underline">@Localizer["Details"]</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <a href="/requests" class="text-blue-500 hover:underline text-sm">@Localizer["ViewAllRequests"]</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-8 text-gray-500">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p>@Localizer["NoRequestsYet"]</p>
+                        <button @onclick="CreateNewRequest" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            @Localizer["CreateFirstRequest"]
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2">
+            <div class="bg-white rounded-lg shadow p-6 h-full">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    @Localizer["HowItWorks"]
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-bold">1</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium">@Localizer["ShopOnline"]</h3>
+                            <p class="text-gray-600">@Localizer["ShopOnlineDescription"]</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-bold">2</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium">@Localizer["ReceiveAtWarehouse"]</h3>
+                            <p class="text-gray-600">@Localizer["ReceiveAtWarehouseDescription"]</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-bold">3</div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium">@Localizer["WeForwardToYou"]</h3>
+                            <p class="text-gray-600">@Localizer["WeForwardToYouDescription"]</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button @onclick="CreateNewRequest" class="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                            @Localizer["StartNow"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            @Localizer["QuickActions"]
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer" @onclick="CreateNewRequest">
+                <div class="text-blue-500 mb-2">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                </div>
+                <h3 class="font-medium text-lg">@Localizer["NewRequest"]</h3>
+                <p class="text-gray-600 text-sm">@Localizer["NewRequestDescription"]</p>
+            </div>
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer" @onclick="ViewAddresses">
+                <div class="text-blue-500 mb-2">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="font-medium text-lg">@Localizer["ManageAddresses"]</h3>
+                <p class="text-gray-600 text-sm">@Localizer["ManageAddressesDescription"]</p>
+            </div>
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer" @onclick="ViewFAQ">
+                <div class="text-blue-500 mb-2">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="font-medium text-lg">@Localizer["FAQ"]</h3>
+                <p class="text-gray-600 text-sm">@Localizer["FAQDescription"]</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ForwardRequest> Requests { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private string UserFullName { get; set; } = string.Empty;
+    private string UserIdentifier { get; set; } = string.Empty;
+    private string USWarehouseAddress { get; set; } = string.Empty;
+    private bool AddressCopied { get; set; } = false;
+    private string WelcomeMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener información del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // Obtener datos del usuario
+                var appUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (appUser != null)
+                {
+                    UserFullName = $"{appUser.FirstName} {appUser.LastName}";
+                    UserIdentifier = appUser.Id.Substring(0, 8).ToUpper();
+                }
+
+                // Obtener las solicitudes recientes
+                Requests = await ForwardingService.GetUserRequestsAsync(userId, 1, 5);
+            }
+        }
+
+        // Obtener la dirección del almacén en EE.UU.
+        var addressConfig = await DbContext.SystemConfigurations
+            .FirstOrDefaultAsync(c => c.Key == "USWarehouseAddress");
+        USWarehouseAddress = addressConfig?.Value ?? "123 Shipping St, Miami, FL 33101, USA";
+
+        // Establecer mensaje de bienvenida según la hora del día
+        WelcomeMessage = GetTimeBasedGreeting();
+
+        IsLoading = false;
+    }
+
+    private string GetTimeBasedGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        var localizer = Localizer;
+
+        return hour switch
+        {
+            >= 5 and < 12 => localizer["GoodMorning"],
+            >= 12 and < 18 => localizer["GoodAfternoon"],
+            _ => localizer["GoodEvening"]
+        };
+    }
+
+    private async Task CopyAddressToClipboard()
+    {
+        var fullAddress = $"{UserFullName}\n{USWarehouseAddress}\n{Localizer["CustomerID"]}: {UserIdentifier}";
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", fullAddress);
+        
+        AddressCopied = true;
+        StateHasChanged();
+        
+        // Ocultar el mensaje después de 3 segundos
+        await Task.Delay(3000);
+        AddressCopied = false;
+        StateHasChanged();
+    }
+
+    private void CreateNewRequest()
+    {
+        NavigationManager.NavigateTo("/request/new");
+    }
+
+    private void ViewAddresses()
+    {
+        NavigationManager.NavigateTo("/addresses");
+    }
+
+    private void ViewFAQ()
+    {
+        NavigationManager.NavigateTo("/faq");
+    }
+}

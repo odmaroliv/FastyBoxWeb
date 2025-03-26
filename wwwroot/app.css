@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+html {
+    @apply h-full scroll-smooth;
+}
+
+body {
+    @apply h-full;
+}
+
+/* Custom components */
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out;
+    }
+
+    .btn-primary {
+        @apply bg-blue-500 text-white hover:bg-blue-600;
+    }
+
+    .btn-secondary {
+        @apply bg-white text-gray-700 border-gray-300 hover:bg-gray-50;
+    }
+
+    .btn-danger {
+        @apply bg-red-500 text-white hover:bg-red-600;
+    }
+
+    .form-input {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500;
+    }
+
+    .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+
+    .form-error {
+        @apply mt-1 text-sm text-red-600;
+    }
+
+    .form-help {
+        @apply mt-1 text-xs text-gray-500;
+    }
+
+    .card {
+        @apply bg-white rounded-lg shadow-sm overflow-hidden;
+    }
+
+    .card-header {
+        @apply px-6 py-4 bg-gray-50 border-b border-gray-200;
+    }
+
+    .card-body {
+        @apply p-6;
+    }
+
+    .card-footer {
+        @apply px-6 py-4 bg-gray-50 border-t border-gray-200;
+    }
+}
+
+/* Form validation styles */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+/* Blazor error UI */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+/* Fade animations */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400 dark:bg-gray-500;
+    }
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background-color: white !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}

@@ -1,0 +1,940 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<!-- Layout and Navigation -->
+	<data name="SiteTitle" xml:space="preserve">
+    <value>FastyBox - Package Forwarding from USA to Mexico</value>
+  </data>
+	<data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+	<data name="Admin" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+	<data name="Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+	<data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+	<data name="LogOut" xml:space="preserve">
+    <value>Log Out</value>
+  </data>
+	<data name="Login" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+	<data name="Register" xml:space="preserve">
+    <value>Register</value>
+  </data>
+	<data name="AllRightsReserved" xml:space="preserve">
+    <value>All Rights Reserved</value>
+  </data>
+	<data name="ToggleTheme" xml:space="preserve">
+    <value>Toggle Theme</value>
+  </data>
+	<data name="AccessDenied" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+	<data name="AccessDeniedMessage" xml:space="preserve">
+    <value>You do not have permission to access this page.</value>
+  </data>
+	<data name="ReturnToDashboard" xml:space="preserve">
+    <value>Return to Dashboard</value>
+  </data>
+	<data name="NotFound" xml:space="preserve">
+    <value>Page Not Found</value>
+  </data>
+	<data name="PageNotFound" xml:space="preserve">
+    <value>Oops! Page Not Found</value>
+  </data>
+	<data name="PageNotFoundMessage" xml:space="preserve">
+    <value>The page you are looking for does not exist or has been moved.</value>
+  </data>
+	<data name="AuthenticationRequired" xml:space="preserve">
+    <value>Authentication Required</value>
+  </data>
+	<data name="PleaseLoginMessage" xml:space="preserve">
+    <value>Please log in to access this page.</value>
+  </data>
+
+	<!-- Client Dashboard -->
+	<data name="GoodMorning" xml:space="preserve">
+    <value>Good Morning!</value>
+  </data>
+	<data name="GoodAfternoon" xml:space="preserve">
+    <value>Good Afternoon!</value>
+  </data>
+	<data name="GoodEvening" xml:space="preserve">
+    <value>Good Evening!</value>
+  </data>
+	<data name="YourUSAddress" xml:space="preserve">
+    <value>Your US Address</value>
+  </data>
+	<data name="CustomerID" xml:space="preserve">
+    <value>Customer ID</value>
+  </data>
+	<data name="CopyAddress" xml:space="preserve">
+    <value>Copy Address</value>
+  </data>
+	<data name="AddressCopied" xml:space="preserve">
+    <value>Address copied to clipboard!</value>
+  </data>
+	<data name="RecentRequests" xml:space="preserve">
+    <value>Recent Requests</value>
+  </data>
+	<data name="ViewAllRequests" xml:space="preserve">
+    <value>View All Requests</value>
+  </data>
+	<data name="TrackingCode" xml:space="preserve">
+    <value>Tracking Code</value>
+  </data>
+	<data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+	<data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+	<data name="Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+	<data name="Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+	<data name="NoRequestsYet" xml:space="preserve">
+    <value>You have no requests yet</value>
+  </data>
+	<data name="CreateFirstRequest" xml:space="preserve">
+    <value>Create Your First Request</value>
+  </data>
+	<data name="HowItWorks" xml:space="preserve">
+    <value>How It Works</value>
+  </data>
+	<data name="ShopOnline" xml:space="preserve">
+    <value>Shop Online</value>
+  </data>
+	<data name="ShopOnlineDescription" xml:space="preserve">
+    <value>Shop at any US store and use your FastyBox virtual address.</value>
+  </data>
+	<data name="ReceiveAtWarehouse" xml:space="preserve">
+    <value>Receive at Warehouse</value>
+  </data>
+	<data name="ReceiveAtWarehouseDescription" xml:space="preserve">
+    <value>We receive your package at our US warehouse.</value>
+  </data>
+	<data name="WeForwardToYou" xml:space="preserve">
+    <value>We Forward It to You</value>
+  </data>
+	<data name="WeForwardToYouDescription" xml:space="preserve">
+    <value>We process your shipment and deliver it to your address in Mexico.</value>
+  </data>
+	<data name="StartNow" xml:space="preserve">
+    <value>Start Now</value>
+  </data>
+	<data name="QuickActions" xml:space="preserve">
+    <value>Quick Actions</value>
+  </data>
+	<data name="NewRequest" xml:space="preserve">
+    <value>New Request</value>
+  </data>
+	<data name="NewRequestDescription" xml:space="preserve">
+    <value>Create a new package forwarding request</value>
+  </data>
+	<data name="ManageAddresses" xml:space="preserve">
+    <value>Manage Addresses</value>
+  </data>
+	<data name="ManageAddressesDescription" xml:space="preserve">
+    <value>Add or edit your shipping addresses</value>
+  </data>
+	<data name="FAQ" xml:space="preserve">
+    <value>FAQ</value>
+  </data>
+	<data name="FAQDescription" xml:space="preserve">
+    <value>Find answers to common questions</value>
+  </data>
+
+	<!-- Request Statuses -->
+	<data name="StatusDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+	<data name="StatusAwaitingArrival" xml:space="preserve">
+    <value>Awaiting Arrival</value>
+  </data>
+	<data name="StatusReceivedInWarehouse" xml:space="preserve">
+    <value>Received at Warehouse</value>
+  </data>
+	<data name="StatusInReview" xml:space="preserve">
+    <value>In Review</value>
+  </data>
+	<data name="StatusAwaitingPayment" xml:space="preserve">
+    <value>Awaiting Payment</value>
+  </data>
+	<data name="StatusProcessing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+	<data name="StatusInTransitToMexico" xml:space="preserve">
+    <value>In Transit to Mexico</value>
+  </data>
+	<data name="StatusDelivered" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+	<data name="StatusCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+
+	<!-- New Request -->
+	<data name="NewForwardingRequest" xml:space="preserve">
+    <value>New Forwarding Request</value>
+  </data>
+	<data name="NewRequestDescription" xml:space="preserve">
+    <value>Complete the required information to request a package forwarding from the United States.</value>
+  </data>
+	<data name="RequestInstructions" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+	<data name="RequestInstructionsDetail" xml:space="preserve">
+    <value>Fill in all the required fields. Providing accurate information will help us process your request faster.</value>
+  </data>
+	<data name="Step" xml:space="preserve">
+    <value>Step</value>
+  </data>
+	<data name="Of" xml:space="preserve">
+    <value>of</value>
+  </data>
+	<data name="ShipmentDetails" xml:space="preserve">
+    <value>Shipment Details</value>
+  </data>
+	<data name="ItemDetails" xml:space="preserve">
+    <value>Item Details</value>
+  </data>
+	<data name="ShippingAddress" xml:space="preserve">
+    <value>Shipping Address</value>
+  </data>
+	<data name="ReviewAndConfirm" xml:space="preserve">
+    <value>Review and Confirm</value>
+  </data>
+	<data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+	<data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+	<data name="OriginalCarrier" xml:space="preserve">
+    <value>Original Carrier</value>
+  </data>
+	<data name="OriginalCarrierPlaceholder" xml:space="preserve">
+    <value>e.g., USPS, FedEx, UPS, Amazon</value>
+  </data>
+	<data name="OriginalCarrierHelp" xml:space="preserve">
+    <value>Indicate which shipping company will deliver the package to our US address.</value>
+  </data>
+	<data name="OriginalTrackingNumber" xml:space="preserve">
+    <value>Original Tracking Number</value>
+  </data>
+	<data name="OriginalTrackingNumberPlaceholder" xml:space="preserve">
+    <value>e.g., 9400 1000 0000 0000 0000 00</value>
+  </data>
+	<data name="OriginalTrackingNumberHelp" xml:space="preserve">
+    <value>Provide the tracking number assigned by the original carrier.</value>
+  </data>
+	<data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+	<data name="NotesPlaceholder" xml:space="preserve">
+    <value>Any additional information we should know...</value>
+  </data>
+	<data name="NotesHelp" xml:space="preserve">
+    <value>Special instructions or additional information about your shipment.</value>
+  </data>
+	<data name="Items" xml:space="preserve">
+    <value>Items</value>
+  </data>
+	<data name="AddItem" xml:space="preserve">
+    <value>Add Item</value>
+  </data>
+	<data name="NoItems" xml:space="preserve">
+    <value>No items</value>
+  </data>
+	<data name="NoItemsDescription" xml:space="preserve">
+    <value>Add at least one item to continue.</value>
+  </data>
+	<data name="AddFirstItem" xml:space="preserve">
+    <value>Add Your First Item</value>
+  </data>
+	<data name="Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+	<data name="ItemName" xml:space="preserve">
+    <value>Item Name</value>
+  </data>
+	<data name="ItemNamePlaceholder" xml:space="preserve">
+    <value>e.g., iPhone 13, Nike Shoes, Book</value>
+  </data>
+	<data name="Vendor" xml:space="preserve">
+    <value>Vendor</value>
+  </data>
+	<data name="VendorPlaceholder" xml:space="preserve">
+    <value>e.g., Amazon, eBay, Apple Store</value>
+  </data>
+	<data name="ProductURL" xml:space="preserve">
+    <value>Product URL</value>
+  </data>
+	<data name="ProductURLPlaceholder" xml:space="preserve">
+    <value>https://...</value>
+  </data>
+	<data name="DeclaredValue" xml:space="preserve">
+    <value>Declared Value</value>
+  </data>
+	<data name="DeclaredValueHelp" xml:space="preserve">
+    <value>The USD value of your item, excluding taxes and shipping. This value is used to calculate customs fees.</value>
+  </data>
+	<data name="Dimensions" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+	<data name="DimensionsHelp" xml:space="preserve">
+    <value>Provide accurate dimensions for a more precise cost estimate.</value>
+  </data>
+	<data name="Optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+	<data name="Weight" xml:space="preserve">
+    <value>Weight</value>
+  </data>
+	<data name="Length" xml:space="preserve">
+    <value>Length</value>
+  </data>
+	<data name="Width" xml:space="preserve">
+    <value>Width</value>
+  </data>
+	<data name="Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
+	<data name="Attachments" xml:space="preserve">
+    <value>Attachments</value>
+  </data>
+	<data name="AttachmentsHelp" xml:space="preserve">
+    <value>Attach invoices, purchase screenshots, or other relevant documents.</value>
+  </data>
+	<data name="AddAnotherItem" xml:space="preserve">
+    <value>Add Another Item</value>
+  </data>
+	<data name="NoAddresses" xml:space="preserve">
+    <value>You have no saved addresses</value>
+  </data>
+	<data name="NoAddressesDescription" xml:space="preserve">
+    <value>Add a delivery address to receive your packages in Mexico.</value>
+  </data>
+	<data name="AddFirstAddress" xml:space="preserve">
+    <value>Add Your First Address</value>
+  </data>
+	<data name="SelectAddress" xml:space="preserve">
+    <value>Please select an address</value>
+  </data>
+	<data name="AddNewAddress" xml:space="preserve">
+    <value>Add New Address</value>
+  </data>
+	<data name="EstimatedCosts" xml:space="preserve">
+    <value>Estimated Costs</value>
+  </data>
+	<data name="CalculatingCosts" xml:space="preserve">
+    <value>Calculating Costs</value>
+  </data>
+	<data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+	<data name="CostDisclaimer" xml:space="preserve">
+    <value>This is only an estimate. The final cost may vary based on the actual weight and dimensions verified at our warehouse.</value>
+  </data>
+	<data name="AcceptTerms" xml:space="preserve">
+    <value>I accept the terms and conditions of service.</value>
+  </data>
+	<data name="TermsLink" xml:space="preserve">
+    <value>View Terms</value>
+  </data>
+	<data name="AcceptTermsRequired" xml:space="preserve">
+    <value>You must accept the terms and conditions to continue.</value>
+  </data>
+	<data name="SubmitRequest" xml:space="preserve">
+    <value>Submit Request</value>
+  </data>
+	<data name="Processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+	<data name="RequiredField" xml:space="preserve">
+    <value>This field is required</value>
+  </data>
+	<data name="AtLeastOneItem" xml:space="preserve">
+    <value>You must add at least one item</value>
+  </data>
+	<data name="ValueMustBePositive" xml:space="preserve">
+    <value>The value must be greater than zero</value>
+  </data>
+	<data name="RequestCreationError" xml:space="preserve">
+    <value>An error occurred while creating the request. Please try again.</value>
+  </data>
+
+	<!-- Request Details -->
+	<data name="RequestDetails" xml:space="preserve">
+    <value>Request Details</value>
+  </data>
+	<data name="BackToDashboard" xml:space="preserve">
+    <value>Back to Dashboard</value>
+  </data>
+	<data name="Created" xml:space="preserve">
+    <value>Created</value>
+  </data>
+	<data name="Print" xml:space="preserve">
+    <value>Print</value>
+  </data>
+	<data name="MakePayment" xml:space="preserve">
+    <value>Make Payment</value>
+  </data>
+	<data name="TrackingInformation" xml:space="preserve">
+    <value>Tracking Information</value>
+  </data>
+	<data name="ShipmentStatus" xml:space="preserve">
+    <value>Shipment Status</value>
+  </data>
+	<data name="ItemsList" xml:space="preserve">
+    <value>Items List</value>
+  </data>
+	<data name="StatusHistory" xml:space="preserve">
+    <value>Status History</value>
+  </data>
+	<data name="NoStatusHistory" xml:space="preserve">
+    <value>No status history available</value>
+  </data>
+	<data name="NoShippingAddressSelected" xml:space="preserve">
+    <value>No shipping address selected</value>
+  </data>
+	<data name="PaymentInformation" xml:space="preserve">
+    <value>Payment Information</value>
+  </data>
+	<data name="EstimatedTotal" xml:space="preserve">
+    <value>Estimated Total</value>
+  </data>
+	<data name="FinalTotal" xml:space="preserve">
+    <value>Final Total</value>
+  </data>
+	<data name="TotalPaid" xml:space="preserve">
+    <value>Total Paid</value>
+  </data>
+	<data name="AmountDue" xml:space="preserve">
+    <value>Amount Due</value>
+  </data>
+	<data name="PaymentStatus" xml:space="preserve">
+    <value>Payment Status</value>
+  </data>
+	<data name="PaidInFull" xml:space="preserve">
+    <value>Paid in Full</value>
+  </data>
+	<data name="PartiallyPaid" xml:space="preserve">
+    <value>Partially Paid</value>
+  </data>
+	<data name="Unpaid" xml:space="preserve">
+    <value>Unpaid</value>
+  </data>
+	<data name="PaymentHistory" xml:space="preserve">
+    <value>Payment History</value>
+  </data>
+	<data name="RequestNotFound" xml:space="preserve">
+    <value>Request Not Found</value>
+  </data>
+	<data name="RequestNotFoundDescription" xml:space="preserve">
+    <value>The request you are looking for does not exist or you do not have permission to view it.</value>
+  </data>
+	<data name="NeedHelp" xml:space="preserve">
+    <value>Need Help?</value>
+  </data>
+	<data name="NeedHelpDescription" xml:space="preserve">
+    <value>If you have any questions about your request, contact us via email.</value>
+  </data>
+	<data name="Files" xml:space="preserve">
+    <value>Files</value>
+  </data>
+
+	<!-- Payment Statuses -->
+	<data name="PaymentPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+	<data name="PaymentProcessing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+	<data name="PaymentSucceeded" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+	<data name="PaymentFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+	<data name="PaymentRefunded" xml:space="preserve">
+    <value>Refunded</value>
+  </data>
+
+	<!-- Address Management -->
+	<data name="MyAddresses" xml:space="preserve">
+    <value>My Addresses</value>
+  </data>
+	<data name="AddressesDescription" xml:space="preserve">
+    <value>Manage the addresses where you want to receive your packages.</value>
+  </data>
+	<data name="AddNewAddress" xml:space="preserve">
+    <value>Add New Address</value>
+  </data>
+	<data name="DefaultAddress" xml:space="preserve">
+    <value>Default Address</value>
+  </data>
+	<data name="SetAsDefault" xml:space="preserve">
+    <value>Set as Default</value>
+  </data>
+	<data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+	<data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+	<data name="ConfirmDelete" xml:space="preserve">
+    <value>Confirm Deletion</value>
+  </data>
+	<data name="DeleteAddressConfirmation" xml:space="preserve">
+    <value>Are you sure you want to delete this address? This action cannot be undone.</value>
+  </data>
+	<data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+	<data name="Deleting" xml:space="preserve">
+    <value>Deleting</value>
+  </data>
+	<data name="NewAddress" xml:space="preserve">
+    <value>New Address</value>
+  </data>
+	<data name="EditAddress" xml:space="preserve">
+    <value>Edit Address</value>
+  </data>
+	<data name="BackToAddresses" xml:space="preserve">
+    <value>Back to Addresses</value>
+  </data>
+	<data name="AddressDetails" xml:space="preserve">
+    <value>Address Details</value>
+  </data>
+	<data name="AddressName" xml:space="preserve">
+    <value>Address Name</value>
+  </data>
+	<data name="AddressNamePlaceholder" xml:space="preserve">
+    <value>e.g., Home, Office, My Parents' House</value>
+  </data>
+	<data name="AddressNameHelp" xml:space="preserve">
+    <value>A name to help you identify this address.</value>
+  </data>
+	<data name="RecipientName" xml:space="preserve">
+    <value>Recipient Name</value>
+  </data>
+	<data name="RecipientNamePlaceholder" xml:space="preserve">
+    <value>Full name of the person receiving the package</value>
+  </data>
+	<data name="Street" xml:space="preserve">
+    <value>Street</value>
+  </data>
+	<data name="StreetPlaceholder" xml:space="preserve">
+    <value>Street name</value>
+  </data>
+	<data name="StreetNumber" xml:space="preserve">
+    <value>Street Number</value>
+  </data>
+	<data name="StreetNumberPlaceholder" xml:space="preserve">
+    <value>e.g., 123, N/A</value>
+  </data>
+	<data name="Interior" xml:space="preserve">
+    <value>Apartment/Unit Number</value>
+  </data>
+	<data name="InteriorPlaceholder" xml:space="preserve">
+    <value>e.g., Apt 4, Office 2B</value>
+  </data>
+	<data name="InteriorHelp" xml:space="preserve">
+    <value>Apartment, suite, unit, building, floor, etc.</value>
+  </data>
+	<data name="Colony" xml:space="preserve">
+    <value>Neighborhood</value>
+  </data>
+	<data name="ColonyPlaceholder" xml:space="preserve">
+    <value>Name of the neighborhood or subdivision</value>
+  </data>
+	<data name="City" xml:space="preserve">
+    <value>City</value>
+  </data>
+	<data name="CityPlaceholder" xml:space="preserve">
+    <value>Name of the city or municipality</value>
+  </data>
+	<data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+	<data name="SelectState" xml:space="preserve">
+    <value>Select a state</value>
+  </data>
+	<data name="PostalCode" xml:space="preserve">
+    <value>Postal Code</value>
+  </data>
+	<data name="PostalCodePlaceholder" xml:space="preserve">
+    <value>5 digits</value>
+  </data>
+	<data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+	<data name="PhonePlaceholder" xml:space="preserve">
+    <value>Contact phone number</value>
+  </data>
+	<data name="PhoneHelp" xml:space="preserve">
+    <value>A phone number where we can contact you for delivery.</value>
+  </data>
+	<data name="AdditionalInstructions" xml:space="preserve">
+    <value>Additional Instructions</value>
+  </data>
+	<data name="AdditionalInstructionsPlaceholder" xml:space="preserve">
+    <value>e.g., White house, ring doorbell twice, leave with concierge...</value>
+  </data>
+	<data name="AdditionalInstructionsHelp" xml:space="preserve">
+    <value>Provide specific instructions to facilitate delivery.</value>
+  </data>
+	<data name="SetAsDefaultHelp" xml:space="preserve">
+    <value>This address will be used automatically for future shipments.</value>
+  </data>
+	<data name="SaveAddress" xml:space="preserve">
+    <value>Save Address</value>
+  </data>
+	<data name="UpdateAddress" xml:space="preserve">
+    <value>Update Address</value>
+  </data>
+	<data name="Saving" xml:space="preserve">
+    <value>Saving</value>
+  </data>
+
+	<!-- Admin Panel -->
+	<data name="AdminDashboard" xml:space="preserve">
+    <value>Admin Dashboard</value>
+  </data>
+	<data name="AdminDashboardDescription" xml:space="preserve">
+    <value>Manage all forwarding requests and system settings.</value>
+  </data>
+	<data name="PendingRequests" xml:space="preserve">
+    <value>Pending Requests</value>
+  </data>
+	<data name="TotalRevenue" xml:space="preserve">
+    <value>Total Revenue</value>
+  </data>
+	<data name="TotalUsers" xml:space="preserve">
+    <value>Total Users</value>
+  </data>
+	<data name="ViewReports" xml:space="preserve">
+    <value>View Reports</value>
+  </data>
+	<data name="ManageUsers" xml:space="preserve">
+    <value>Manage Users</value>
+  </data>
+	<data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+	<data name="Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+	<data name="NoRequests" xml:space="preserve">
+    <value>No Requests</value>
+  </data>
+	<data name="ManageRates" xml:space="preserve">
+    <value>Manage Rates</value>
+  </data>
+	<data name="ManageRatesDescription" xml:space="preserve">
+    <value>Set up shipping and customs rates</value>
+  </data>
+	<data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+	<data name="SettingsDescription" xml:space="preserve">
+    <value>Adjust the system's general settings</value>
+  </data>
+	<data name="Reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+	<data name="ReportsDescription" xml:space="preserve">
+    <value>View sales and operations reports</value>
+  </data>
+	<data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+	<data name="UsersDescription" xml:space="preserve">
+    <value>Manage user accounts</value>
+  </data>
+	<data name="QuickSearch" xml:space="preserve">
+    <value>Quick Search</value>
+  </data>
+	<data name="SearchBy" xml:space="preserve">
+    <value>Search by</value>
+  </data>
+	<data name="CustomerName" xml:space="preserve">
+    <value>Customer Name</value>
+  </data>
+	<data name="CustomerEmail" xml:space="preserve">
+    <value>Customer Email</value>
+  </data>
+	<data name="SearchQuery" xml:space="preserve">
+    <value>Search Term</value>
+  </data>
+	<data name="SearchPlaceholder" xml:space="preserve">
+    <value>Type to search...</value>
+  </data>
+	<data name="NoSearchResults" xml:space="preserve">
+    <value>No results found</value>
+  </data>
+
+	<!-- Admin Requests List -->
+	<data name="ForwardingRequests" xml:space="preserve">
+    <value>Forwarding Requests</value>
+  </data>
+	<data name="RequestsDescription" xml:space="preserve">
+    <value>Manage all customer forwarding requests.</value>
+  </data>
+	<data name="ExportCSV" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+	<data name="Filters" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+	<data name="ClearFilters" xml:space="preserve">
+    <value>Clear Filters</value>
+  </data>
+	<data name="AllStatuses" xml:space="preserve">
+    <value>All Statuses</value>
+  </data>
+	<data name="DateRange" xml:space="preserve">
+    <value>Date Range</value>
+  </data>
+	<data name="AllDates" xml:space="preserve">
+    <value>All Dates</value>
+  </data>
+	<data name="Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+	<data name="Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+	<data name="ThisWeek" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+	<data name="LastWeek" xml:space="preserve">
+    <value>Last Week</value>
+  </data>
+	<data name="ThisMonth" xml:space="preserve">
+    <value>This Month</value>
+  </data>
+	<data name="LastMonth" xml:space="preserve">
+    <value>Last Month</value>
+  </data>
+	<data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+	<data name="RequestsList" xml:space="preserve">
+    <value>Requests List</value>
+  </data>
+	<data name="Results" xml:space="preserve">
+    <value>results</value>
+  </data>
+	<data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+	<data name="Showing" xml:space="preserve">
+    <value>Showing</value>
+  </data>
+	<data name="To" xml:space="preserve">
+    <value>to</value>
+  </data>
+	<data name="Paid" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+
+	<!-- Admin Request Details -->
+	<data name="BackToRequests" xml:space="preserve">
+    <value>Back to Requests</value>
+  </data>
+	<data name="UpdateStatus" xml:space="preserve">
+    <value>Update Status</value>
+  </data>
+	<data name="UpdatePricing" xml:space="preserve">
+    <value>Update Pricing</value>
+  </data>
+	<data name="RequestID" xml:space="preserve">
+    <value>Request ID</value>
+  </data>
+	<data name="CustomerInfo" xml:space="preserve">
+    <value>Customer Information</value>
+  </data>
+	<data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+	<data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+	<data name="CustomerSince" xml:space="preserve">
+    <value>Customer Since</value>
+  </data>
+	<data name="ViewCustomerDetails" xml:space="preserve">
+    <value>View Customer Details</value>
+  </data>
+	<data name="CustomerNotFound" xml:space="preserve">
+    <value>Customer Not Found</value>
+  </data>
+	<data name="NewStatus" xml:space="preserve">
+    <value>New Status</value>
+  </data>
+	<data name="StatusNotesPlaceholder" xml:space="preserve">
+    <value>Reason for the status change or additional information...</value>
+  </data>
+	<data name="Updating" xml:space="preserve">
+    <value>Updating</value>
+  </data>
+	<data name="UpdatePricingDescription" xml:space="preserve">
+    <value>Update the actual measurements and final price for this shipment.</value>
+  </data>
+	<data name="UpdateMeasurements" xml:space="preserve">
+    <value>Update Measurements</value>
+  </data>
+	<data name="ActualWeight" xml:space="preserve">
+    <value>Actual Weight</value>
+  </data>
+	<data name="ActualLength" xml:space="preserve">
+    <value>Actual Length</value>
+  </data>
+	<data name="ActualWidth" xml:space="preserve">
+    <value>Actual Width</value>
+  </data>
+	<data name="ActualHeight" xml:space="preserve">
+    <value>Actual Height</value>
+  </data>
+	<data name="CalculateNewTotal" xml:space="preserve">
+    <value>Calculate New Total</value>
+  </data>
+	<data name="Calculating" xml:space="preserve">
+    <value>Calculating</value>
+  </data>
+	<data name="NewCalculatedTotal" xml:space="preserve">
+    <value>New Calculated Total</value>
+  </data>
+	<data name="Difference" xml:space="preserve">
+    <value>Difference</value>
+  </data>
+	<data name="PricingNotesPlaceholder" xml:space="preserve">
+    <value>Explanation for the price change or additional information...</value>
+  </data>
+	<data name="DeclaredWeight" xml:space="preserve">
+    <value>Declared Weight</value>
+  </data>
+	<data name="DeclaredLength" xml:space="preserve">
+    <value>Declared Length</value>
+  </data>
+	<data name="DeclaredWidth" xml:space="preserve">
+    <value>Declared Width</value>
+  </data>
+	<data name="DeclaredHeight" xml:space="preserve">
+    <value>Declared Height</value>
+  </data>
+	<data name="PriceUpdatedNote" xml:space="preserve">
+    <value>Price updated from ${0} to ${1} USD based on actual measurements.</value>
+  </data>
+	<data name="AdditionalPaymentRequiredNote" xml:space="preserve">
+    <value>Additional payment required due to changes in dimensions or weight.</value>
+  </data>
+
+
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>1.3</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+</root>

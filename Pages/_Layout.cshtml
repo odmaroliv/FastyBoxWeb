@@ -1,0 +1,128 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace FastyBox.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FastyBox - @ViewData["Title"]</title>
+    <base href="~/" />
+    <link href="css/app.min.css" rel="stylesheet" />
+    <link href="FastyBox.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui" class="hidden fixed bottom-0 right-0 m-4 p-4 z-50 bg-red-50 rounded-lg shadow-lg border border-red-100">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                    Error en la aplicación
+                </h3>
+                <div class="mt-2 text-xs text-red-700">
+                    <p>Se ha producido un error sin manejar. <a href="" class="font-medium underline">Recargar</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+    <script>
+        // Función para alternar el tema
+        window.toggleTheme = function (isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Aplicar tema al cargar la página
+        if (localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Interoperabilidad con Stripe
+        window.initializeStripe = function (publishableKey) {
+            window.stripe = Stripe(publishableKey);
+            return true;
+        }
+
+        window.redirectToStripeCheckout = function (sessionId) {
+            if (window.stripe) {
+                window.stripe.redirectToCheckout({ sessionId: sessionId });
+                return true;
+            }
+            return false;
+        }
+
+        window.handleStripePayment = function (clientSecret, successUrl) {
+            if (window.stripe) {
+                const elements = window.stripe.elements({
+                    clientSecret: clientSecret
+                });
+
+                const paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+
+                const form = document.getElementById('payment-form');
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const { error } = await window.stripe.confirmPayment({
+                        elements,
+                        confirmParams: {
+                            return_url: successUrl,
+                        },
+                    });
+
+                    if (error) {
+                        const messageElement = document.getElementById('payment-message');
+                        messageElement.textContent = error.message;
+                    }
+                });
+                return true;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

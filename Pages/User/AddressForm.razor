@@ -1,0 +1,348 @@
+﻿@page "/addresses/new"
+@page "/addresses/edit/{AddressId:int}"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@(IsEditMode ? Localizer["EditAddress"] : Localizer["NewAddress"]) - FastyBox</PageTitle>
+
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <div class="flex items-center">
+            <a href="/addresses" class="text-blue-500 hover:underline flex items-center mr-2">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                @Localizer["BackToAddresses"]
+            </a>
+            <h1 class="text-2xl font-semibold">@(IsEditMode ? Localizer["EditAddress"] : Localizer["NewAddress"])</h1>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["AddressDetails"]</h2>
+        </div>
+        <div class="p-6">
+            @if (IsLoading)
+            {
+                <div class="flex justify-center py-6">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="@Address" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="md:col-span-2">
+                            <div class="mb-4">
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["AddressName"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.Name" placeholder="@Localizer["AddressNamePlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.Name)" class="mt-1 text-sm text-red-600" />
+                                <p class="mt-1 text-xs text-gray-500">@Localizer["AddressNameHelp"]</p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="mb-4">
+                                <label for="recipient-name" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["RecipientName"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="recipient-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.RecipientName" placeholder="@Localizer["RecipientNamePlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.RecipientName)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="mb-4">
+                                <label for="street" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["Street"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="street" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.Street" placeholder="@Localizer["StreetPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.Street)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="street-number" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["StreetNumber"]
+                                </label>
+                                <InputText id="street-number" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.StreetNumber" placeholder="@Localizer["StreetNumberPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.StreetNumber)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="interior" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["Interior"]
+                                </label>
+                                <InputText id="interior" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.Interior" placeholder="@Localizer["InteriorPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.Interior)" class="mt-1 text-sm text-red-600" />
+                                <p class="mt-1 text-xs text-gray-500">@Localizer["InteriorHelp"]</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="colony" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["Colony"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="colony" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.Colony" placeholder="@Localizer["ColonyPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.Colony)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["City"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="city" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.City" placeholder="@Localizer["CityPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.City)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="state" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["State"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputSelect id="state" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                             @bind-Value="Address.State">
+                                    <option value="">@Localizer["SelectState"]</option>
+                                    @foreach (var state in MexicanStates)
+                                    {
+                                        <option value="@state">@state</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => Address.State)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-4">
+                                <label for="postal-code" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["PostalCode"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputText id="postal-code" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.PostalCode" placeholder="@Localizer["PostalCodePlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.PostalCode)" class="mt-1 text-sm text-red-600" />
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="mb-4">
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["Phone"]
+                                </label>
+                                <InputText id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           @bind-Value="Address.Phone" placeholder="@Localizer["PhonePlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.Phone)" class="mt-1 text-sm text-red-600" />
+                                <p class="mt-1 text-xs text-gray-500">@Localizer["PhoneHelp"]</p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="mb-4">
+                                <label for="additional-instructions" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["AdditionalInstructions"]
+                                </label>
+                                <InputTextArea id="additional-instructions" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="Address.AdditionalInstructions" placeholder="@Localizer["AdditionalInstructionsPlaceholder"]" />
+                                <ValidationMessage For="@(() => Address.AdditionalInstructions)" class="mt-1 text-sm text-red-600" />
+                                <p class="mt-1 text-xs text-gray-500">@Localizer["AdditionalInstructionsHelp"]</p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="flex items-center">
+                                <InputCheckbox id="is-default" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @bind-Value="Address.IsDefault" />
+                                <label for="is-default" class="ml-2 block text-sm text-gray-700">
+                                    @Localizer["SetAsDefault"]
+                                </label>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">@Localizer["SetAsDefaultHelp"]</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6 flex justify-end space-x-3">
+                        <a href="/addresses" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            @Localizer["Cancel"]
+                        </a>
+                        <button type="submit" disabled="@IsSaving" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                            @if (IsSaving)
+                            {
+                                <span class="flex items-center">
+                                    <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    @Localizer["Saving"]...
+                                </span>
+                            }
+                            else
+                            {
+                                @(IsEditMode ? Localizer["UpdateAddress"] : Localizer["SaveAddress"])
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? AddressId { get; set; }
+
+    private Address Address { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private bool IsSaving { get; set; } = false;
+    private bool IsEditMode => !string.IsNullOrEmpty(AddressId) && int.TryParse(AddressId, out _);
+    private string UserId { get; set; } = string.Empty;
+    private string? ReturnUrl { get; set; }
+
+    // Lista de estados mexicanos
+    private List<string> MexicanStates { get; } = new List<string>
+    {
+        "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+        "Chihuahua", "Ciudad de México", "Coahuila", "Colima", "Durango", "Estado de México",
+        "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán", "Morelos", "Nayarit",
+        "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí",
+        "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener parámetros de consulta
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrlValue))
+        {
+            ReturnUrl = returnUrlValue;
+        }
+
+        // Obtener ID del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        // Si estamos en modo edición, cargar la dirección
+        if (IsEditMode && int.TryParse(AddressId, out var addressId))
+        {
+            await LoadAddress(addressId);
+        }
+        else
+        {
+            // Valores predeterminados para nueva dirección
+            Address = new Address
+                {
+                    UserId = UserId,
+                    Country = "México"
+                };
+
+            // Si no hay otras direcciones, establecer ésta como predeterminada
+            var hasAddresses = await DbContext.Addresses
+                .AnyAsync(a => a.UserId == UserId && !a.IsDeleted);
+
+            if (!hasAddresses)
+            {
+                Address.IsDefault = true;
+            }
+
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadAddress(int addressId)
+    {
+        try
+        {
+            var address = await DbContext.Addresses
+                .FirstOrDefaultAsync(a => a.Id == addressId && a.UserId == UserId && !a.IsDeleted);
+
+            if (address == null)
+            {
+                // La dirección no existe o no pertenece a este usuario
+                NavigationManager.NavigateTo("/addresses");
+                return;
+            }
+
+            Address = address;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        IsSaving = true;
+
+        try
+        {
+            Address.UserId = UserId;
+
+            // Si esta dirección está marcada como predeterminada, desmarcar las demás
+            if (Address.IsDefault)
+            {
+                var defaultAddresses = await DbContext.Addresses
+                    .Where(a => a.UserId == UserId && a.IsDefault && a.Id != Address.Id)
+                    .ToListAsync();
+
+                foreach (var addr in defaultAddresses)
+                {
+                    addr.IsDefault = false;
+                    DbContext.Addresses.Update(addr);
+                }
+            }
+
+            if (IsEditMode)
+            {
+                DbContext.Addresses.Update(Address);
+            }
+            else
+            {
+                await DbContext.Addresses.AddAsync(Address);
+            }
+
+            await DbContext.SaveChangesAsync();
+
+            // Redirigir de vuelta a la lista de direcciones o a la URL de retorno
+            if (!string.IsNullOrEmpty(ReturnUrl))
+            {
+                NavigationManager.NavigateTo(ReturnUrl);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/addresses");
+            }
+        }
+        catch (Exception)
+        {
+            // Manejar errores
+            IsSaving = false;
+        }
+    }
+}

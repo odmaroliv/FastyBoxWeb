@@ -1,0 +1,115 @@
+﻿@using System.Globalization
+@using FastyBoxWeb.Components.Layout
+@using FastyBoxWeb.Resources
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Routing
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLoginComponent />
+                    }
+                    else
+                    {
+                        <div class="container mx-auto px-4 py-16 text-center">
+                            <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-4">
+                                <h2 class="text-xl font-semibold mb-2">@Localizer["AccessDenied"]</h2>
+                                <p>@Localizer["AccessDeniedMessage"]</p>
+                            </div>
+                            <a href="/dashboard" class="inline-block px-4 py-2 mt-4 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                @Localizer["ReturnToDashboard"]
+                            </a>
+                        </div>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="flex justify-center items-center h-screen">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <PageTitle>@Localizer["NotFound"]</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="container mx-auto px-4 py-16 text-center">
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-4">
+                        <h2 class="text-xl font-semibold mb-2">@Localizer["PageNotFound"]</h2>
+                        <p>@Localizer["PageNotFoundMessage"]</p>
+                    </div>
+                    <a href="/dashboard" class="inline-block px-4 py-2 mt-4 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                        @Localizer["ReturnToDashboard"]
+                    </a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+
+@code {
+    [Inject]
+    private IStringLocalizer<SharedResources> Localizer { get; set; } = default!;
+
+    private bool _isInitialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var cultureQuery = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("culture");
+
+        if (!string.IsNullOrEmpty(cultureQuery))
+        {
+            // Establecer cultura desde QueryString
+            var culture = new CultureInfo(cultureQuery);
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+        }
+        // No usar localStorage aquí
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInitialized = true;
+
+            // Mover el código de localStorage aquí
+            try
+            {
+                var storedCulture = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "culture");
+                if (!string.IsNullOrEmpty(storedCulture) && storedCulture != CultureInfo.CurrentUICulture.Name)
+                {
+                    // Si no hay cultura en QueryString, usar la de localStorage
+                    var uri = new Uri(NavigationManager.Uri);
+                    var cultureQuery = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("culture");
+
+                    if (string.IsNullOrEmpty(cultureQuery))
+                    {
+                        // Refrescar con la cultura guardada
+                        var uriBuilder = new UriBuilder(uri);
+                        var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+                        query["culture"] = storedCulture;
+                        uriBuilder.Query = query.ToString() ?? string.Empty;
+                        NavigationManager.NavigateTo(uriBuilder.Uri.ToString(), forceLoad: true);
+                    }
+                }
+            }
+            catch
+            {
+                // Manejo de errores si localStorage no está disponible
+            }
+        }
+    }
+}
+
+<PageTitle>@(Localizer["SiteTitle"] + (NavigationManager.Uri.Contains("/admin") ? " - " + Localizer["Admin"] : ""))</PageTitle>

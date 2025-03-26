@@ -1,0 +1,383 @@
+﻿@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
+@attribute [Authorize(Roles = "Administrator")]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject IForwardingService ForwardingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@Localizer["AdminDashboard"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold mb-2">@Localizer["AdminDashboard"]</h1>
+        <p class="text-gray-600">@Localizer["AdminDashboardDescription"]</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold">@PendingRequests</h2>
+                    <p class="text-gray-600">@Localizer["PendingRequests"]</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button @onclick="() => NavigateToRequests()" class="text-blue-500 hover:underline text-sm">
+                    @Localizer["ViewAllRequests"] →
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold">@(TotalRevenue.ToString("C"))</h2>
+                    <p class="text-gray-600">@Localizer["TotalRevenue"]</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button @onclick="() => NavigateToReports()" class="text-blue-500 hover:underline text-sm">
+                    @Localizer["ViewReports"] →
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold">@TotalUsers</h2>
+                    <p class="text-gray-600">@Localizer["TotalUsers"]</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button @onclick="() => NavigateToUsers()" class="text-blue-500 hover:underline text-sm">
+                    @Localizer["ManageUsers"] →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-medium">@Localizer["RecentRequests"]</h2>
+            </div>
+            <div class="p-6">
+                @if (IsLoading)
+                {
+                    <div class="flex justify-center py-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                }
+                else if (RecentRequests.Any())
+                {
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-2">@Localizer["Code"]</th>
+                                    <th class="px-4 py-2">@Localizer["Customer"]</th>
+                                    <th class="px-4 py-2">@Localizer["Status"]</th>
+                                    <th class="px-4 py-2">@Localizer["Date"]</th>
+                                    <th class="px-4 py-2 text-right">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach (var request in RecentRequests)
+                                {
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap font-medium">@request.TrackingCode</td>
+                                        <td class="px-4 py-3 whitespace-nowrap">@request.User?.FullName</td>
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <StatusBadge Status="@request.Status" />
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                            @request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-sm">
+                                            <a href="/admin/request/@request.Id" class="text-blue-500 hover:underline">@Localizer["Details"]</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <a href="/admin/requests" class="text-blue-500 hover:underline text-sm">@Localizer["ViewAllRequests"]</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-8 text-gray-500">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p>@Localizer["NoRequests"]</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-medium">@Localizer["QuickActions"]</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div @onclick="() => NavigateToShippingRates()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="font-medium">@Localizer["ManageRates"]</h3>
+                        <p class="text-sm text-gray-500">@Localizer["ManageRatesDescription"]</p>
+                    </div>
+
+                    <div @onclick="() => NavigateToSettings()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <h3 class="font-medium">@Localizer["Settings"]</h3>
+                        <p class="text-sm text-gray-500">@Localizer["SettingsDescription"]</p>
+                    </div>
+
+                    <div @onclick="() => NavigateToReports()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h3 class="font-medium">@Localizer["Reports"]</h3>
+                        <p class="text-sm text-gray-500">@Localizer["ReportsDescription"]</p>
+                    </div>
+
+                    <div @onclick="() => NavigateToUsers()" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <h3 class="font-medium">@Localizer["Users"]</h3>
+                        <p class="text-sm text-gray-500">@Localizer["UsersDescription"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-lg font-medium">@Localizer["QuickSearch"]</h2>
+        </div>
+        <div class="p-6">
+            <div class="mb-4">
+                <label for="search-type" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["SearchBy"]</label>
+                <select id="search-type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                        @bind="SearchType">
+                    <option value="tracking">@Localizer["TrackingCode"]</option>
+                    <option value="customer">@Localizer["CustomerName"]</option>
+                    <option value="email">@Localizer["CustomerEmail"]</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="search-query" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["SearchQuery"]</label>
+                <div class="flex items-center">
+                    <input type="text" id="search-query" class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                           @bind="SearchQuery" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" placeholder="@Localizer["SearchPlaceholder"]" />
+                    <button @onclick="PerformSearch" class="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            @if (IsSearching)
+            {
+                <div class="flex justify-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            }
+            else if (SearchPerformed && !SearchResults.Any())
+            {
+                <div class="text-center py-4 text-gray-500">
+                    <p>@Localizer["NoSearchResults"]</p>
+                </div>
+            }
+            else if (SearchResults.Any())
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-4 py-2">@Localizer["Code"]</th>
+                                <th class="px-4 py-2">@Localizer["Customer"]</th>
+                                <th class="px-4 py-2">@Localizer["Status"]</th>
+                                <th class="px-4 py-2">@Localizer["Date"]</th>
+                                <th class="px-4 py-2 text-right">@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach (var result in SearchResults)
+                            {
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 whitespace-nowrap font-medium">@result.TrackingCode</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">@result.User?.FullName</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <StatusBadge Status="@result.Status" />
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                        @result.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm">
+                                        <a href="/admin/request/@result.Id" class="text-blue-500 hover:underline">@Localizer["Details"]</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private bool IsSearching { get; set; } = false;
+    private bool SearchPerformed { get; set; } = false;
+    private string SearchType { get; set; } = "tracking";
+    private string SearchQuery { get; set; } = string.Empty;
+    private List<ForwardRequest> RecentRequests { get; set; } = new();
+    private List<ForwardRequest> SearchResults { get; set; } = new();
+    private int PendingRequests { get; set; }
+    private decimal TotalRevenue { get; set; }
+    private int TotalUsers { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            // Cargar solicitudes recientes
+            RecentRequests = await ForwardingService.GetAllRequestsAsync(1, 5);
+
+            // Obtener conteo de solicitudes pendientes
+            PendingRequests = await DbContext.ForwardRequests
+                .Where(r => r.Status == ForwardRequestStatus.AwaitingArrival || 
+                            r.Status == ForwardRequestStatus.ReceivedInWarehouse || 
+                            r.Status == ForwardRequestStatus.InReview)
+                .CountAsync();
+
+            // Calcular ingresos totales
+            TotalRevenue = await DbContext.Payments
+                .Where(p => p.Status == PaymentStatus.Succeeded)
+                .SumAsync(p => p.Amount);
+
+            // Contar usuarios totales
+            TotalUsers = await DbContext.Users.CountAsync();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void HandleSearchKeyPress(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            PerformSearch();
+        }
+    }
+
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            return;
+        }
+
+        IsSearching = true;
+        SearchPerformed = true;
+        SearchResults.Clear();
+
+        try
+        {
+            // Construir consulta base
+            var query = DbContext.ForwardRequests
+                .Include(r => r.User)
+                .AsQueryable();
+
+            // Aplicar filtro según tipo de búsqueda
+            switch (SearchType)
+            {
+                case "tracking":
+                    // Buscar por código de seguimiento (coincidencia exacta o parcial)
+                    query = query.Where(r => r.TrackingCode.Contains(SearchQuery) || 
+                                            r.OriginalTrackingNumber.Contains(SearchQuery));
+                    break;
+                case "customer":
+                    // Buscar por nombre de cliente
+                    query = query.Where(r => r.User.FirstName.Contains(SearchQuery) || 
+                                            r.User.LastName.Contains(SearchQuery) ||
+                                            (r.User.FirstName + " " + r.User.LastName).Contains(SearchQuery));
+                    break;
+                case "email":
+                    // Buscar por email de cliente
+                    query = query.Where(r => r.User.Email.Contains(SearchQuery));
+                    break;
+            }
+
+            // Ejecutar consulta con límite de resultados
+            SearchResults = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    private void NavigateToRequests()
+    {
+        NavigationManager.NavigateTo("/admin/requests");
+    }
+
+    private void NavigateToReports()
+    {
+        NavigationManager.NavigateTo("/admin/reports");
+    }
+
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/admin/users");
+    }
+
+    private void NavigateToShippingRates()
+    {
+        NavigationManager.NavigateTo("/admin/shipping-rates");
+    }
+
+    private void NavigateToSettings()
+    {
+        NavigationManager.NavigateTo("/admin/settings");
+    }
+}

@@ -1,0 +1,662 @@
+﻿@page "/admin/settings"
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Administrator")]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["SystemSettings"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <div class="flex items-center">
+            <a href="/admin" class="text-blue-500 hover:underline flex items-center mr-2">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                @Localizer["BackToDashboard"]
+            </a>
+            <h1 class="text-2xl font-semibold">@Localizer["SystemSettings"]</h1>
+        </div>
+        <p class="text-gray-600 mt-2">@Localizer["SystemSettingsDescription"]</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["GeneralSettings"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@GeneralSettings" OnValidSubmit="SaveGeneralSettings">
+                            <div class="mb-6">
+                                <label for="us-warehouse-address" class="block text-sm font-medium text-gray-700 mb-1">
+                                    @Localizer["USWarehouseAddress"] <span class="text-red-500">*</span>
+                                </label>
+                                <InputTextArea id="us-warehouse-address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="GeneralSettings.USWarehouseAddress" />
+                                <p class="mt-1 text-xs text-gray-500">@Localizer["USWarehouseAddressHelp"]</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label for="company-name" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["CompanyName"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="company-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="GeneralSettings.CompanyName" />
+                                </div>
+                                <div>
+                                    <label for="support-email" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["SupportEmail"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="support-email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="GeneralSettings.SupportEmail" />
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-6 flex justify-end">
+                                <button type="submit" disabled="@IsSaving" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                                    @if (IsSaving)
+                                    {
+                                        <span class="flex items-center">
+                                            <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            @Localizer["Saving"]...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @Localizer["SaveSettings"]
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["ShippingRates"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-4 flex justify-end">
+                            <button @onclick="AddShippingRate" class="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                @Localizer["AddRate"]
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Name"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["WeightRange"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["BaseRate"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["AdditionalPerKg"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Status"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Actions"]
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach (var rate in ShippingRates)
+                                    {
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span class="font-medium text-gray-900">@rate.Name</span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                @rate.MinWeight - @rate.MaxWeight kg
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                $@rate.BaseRate.ToString("F2") USD
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                $@rate.AdditionalPerKg.ToString("F2") USD
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                @if (rate.IsActive)
+                                                {
+                                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        @Localizer["Active"]
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                        @Localizer["Inactive"]
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                                <button @onclick="() => EditShippingRate(rate)" class="text-blue-600 hover:text-blue-900 mr-3">
+                                                    @Localizer["Edit"]
+                                                </button>
+                                                <button @onclick="() => ToggleShippingRateStatus(rate)" class="text-gray-600 hover:text-gray-900">
+                                                    @(rate.IsActive ? Localizer["Disable"] : Localizer["Enable"])
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["CustomsRates"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-4 flex justify-end">
+                            <button @onclick="AddCustomsRate" class="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                @Localizer["AddRate"]
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Name"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Category"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["RatePercentage"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["MinimumFee"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Status"]
+                                        </th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            @Localizer["Actions"]
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach (var rate in CustomsRates)
+                                    {
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span class="font-medium text-gray-900">@rate.Name</span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                @rate.Category
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                @(rate.RatePercentage * 100)%
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                $@rate.MinimumFee.ToString("F2") USD
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                @if (rate.IsActive)
+                                                {
+                                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        @Localizer["Active"]
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                        @Localizer["Inactive"]
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                                <button @onclick="() => EditCustomsRate(rate)" class="text-blue-600 hover:text-blue-900 mr-3">
+                                                    @Localizer["Edit"]
+                                                </button>
+                                                <button @onclick="() => ToggleCustomsRateStatus(rate)" class="text-gray-600 hover:text-gray-900">
+                                                    @(rate.IsActive ? Localizer["Disable"] : Localizer["Enable"])
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["EmailSettings"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@EmailSettings" OnValidSubmit="SaveEmailSettings">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="smtp-server" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["SMTPServer"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="smtp-server" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="EmailSettings.SmtpServer" />
+                                </div>
+                                <div>
+                                    <label for="smtp-port" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["SMTPPort"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputNumber id="smtp-port" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                 @bind-Value="EmailSettings.SmtpPort" />
+                                </div>
+                                <div>
+                                    <label for="smtp-username" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["SMTPUsername"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="smtp-username" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="EmailSettings.SmtpUsername" />
+                                </div>
+                                <div>
+                                    <label for="smtp-password" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["SMTPPassword"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="smtp-password" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="EmailSettings.SmtpPassword" />
+                                </div>
+                                <div>
+                                    <label for="from-email" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["FromEmail"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="from-email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="EmailSettings.FromEmail" />
+                                </div>
+                                <div>
+                                    <label for="from-name" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["FromName"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="from-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="EmailSettings.FromName" />
+                                </div>
+                                <div class="flex items-center mt-2">
+                                    <InputCheckbox id="enable-ssl" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                                   @bind-Value="EmailSettings.EnableSsl" />
+                                    <label for="enable-ssl" class="ml-2 block text-sm text-gray-700">
+                                        @Localizer["EnableSSL"]
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end">
+                                <button type="submit" disabled="@IsSaving" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                                    @if (IsSaving)
+                                    {
+                                        <span class="flex items-center">
+                                            <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            @Localizer["Saving"]...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @Localizer["SaveSettings"]
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["PaymentSettings"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@PaymentSettings" OnValidSubmit="SavePaymentSettings">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="stripe-publishable-key" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["StripePublishableKey"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="stripe-publishable-key" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="PaymentSettings.PublishableKey" />
+                                </div>
+                                <div>
+                                    <label for="stripe-secret-key" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["StripeSecretKey"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="stripe-secret-key" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="PaymentSettings.SecretKey" />
+                                </div>
+                                <div>
+                                    <label for="stripe-webhook-secret" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["StripeWebhookSecret"]
+                                    </label>
+                                    <InputText id="stripe-webhook-secret" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               @bind-Value="PaymentSettings.WebhookSecret" />
+                                </div>
+                                <div>
+                                    <label for="stripe-currency" class="block text-sm font-medium text-gray-700 mb-1">
+                                        @Localizer["Currency"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputSelect id="stripe-currency" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                 @bind-Value="PaymentSettings.Currency">
+                                        <option value="usd">USD</option>
+                                        <option value="mxn">MXN</option>
+                                        <option value="eur">EUR</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end">
+                                <button type="submit" disabled="@IsSaving" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">
+                                    @if (IsSaving)
+                                    {
+                                        <span class="flex items-center">
+                                            <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            @Localizer["Saving"]...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @Localizer["SaveSettings"]
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-lg font-medium">@Localizer["SystemTools"]</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">@Localizer["DatabaseBackup"]</h3>
+                            <button @onclick="CreateBackup" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                @Localizer["CreateBackup"]
+                            </button>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">@Localizer["ClearCache"]</h3>
+                            <button @onclick="ClearCache" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                @Localizer["ClearSystemCache"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private bool IsSaving { get; set; } = false;
+    private GeneralSettingsViewModel GeneralSettings { get; set; } = new();
+    private EmailSettingsViewModel EmailSettings { get; set; } = new();
+    private PaymentSettingsViewModel PaymentSettings { get; set; } = new();
+    private List<ShippingRate> ShippingRates { get; set; } = new();
+    private List<CustomsRate> CustomsRates { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+        await LoadShippingRates();
+        await LoadCustomsRates();
+        IsLoading = false;
+    }
+
+    private async Task LoadSettings()
+    {
+        // Cargar configuraciones generales
+        var configs = await DbContext.SystemConfigurations.ToListAsync();
+
+        // Configuraciones generales
+        GeneralSettings.USWarehouseAddress = configs.FirstOrDefault(c => c.Key == "USWarehouseAddress")?.Value ?? "";
+        GeneralSettings.CompanyName = configs.FirstOrDefault(c => c.Key == "CompanyName")?.Value ?? "FastyBox";
+        GeneralSettings.SupportEmail = configs.FirstOrDefault(c => c.Key == "SupportEmail")?.Value ?? "support@fastybox.com";
+
+        // Configuraciones de correo
+        EmailSettings.SmtpServer = configs.FirstOrDefault(c => c.Key == "SmtpServer")?.Value ?? "";
+        EmailSettings.SmtpPort = int.TryParse(configs.FirstOrDefault(c => c.Key == "SmtpPort")?.Value, out int port) ? port : 587;
+        EmailSettings.SmtpUsername = configs.FirstOrDefault(c => c.Key == "SmtpUsername")?.Value ?? "";
+        EmailSettings.SmtpPassword = configs.FirstOrDefault(c => c.Key == "SmtpPassword")?.Value ?? "";
+        EmailSettings.FromEmail = configs.FirstOrDefault(c => c.Key == "FromEmail")?.Value ?? "";
+        EmailSettings.FromName = configs.FirstOrDefault(c => c.Key == "FromName")?.Value ?? "";
+        EmailSettings.EnableSsl = bool.TryParse(configs.FirstOrDefault(c => c.Key == "EnableSsl")?.Value, out bool ssl) ? ssl : true;
+
+        // Configuraciones de pago
+        PaymentSettings.PublishableKey = configs.FirstOrDefault(c => c.Key == "StripePublishableKey")?.Value ?? "";
+        PaymentSettings.SecretKey = configs.FirstOrDefault(c => c.Key == "StripeSecretKey")?.Value ?? "";
+        PaymentSettings.WebhookSecret = configs.FirstOrDefault(c => c.Key == "StripeWebhookSecret")?.Value ?? "";
+        PaymentSettings.Currency = configs.FirstOrDefault(c => c.Key == "StripeCurrency")?.Value ?? "usd";
+    }
+
+    private async Task LoadShippingRates()
+    {
+        ShippingRates = await DbContext.ShippingRates.OrderBy(r => r.MinWeight).ToListAsync();
+    }
+
+    private async Task LoadCustomsRates()
+    {
+        CustomsRates = await DbContext.CustomsRates.OrderBy(r => r.Name).ToListAsync();
+    }
+
+    private async Task SaveGeneralSettings()
+    {
+        IsSaving = true;
+        try
+        {
+            await SaveSystemConfiguration("USWarehouseAddress", GeneralSettings.USWarehouseAddress);
+            await SaveSystemConfiguration("CompanyName", GeneralSettings.CompanyName);
+            await SaveSystemConfiguration("SupportEmail", GeneralSettings.SupportEmail);
+
+            await DbContext.SaveChangesAsync();
+            await ShowSuccessMessage(Localizer["SettingsSaved"]);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task SaveEmailSettings()
+    {
+        IsSaving = true;
+        try
+        {
+            await SaveSystemConfiguration("SmtpServer", EmailSettings.SmtpServer);
+            await SaveSystemConfiguration("SmtpPort", EmailSettings.SmtpPort.ToString());
+            await SaveSystemConfiguration("SmtpUsername", EmailSettings.SmtpUsername);
+            await SaveSystemConfiguration("SmtpPassword", EmailSettings.SmtpPassword);
+            await SaveSystemConfiguration("FromEmail", EmailSettings.FromEmail);
+            await SaveSystemConfiguration("FromName", EmailSettings.FromName);
+            await SaveSystemConfiguration("EnableSsl", EmailSettings.EnableSsl.ToString());
+
+            await DbContext.SaveChangesAsync();
+            await ShowSuccessMessage(Localizer["SettingsSaved"]);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task SavePaymentSettings()
+    {
+        IsSaving = true;
+        try
+        {
+            await SaveSystemConfiguration("StripePublishableKey", PaymentSettings.PublishableKey);
+            await SaveSystemConfiguration("StripeSecretKey", PaymentSettings.SecretKey);
+            await SaveSystemConfiguration("StripeWebhookSecret", PaymentSettings.WebhookSecret);
+            await SaveSystemConfiguration("StripeCurrency", PaymentSettings.Currency);
+
+            await DbContext.SaveChangesAsync();
+            await ShowSuccessMessage(Localizer["SettingsSaved"]);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task SaveSystemConfiguration(string key, string value)
+    {
+        var config = await DbContext.SystemConfigurations.FirstOrDefaultAsync(c => c.Key == key);
+        if (config != null)
+        {
+            config.Value = value;
+            DbContext.SystemConfigurations.Update(config);
+        }
+        else
+        {
+            config = new SystemConfiguration { Key = key, Value = value };
+            await DbContext.SystemConfigurations.AddAsync(config);
+        }
+    }
+
+    private void AddShippingRate()
+    {
+        NavigationManager.NavigateTo("/admin/shipping-rates/new");
+    }
+
+    private void EditShippingRate(ShippingRate rate)
+    {
+        NavigationManager.NavigateTo($"/admin/shipping-rates/edit/{rate.Id}");
+    }
+
+    private async Task ToggleShippingRateStatus(ShippingRate rate)
+    {
+        rate.IsActive = !rate.IsActive;
+        DbContext.ShippingRates.Update(rate);
+        await DbContext.SaveChangesAsync();
+        await ShowSuccessMessage(rate.IsActive ? Localizer["RateEnabled"] : Localizer["RateDisabled"]);
+    }
+
+    private void AddCustomsRate()
+    {
+        NavigationManager.NavigateTo("/admin/customs-rates/new");
+    }
+
+    private void EditCustomsRate(CustomsRate rate)
+    {
+        NavigationManager.NavigateTo($"/admin/customs-rates/edit/{rate.Id}");
+    }
+
+    private async Task ToggleCustomsRateStatus(CustomsRate rate)
+    {
+        rate.IsActive = !rate.IsActive;
+        DbContext.CustomsRates.Update(rate);
+        await DbContext.SaveChangesAsync();
+        await ShowSuccessMessage(rate.IsActive ? Localizer["RateEnabled"] : Localizer["RateDisabled"]);
+    }
+
+    private async Task CreateBackup()
+    {
+        // En una implementación real, aquí se generaría una copia de seguridad de la base de datos
+        // Para esta demo, mostramos un mensaje de éxito
+        await ShowSuccessMessage(Localizer["BackupCreated"]);
+    }
+
+    private async Task ClearCache()
+    {
+        // En una implementación real, aquí se limpiaría la caché del sistema
+        // Para esta demo, mostramos un mensaje de éxito
+        await ShowSuccessMessage(Localizer["CacheCleared"]);
+    }
+
+    private async Task ShowSuccessMessage(string message)
+    {
+        await JSRuntime.InvokeVoidAsync("alert", message);
+    }
+
+    private class GeneralSettingsViewModel
+    {
+        public string USWarehouseAddress { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
+        public string SupportEmail { get; set; } = string.Empty;
+    }
+
+    private class EmailSettingsViewModel
+    {
+        public string SmtpServer { get; set; } = string.Empty;
+        public int SmtpPort { get; set; } = 587;
+        public string SmtpUsername { get; set; } = string.Empty;
+        public string SmtpPassword { get; set; } = string.Empty;
+        public string FromEmail { get; set; } = string.Empty;
+        public string FromName { get; set; } = string.Empty;
+        public bool EnableSsl { get; set; } = true;
+    }
+
+    private class PaymentSettingsViewModel
+    {
+        public string PublishableKey { get; set; } = string.Empty;
+        public string SecretKey { get; set; } = string.Empty;
+        public string WebhookSecret { get; set; } = string.Empty;
+        public string Currency { get; set; } = "usd";
+    }
+}

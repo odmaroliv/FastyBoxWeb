@@ -1,0 +1,341 @@
+﻿@page "/addresses"
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@implements IDisposable
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["MyAddresses"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold mb-2">@Localizer["MyAddresses"]</h1>
+            <p class="text-gray-600">@Localizer["AddressesDescription"]</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <button @onclick="CreateNewAddress" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                @Localizer["AddNewAddress"]
+            </button>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    }
+    else if (!Addresses.Any())
+    {
+        <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <h2 class="text-xl font-medium mb-2">@Localizer["NoAddresses"]</h2>
+            <p class="text-gray-500 max-w-md mx-auto mb-4">
+                @Localizer["NoAddressesDescription"]
+            </p>
+            <button @onclick="CreateNewAddress" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                @Localizer["AddFirstAddress"]
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            @foreach (var address in Addresses)
+            {
+                <div class="bg-white rounded-lg shadow-sm border @(address.IsDefault ? "border-blue-400" : "border-gray-200")">
+                    <div class="p-4 pb-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-lg">@address.Name</h3>
+                                <p class="text-gray-600">@address.RecipientName</p>
+                            </div>
+                            <div class="flex">
+                                <div class="relative" @onclick:stopPropagation>
+                                    <button @onclick="() => ToggleMenu(address.Id)" class="p-1.5 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                                        </svg>
+                                    </button>
+                                    @if (OpenMenuId == address.Id)
+                                    {
+                                        <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                            <div class="py-1">
+                                                <button @onclick="() => EditAddress(address.Id)" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    @Localizer["Edit"]
+                                                </button>
+                                                @if (!address.IsDefault)
+                                                {
+                                                    <button @onclick="() => SetAsDefault(address.Id)" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        @Localizer["SetAsDefault"]
+                                                    </button>
+                                                }
+                                                <button @onclick="() => ConfirmDeleteAddress(address.Id)" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    @Localizer["Delete"]
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-sm">
+                            <p>@address.Street @address.StreetNumber @address.Interior</p>
+                            <p>@address.Colony</p>
+                            <p>@address.City, @address.State @address.PostalCode</p>
+                            <p>@address.Country</p>
+                            @if (!string.IsNullOrEmpty(address.Phone))
+                            {
+                                <p class="mt-1">@Localizer["Phone"]: @address.Phone</p>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(address.AdditionalInstructions))
+                        {
+                            <div class="mt-2 text-sm">
+                                <p class="text-gray-500 font-medium">@Localizer["AdditionalInstructions"]:</p>
+                                <p class="text-gray-600">@address.AdditionalInstructions</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                        @if (address.IsDefault)
+                        {
+                            <span class="text-sm font-medium text-blue-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                @Localizer["DefaultAddress"]
+                            </span>
+                        }
+                        else
+                        {
+                            <button @onclick="() => SetAsDefault(address.Id)" class="text-sm text-blue-500 hover:underline">
+                                @Localizer["SetAsDefault"]
+                            </button>
+                        }
+                        <button @onclick="() => EditAddress(address.Id)" class="text-sm text-gray-500 hover:text-gray-700">
+                            @Localizer["Edit"]
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (IsDeleteModalVisible)
+{
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium">@Localizer["ConfirmDelete"]</h3>
+                <button @onclick="CancelDelete" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="mb-4">@Localizer["DeleteAddressConfirmation"]</p>
+                <div class="flex justify-end space-x-3">
+                    <button @onclick="CancelDelete" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        @Localizer["Cancel"]
+                    </button>
+                    <button @onclick="DeleteAddress" disabled="@IsDeleting" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50">
+                        @if (IsDeleting)
+                        {
+                            <span class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                @Localizer["Deleting"]...
+                            </span>
+                        }
+                        else
+                        {
+                            @Localizer["Delete"]
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Address> Addresses { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private bool IsDeleteModalVisible { get; set; } = false;
+    private bool IsDeleting { get; set; } = false;
+    private int? OpenMenuId { get; set; }
+    private int? AddressToDeleteId { get; set; }
+    private string UserId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener ID del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        await LoadAddresses();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create a reference to this component
+            var reference = DotNetObjectReference.Create(this);
+
+            // Call the JavaScript function and pass the reference
+            await JSRuntime.InvokeVoidAsync("setupClickListener", reference);
+
+            // Store the reference so you can dispose of it later
+            _dotNetReference = reference;
+        }
+    }
+
+    // Add this to your component's fields
+    private DotNetObjectReference<AddressList>? _dotNetReference;
+
+    // And this to properly clean up
+    public void Dispose()
+    {
+        _dotNetReference?.Dispose();
+    }
+
+    private async Task LoadAddresses()
+    {
+        IsLoading = true;
+
+        try
+        {
+            Addresses = await DbContext.Addresses
+                .Where(a => a.UserId == UserId && !a.IsDeleted)
+                .OrderByDescending(a => a.IsDefault)
+                .ThenBy(a => a.Name)
+                .ToListAsync();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void ToggleMenu(int addressId)
+    {
+        if (OpenMenuId == addressId)
+        {
+            OpenMenuId = null;
+        }
+        else
+        {
+            OpenMenuId = addressId;
+        }
+    }
+
+    [JSInvokable]
+    public void CloseMenu()
+    {
+        if (OpenMenuId.HasValue)
+        {
+            OpenMenuId = null;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateNewAddress()
+    {
+        NavigationManager.NavigateTo("/addresses/new");
+    }
+
+    private void EditAddress(int addressId)
+    {
+        OpenMenuId = null;
+        NavigationManager.NavigateTo($"/addresses/edit/{addressId}");
+    }
+
+    private async Task SetAsDefault(int addressId)
+    {
+        OpenMenuId = null;
+
+        var address = Addresses.FirstOrDefault(a => a.Id == addressId);
+        if (address == null) return;
+
+        var currentDefault = Addresses.FirstOrDefault(a => a.IsDefault);
+        if (currentDefault != null)
+        {
+            currentDefault.IsDefault = false;
+            DbContext.Addresses.Update(currentDefault);
+        }
+
+        address.IsDefault = true;
+        DbContext.Addresses.Update(address);
+        await DbContext.SaveChangesAsync();
+
+        // Reordenar la lista en la interfaz
+        var addresses = Addresses.ToList();
+        Addresses.Clear();
+        var sorted = addresses.OrderByDescending(a => a.IsDefault).ThenBy(a => a.Name);
+        foreach (var a in sorted)
+        {
+            Addresses.Add(a);
+        }
+    }
+
+    private void ConfirmDeleteAddress(int addressId)
+    {
+        OpenMenuId = null;
+        AddressToDeleteId = addressId;
+        IsDeleteModalVisible = true;
+    }
+
+    private void CancelDelete()
+    {
+        IsDeleteModalVisible = false;
+        AddressToDeleteId = null;
+    }
+
+    private async Task DeleteAddress()
+    {
+        if (!AddressToDeleteId.HasValue) return;
+
+        IsDeleting = true;
+
+        try
+        {
+            var address = await DbContext.Addresses
+                .FirstOrDefaultAsync(a => a.Id == AddressToDeleteId && a.UserId == UserId);
+
+            if (address != null)
+            {
+                DbContext.Addresses.Remove(address);
+                await DbContext.SaveChangesAsync();
+
+                // Recargar direcciones
+                await LoadAddresses();
+            }
+        }
+        finally
+        {
+            IsDeleting = false;
+            IsDeleteModalVisible = false;
+            AddressToDeleteId = null;
+        }
+    }
+}

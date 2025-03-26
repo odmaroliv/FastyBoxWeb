@@ -1,0 +1,220 @@
+﻿@using System.Security.Claims
+@using FastyBoxWeb.Components.Shared.Components
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<SharedResources> Localizer
+@inject IJSRuntime JSRuntime
+
+<div class="min-h-screen flex flex-col @(IsLightTheme ? "bg-white text-gray-800" : "bg-gray-900 text-white")">
+    <header class="@(IsLightTheme ? "bg-white shadow-sm" : "bg-gray-800") sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="/dashboard" class="text-xl font-semibold">
+                    <span class="text-blue-500">Fasty</span><span class="@(IsLightTheme ? "text-gray-800" : "text-white")">Box</span>
+                </a>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-4">
+                <AuthorizeView>
+                    <Authorized>
+                        <CultureSelector />
+                        <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
+                        <NavLink href="/dashboard" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                            @Localizer["Dashboard"]
+                        </NavLink>
+                        <AuthorizeView Roles="Administrator" Context="adminAuth">
+                            <NavLink href="/admin" class="px-3 py-2 rounded-md text-blue-500 hover:underline">
+                                @Localizer["Admin"]
+                            </NavLink>
+                        </AuthorizeView>
+                        <div class="relative">
+                            <button @onclick="ToggleUserMenu" class="px-3 py-2 rounded-md @GetHoverClass() flex items-center">
+                                <span class="mr-1">@UserName</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            @if (IsUserMenuOpen)
+                            {
+                                <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg @(IsLightTheme ? "bg-white" : "bg-gray-800") ring-1 ring-black ring-opacity-5">
+                                    <div class="py-1">
+                                        <NavLink href="/profile" class="@($"block px-4 py-2 text-sm {(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")}")">
+                                            @Localizer["Profile"]
+                                        </NavLink>
+                                        <a href="/Identity/Account/Manage" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")">
+                                            @Localizer["Account"]
+                                        </a>
+                                        <a href="/Identity/Account/LogOut" class="block px-4 py-2 text-sm @(IsLightTheme ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-700")">
+                                            @Localizer["LogOut"]
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <CultureSelector />
+                        <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
+                        <a href="/Identity/Account/Login" class="px-3 py-2 rounded-md  @GetHoverClass()">
+                            @Localizer["Login"]
+                        </a>
+                        <a href="/Identity/Account/Register" class="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600">
+                            @Localizer["Register"]
+                        </a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+            
+            <!-- Botón de menú móvil -->
+            <div class="md:hidden">
+                <button @onclick="ToggleMobileMenu" class="p-2 rounded-md @(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        @if (IsMobileMenuOpen)
+                        {
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        }
+                        else
+                        {
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        }
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Menú móvil -->
+        @if (IsMobileMenuOpen)
+        {
+            <div class="md:hidden @(IsLightTheme ? "bg-white" : "bg-gray-800") shadow-sm">
+                <div class="px-2 pt-2 pb-3 space-y-1">
+                    <AuthorizeView>
+                        <Authorized>
+                            <NavLink href="/dashboard" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                                @Localizer["Dashboard"]
+                            </NavLink>
+                            <AuthorizeView Roles="Administrator" Context="mobileAdminAuth">
+                                <NavLink href="/admin" class="block px-3 py-2 rounded-md text-blue-500 hover:underline">
+                                    @Localizer["Admin"]
+                                </NavLink>
+                            </AuthorizeView>
+                            <NavLink href="/profile" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                                @Localizer["Profile"]
+                            </NavLink>
+                            <a href="/Identity/Account/Manage" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                                @Localizer["Account"]
+                            </a>
+                            <a href="/Identity/Account/LogOut" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                                @Localizer["LogOut"]
+                            </a>
+                            <div class="flex items-center justify-between px-3 py-2">
+                                <CultureSelector />
+                                <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
+                            </div>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a href="/Identity/Account/Login" class="block px-3 py-2 rounded-md  @GetHoverClass()">
+                                @Localizer["Login"]
+                            </a>
+                            <a href="/Identity/Account/Register" class="block px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 text-center">
+                                @Localizer["Register"]
+                            </a>
+                            <div class="flex items-center justify-between px-3 py-2">
+                                <CultureSelector />
+                                <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
+                            </div>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        }
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <ErrorBoundary>
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="ex">
+                <div class="rounded-md bg-red-50 p-4 my-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">
+                                @Localizer["Error"]
+                            </h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>@ex.Message</p>
+                            </div>
+                            <div class="mt-2">
+                                <button @onclick="ReloadPage" class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-red-100 text-red-800 hover:bg-red-200">
+                                    @Localizer["Reload"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+
+    <footer class="py-6 @(IsLightTheme ? "bg-gray-100" : "bg-gray-800")">
+        <div class="container mx-auto px-4 text-center text-sm @(IsLightTheme ? "text-gray-600" : "text-gray-400")">
+            <p>&copy; @DateTime.Now.Year FastyBox. @Localizer["AllRightsReserved"]</p>
+        </div>
+    </footer>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    
+    private bool IsLightTheme { get; set; } = true;
+    private bool IsUserMenuOpen { get; set; }
+    private bool IsMobileMenuOpen { get; set; }
+    private string UserName { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar preferencia de tema del localStorage
+        var theme = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "theme");
+        IsLightTheme = string.IsNullOrEmpty(theme) || theme == "light";
+
+        if (authenticationStateTask != null)
+        {
+            var authState = await authenticationStateTask;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                UserName = authState.User.FindFirst(ClaimTypes.Name)?.Value ?? 
+                           authState.User.FindFirst(ClaimTypes.Email)?.Value ?? 
+                           Localizer["User"];
+            }
+        }
+    }
+
+    private void ToggleTheme()
+    {
+        IsLightTheme = !IsLightTheme;
+        JSRuntime.InvokeVoidAsync("localStorage.setItem", "theme", IsLightTheme ? "light" : "dark");
+    }
+
+    private void ToggleUserMenu()
+    {
+        IsUserMenuOpen = !IsUserMenuOpen;
+    }
+    private string GetHoverClass() => IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700";
+
+    private void ToggleMobileMenu()
+    {
+        IsMobileMenuOpen = !IsMobileMenuOpen;
+    }
+   
+
+    private void ReloadPage()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}

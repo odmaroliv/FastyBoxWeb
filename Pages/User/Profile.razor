@@ -1,0 +1,382 @@
+﻿@page "/profile"
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using System.Globalization
+@using System.Web
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["MyProfile"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold mb-2">@Localizer["MyProfile"]</h1>
+        <p class="text-gray-600">@Localizer["ProfileDescription"]</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["PersonalInformation"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-6">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@ProfileModel" OnValidSubmit="SaveProfile">
+                            <DataAnnotationsValidator />
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="first-name" class="form-label">
+                                        @Localizer["FirstName"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="first-name" class="form-input" @bind-Value="ProfileModel.FirstName" />
+                                    <ValidationMessage For="@(() => ProfileModel.FirstName)" class="form-error" />
+                                </div>
+                                <div>
+                                    <label for="last-name" class="form-label">
+                                        @Localizer["LastName"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="last-name" class="form-input" @bind-Value="ProfileModel.LastName" />
+                                    <ValidationMessage For="@(() => ProfileModel.LastName)" class="form-error" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="email" class="form-label">
+                                        @Localizer["Email"] <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" id="email" class="form-input bg-gray-50" value="@ProfileModel.Email" disabled />
+                                    <p class="form-help">@Localizer["EmailChangeNote"]</p>
+                                </div>
+                                <div>
+                                    <label for="preferred-language" class="form-label">
+                                        @Localizer["PreferredLanguage"]
+                                    </label>
+                                    <InputSelect id="preferred-language" class="form-input" @bind-Value="ProfileModel.PreferredLanguage">
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" disabled="@IsSaving" class="btn btn-primary">
+                                    @if (IsSaving)
+                                    {
+                                        <span class="flex items-center">
+                                            <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            @Localizer["Saving"]...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @Localizer["SaveProfile"]
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["Preferences"]</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="form-label">@Localizer["AppearanceMode"]</label>
+                            <div class="mt-2 flex items-center space-x-4">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="theme" value="light" checked="@(ThemePreference == "light")" @onchange='() => ChangeTheme("light")'
+                                           class="h-4 w-4 text-blue-600 border-gray-300" />
+                                    <span class="ml-2 text-sm text-gray-700">@Localizer["LightMode"]</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="theme" value="dark" checked="@(ThemePreference == "dark")" @onchange='() => ChangeTheme("dark")'
+                                           class="h-4 w-4 text-blue-600 border-gray-300" />
+                                    <span class="ml-2 text-sm text-gray-700">@Localizer["DarkMode"]</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="theme" value="system" checked="@(ThemePreference == "system")" @onchange='() => ChangeTheme("system")'
+                                           class="h-4 w-4 text-blue-600 border-gray-300" />
+                                    <span class="ml-2 text-sm text-gray-700">@Localizer["SystemDefault"]</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-200 pt-4 mt-2">
+                            <label class="form-label">@Localizer["NotificationPreferences"]</label>
+                            <div class="mt-2 space-y-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked="@NotificationPreferences.StatusUpdates" @onchange='() => ToggleNotificationPreference("StatusUpdates")'
+                                           class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                                    <span class="ml-2 text-sm text-gray-700">@Localizer["StatusUpdateNotifications"]</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked="@NotificationPreferences.Promotions" @onchange='() => ToggleNotificationPreference("Promotions")'
+                                           class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                                    <span class="ml-2 text-sm text-gray-700">@Localizer["PromotionalEmails"]</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["AccountSettings"]</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <a href="/Identity/Account/Manage" class="btn btn-secondary w-full justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            @Localizer["ManageAccount"]
+                        </a>
+                        <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-secondary w-full justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            @Localizer["ChangePassword"]
+                        </a>
+                        <a href="/addresses" class="btn btn-secondary w-full justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            @Localizer["ManageAddresses"]
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-medium">@Localizer["USAddress"]</h2>
+                </div>
+                <div class="p-6">
+                    <div class="mb-4">
+                        <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                            <p class="font-medium">@UserFullName</p>
+                            <p>@USWarehouseAddress</p>
+                            <p class="font-bold">@Localizer["CustomerID"]: @UserIdentifier</p>
+                        </div>
+                        <button @onclick="CopyAddressToClipboard" class="mt-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded flex items-center text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                            @Localizer["CopyAddress"]
+                        </button>
+                        @if (AddressCopied)
+                        {
+                            <div class="mt-2 text-sm text-green-600">@Localizer["AddressCopied"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ProfileViewModel ProfileModel { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private bool IsSaving { get; set; } = false;
+    private bool AddressCopied { get; set; } = false;
+    private string ThemePreference { get; set; } = "light";
+    private string UserFullName { get; set; } = string.Empty;
+    private string UserIdentifier { get; set; } = string.Empty;
+    private string USWarehouseAddress { get; set; } = string.Empty;
+    private NotificationPreferencesViewModel NotificationPreferences { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar perfil del usuario
+        await LoadUserProfile();
+
+        // Cargar dirección del almacén en EE.UU.
+        await LoadUSWarehouseAddress();
+
+        // Cargar preferencias de tema
+        await LoadThemePreference();
+
+        // Cargar preferencias de notificaciones
+        await LoadNotificationPreferences();
+
+        IsLoading = false;
+    }
+
+    private async Task LoadUserProfile()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        var user = await UserManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            ProfileModel = new ProfileViewModel
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email ?? string.Empty,
+                    PreferredLanguage = user.PreferredLanguage ?? "es"
+                };
+
+            UserFullName = user.FullName;
+            UserIdentifier = user.Id.Substring(0, 8).ToUpper();
+        }
+    }
+
+    private async Task LoadUSWarehouseAddress()
+    {
+        var addressConfig = await DbContext.SystemConfigurations
+            .FirstOrDefaultAsync(c => c.Key == "USWarehouseAddress");
+
+        USWarehouseAddress = addressConfig?.Value ?? "123 Shipping St, Miami, FL 33101, USA";
+    }
+
+    private async Task LoadThemePreference()
+    {
+        ThemePreference = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "theme") ?? "light";
+    }
+
+    private async Task LoadNotificationPreferences()
+    {
+        // En una implementación real, esto se cargaría desde la base de datos
+        NotificationPreferences = new NotificationPreferencesViewModel
+            {
+                StatusUpdates = true,
+                Promotions = true
+            };
+    }
+
+    private async Task SaveProfile()
+    {
+        IsSaving = true;
+
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return;
+            }
+
+            var user = await UserManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.FirstName = ProfileModel.FirstName;
+                user.LastName = ProfileModel.LastName;
+                user.PreferredLanguage = ProfileModel.PreferredLanguage;
+
+                var result = await UserManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    // Actualizar el nombre mostrado en la UI
+                    UserFullName = $"{user.FirstName} {user.LastName}";
+
+                    // Actualizar idioma de la sesión si es necesario
+                    if (CultureInfo.CurrentUICulture.Name.StartsWith(ProfileModel.PreferredLanguage))
+                    {
+                        var uri = NavigationManager.Uri;
+                        var uriBuilder = new UriBuilder(uri);
+                        var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                        query["culture"] = ProfileModel.PreferredLanguage;
+                        uriBuilder.Query = query.ToString() ?? string.Empty;
+
+                        NavigationManager.NavigateTo(uriBuilder.Uri.ToString(), forceLoad: true);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task CopyAddressToClipboard()
+    {
+        var fullAddress = $"{UserFullName}\n{USWarehouseAddress}\n{Localizer["CustomerID"]}: {UserIdentifier}";
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", fullAddress);
+
+        AddressCopied = true;
+        StateHasChanged();
+
+        // Ocultar el mensaje después de 3 segundos
+        await Task.Delay(3000);
+        AddressCopied = false;
+        StateHasChanged();
+    }
+
+    private async Task ChangeTheme(string theme)
+    {
+        ThemePreference = theme;
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+        await JSRuntime.InvokeVoidAsync("toggleTheme", theme == "dark" || (theme == "system" && await JSRuntime.InvokeAsync<bool>("window.matchMedia('(prefers-color-scheme: dark)').matches")));
+    }
+
+    private void ToggleNotificationPreference(string preference)
+    {
+        switch (preference)
+        {
+            case "StatusUpdates":
+                NotificationPreferences.StatusUpdates = !NotificationPreferences.StatusUpdates;
+                break;
+            case "Promotions":
+                NotificationPreferences.Promotions = !NotificationPreferences.Promotions;
+                break;
+        }
+
+        // En una implementación real, aquí guardaríamos los cambios en la base de datos
+    }
+
+    private class ProfileViewModel
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(100, ErrorMessage = "El nombre no puede tener más de 100 caracteres")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        [StringLength(100, ErrorMessage = "El apellido no puede tener más de 100 caracteres")]
+        public string LastName { get; set; } = string.Empty;
+
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
+        public string Email { get; set; } = string.Empty;
+
+        public string PreferredLanguage { get; set; } = "es";
+    }
+
+    private class NotificationPreferencesViewModel
+    {
+        public bool StatusUpdates { get; set; }
+        public bool Promotions { get; set; }
+    }
+}

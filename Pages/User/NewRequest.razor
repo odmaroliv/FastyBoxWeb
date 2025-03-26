@@ -1,0 +1,913 @@
+﻿@page "/request/new"
+@using FastyBoxWeb.Data
+@using FastyBoxWeb.Resources
+@using FastyBoxWeb.Services.Shipping
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using System.Security.Claims
+@attribute [Authorize]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject NavigationManager NavigationManager
+@inject IForwardingService ForwardingService
+@inject IShippingCalculatorService ShippingCalculator
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["NewForwardingRequest"] - FastyBox</PageTitle>
+
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold mb-2">@Localizer["NewForwardingRequest"]</h1>
+        <p class="text-gray-600">@Localizer["NewRequestDescription"]</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-blue-50 p-4 border-b border-blue-100">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-medium text-blue-800">@Localizer["RequestInstructions"]</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>@Localizer["RequestInstructionsDetail"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 sm:p-6">
+            <div class="mb-6">
+                <div class="flex justify-between mb-3">
+                    <h2 class="text-xl font-medium">@Localizer["Step"] @(CurrentStep) @Localizer["Of"] 4: @GetStepTitle()</h2>
+                    @if (CurrentStep > 1)
+                    {
+                        <button @onclick="PreviousStep" class="text-blue-500 hover:underline flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            @Localizer["Previous"]
+                        </button>
+                    }
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: @(CurrentStep * 25)%"></div>
+                </div>
+            </div>
+
+            @if (IsBusy)
+            {
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            }
+            else
+            {
+                @if (CurrentStep == 1)
+                {
+                    <div class="space-y-6">
+                        <div>
+                            <label for="originalCarrier" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["OriginalCarrier"] <span class="text-red-500">*</span></label>
+                            <input type="text" id="originalCarrier" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                   @bind="Request.OriginalCarrier" placeholder="@Localizer["OriginalCarrierPlaceholder"]" />
+                            @if (ValidationErrors.ContainsKey("OriginalCarrier"))
+                            {
+                                <p class="mt-1 text-sm text-red-600">@ValidationErrors["OriginalCarrier"]</p>
+                            }
+                            <p class="mt-1 text-xs text-gray-500">@Localizer["OriginalCarrierHelp"]</p>
+                        </div>
+
+                        <div>
+                            <label for="originalTrackingNumber" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["OriginalTrackingNumber"] <span class="text-red-500">*</span></label>
+                            <input type="text" id="originalTrackingNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                   @bind="Request.OriginalTrackingNumber" placeholder="@Localizer["OriginalTrackingNumberPlaceholder"]" />
+                            @if (ValidationErrors.ContainsKey("OriginalTrackingNumber"))
+                            {
+                                <p class="mt-1 text-sm text-red-600">@ValidationErrors["OriginalTrackingNumber"]</p>
+                            }
+                            <p class="mt-1 text-xs text-gray-500">@Localizer["OriginalTrackingNumberHelp"]</p>
+                        </div>
+
+                        <div>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">@Localizer["Notes"]</label>
+                            <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                      @bind="Request.Notes" placeholder="@Localizer["NotesPlaceholder"]"></textarea>
+                            <p class="mt-1 text-xs text-gray-500">@Localizer["NotesHelp"]</p>
+                        </div>
+                    </div>
+                }
+                else if (CurrentStep == 2)
+                {
+                    <div>
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-lg font-medium">@Localizer["Items"]</h3>
+                            <button @onclick="AddItem" class="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                @Localizer["AddItem"]
+                            </button>
+                        </div>
+
+                        @if (!Items.Any())
+                        {
+                            <div class="text-center py-6 border-2 border-dashed border-gray-300 rounded-md">
+                                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-700">@Localizer["NoItems"]</h3>
+                                <p class="mt-1 text-sm text-gray-500">@Localizer["NoItemsDescription"]</p>
+                                <div class="mt-3">
+                                    <button @onclick="AddItem" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-md">
+                                        @Localizer["AddFirstItem"]
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var (item, index) in Items.Select((item, index) => (item, index)))
+                            {
+                                <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                                    <div class="flex justify-between mb-2">
+                                        <h4 class="font-medium">@Localizer["Item"] #@(index + 1)</h4>
+                                        <button @onclick="() => RemoveItem(index)" class="text-red-500 hover:text-red-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["ItemName"] <span class="text-red-500">*</span></label>
+                                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                   @bind="item.Name" placeholder="@Localizer["ItemNamePlaceholder"]" />
+                                            @if (ItemValidationErrors.ContainsKey($"Name_{index}"))
+                                            {
+                                                <p class="mt-1 text-sm text-red-600">@ItemValidationErrors[$"Name_{index}"]</p>
+                                            }
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["Vendor"]</label>
+                                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                   @bind="item.Vendor" placeholder="@Localizer["VendorPlaceholder"]" />
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["ProductURL"]</label>
+                                            <input type="url" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                   @bind="item.Url" placeholder="@Localizer["ProductURLPlaceholder"]" />
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["DeclaredValue"] (USD) <span class="text-red-500">*</span></label>
+                                            <input type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                   @bind="item.DeclaredValue" />
+                                            @if (ItemValidationErrors.ContainsKey($"DeclaredValue_{index}"))
+                                            {
+                                                <p class="mt-1 text-sm text-red-600">@ItemValidationErrors[$"DeclaredValue_{index}"]</p>
+                                            }
+                                            <p class="mt-1 text-xs text-gray-500">@Localizer["DeclaredValueHelp"]</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <div class="flex items-center mb-2">
+                                            <h5 class="font-medium text-sm">@Localizer["Dimensions"]</h5>
+                                            <span class="ml-2 text-xs text-gray-500">(@Localizer["Optional"])</span>
+                                            <div class="ml-1 relative group">
+                                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <div class="absolute bottom-full mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
+                                                    @Localizer["DimensionsHelp"]
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">@Localizer["Weight"] (kg)</label>
+                                                <input type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                       @bind="item.DeclaredWeight" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">@Localizer["Length"] (cm)</label>
+                                                <input type="number" step="0.1" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                       @bind="item.DeclaredLength" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">@Localizer["Width"] (cm)</label>
+                                                <input type="number" step="0.1" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                       @bind="item.DeclaredWidth" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">@Localizer["Height"] (cm)</label>
+                                                <input type="number" step="0.1" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                       @bind="item.DeclaredHeight" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["Attachments"]</label>
+                                        <p class="text-xs text-gray-500 mb-2">@Localizer["AttachmentsHelp"]</p>
+                                        <InputFile OnChange="@(e => HandleFileSelection(e, index))" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                        @if (ItemFiles.ContainsKey(index) && ItemFiles[index].Any())
+                                        {
+                                            <div class="mt-2 space-y-1">
+                                                @foreach (var file in ItemFiles[index])
+                                                {
+                                                    <div class="flex items-center text-xs text-gray-600">
+                                                        <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        <span class="truncate">@file.Name</span>
+                                                        <span class="ml-2">(@FormatFileSize(file.Size))</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @if (Items.Any())
+                        {
+                            <div class="mt-2 text-right">
+                                <button @onclick="AddItem" class="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md text-sm flex items-center ml-auto">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    @Localizer["AddAnotherItem"]
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (CurrentStep == 3)
+                {
+                    <div>
+                        <h3 class="text-lg font-medium mb-4">@Localizer["ShippingAddress"]</h3>
+
+                        @if (IsLoadingAddresses)
+                        {
+                            <div class="flex justify-center py-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                            </div>
+                        }
+                        else if (!Addresses.Any())
+                        {
+                            <div class="text-center py-6 border-2 border-dashed border-gray-300 rounded-md">
+                                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-700">@Localizer["NoAddresses"]</h3>
+                                <p class="mt-1 text-sm text-gray-500">@Localizer["NoAddressesDescription"]</p>
+                                <div class="mt-3">
+                                    <button @onclick="CreateNewAddress" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-md">
+                                        @Localizer["AddFirstAddress"]
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach (var address in Addresses)
+                                {
+                                    <div class="@(SelectedAddressId == address.Id ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200") border rounded-md p-4 hover:border-blue-300 cursor-pointer" 
+                                         @onclick="() => SelectAddress(address.Id)">
+                                        <div class="flex justify-between">
+                                            <div>
+                                                <h4 class="font-medium">@address.Name</h4>
+                                                <p class="text-sm text-gray-600">@address.RecipientName</p>
+                                            </div>
+                                            @if (SelectedAddressId == address.Id)
+                                            {
+                                                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="w-6 h-6 border-2 border-gray-300 rounded-full"></div>
+                                            }
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-2">@address.FullAddress</p>
+                                        @if (!string.IsNullOrEmpty(address.Phone))
+                                        {
+                                            <p class="text-sm text-gray-600">@address.Phone</p>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="mt-4 text-right">
+                                <button @onclick="CreateNewAddress" class="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md text-sm">
+                                    @Localizer["AddNewAddress"]
+                                </button>
+                            </div>
+                            
+                            @if (ValidationErrors.ContainsKey("ShippingAddressId"))
+                            {
+                                <p class="mt-2 text-sm text-red-600">@ValidationErrors["ShippingAddressId"]</p>
+                            }
+                        }
+                    </div>
+                }
+                else if (CurrentStep == 4)
+                {
+                    <div>
+                        <h3 class="text-lg font-medium mb-4">@Localizer["ReviewAndConfirm"]</h3>
+
+                        <div class="mb-6 border border-gray-200 rounded-md overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                <h4 class="font-medium">@Localizer["ShipmentDetails"]</h4>
+                            </div>
+                            <div class="p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">@Localizer["OriginalCarrier"]</p>
+                                        <p>@Request.OriginalCarrier</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">@Localizer["OriginalTrackingNumber"]</p>
+                                        <p>@Request.OriginalTrackingNumber</p>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Request.Notes))
+                                    {
+                                        <div class="md:col-span-2">
+                                            <p class="text-sm font-medium text-gray-500">@Localizer["Notes"]</p>
+                                            <p>@Request.Notes</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6 border border-gray-200 rounded-md overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                <h4 class="font-medium">@Localizer["Items"] (@Items.Count)</h4>
+                            </div>
+                            <div class="p-4">
+                                @foreach (var (item, index) in Items.Select((item, index) => (item, index)))
+                                {
+                                    <div class="@(index > 0 ? "mt-4 pt-4 border-t border-gray-200" : "")">
+                                        <h5 class="font-medium">@(index + 1). @item.Name</h5>
+                                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                            @if (!string.IsNullOrEmpty(item.Vendor))
+                                            {
+                                                <div>
+                                                    <span class="font-medium text-gray-500">@Localizer["Vendor"]:</span>
+                                                    <span>@item.Vendor</span>
+                                                </div>
+                                            }
+                                            <div>
+                                                <span class="font-medium text-gray-500">@Localizer["DeclaredValue"]:</span>
+                                                <span>$@item.DeclaredValue.ToString("F2") USD</span>
+                                            </div>
+                                            @if (item.DeclaredWeight.HasValue)
+                                            {
+                                                <div>
+                                                    <span class="font-medium text-gray-500">@Localizer["Weight"]:</span>
+                                                    <span>@item.DeclaredWeight.Value.ToString("F2") kg</span>
+                                                </div>
+                                            }
+                                            @if (item.DeclaredLength.HasValue && item.DeclaredWidth.HasValue && item.DeclaredHeight.HasValue)
+                                            {
+                                                <div>
+                                                    <span class="font-medium text-gray-500">@Localizer["Dimensions"]:</span>
+                                                    <span>@item.DeclaredLength.Value x @item.DeclaredWidth.Value x @item.DeclaredHeight.Value cm</span>
+                                                </div>
+                                            }
+                                            @if (ItemFiles.ContainsKey(index) && ItemFiles[index].Any())
+                                            {
+                                                <div class="md:col-span-2">
+                                                    <span class="font-medium text-gray-500">@Localizer["Attachments"]:</span>
+                                                    <span>@ItemFiles[index].Count @Localizer["Files"]</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-6 border border-gray-200 rounded-md overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                <h4 class="font-medium">@Localizer["ShippingAddress"]</h4>
+                            </div>
+                            <div class="p-4">
+                                @if (SelectedAddress != null)
+                                {
+                                    <div>
+                                        <p class="font-medium">@SelectedAddress.Name</p>
+                                        <p>@SelectedAddress.RecipientName</p>
+                                        <p>@SelectedAddress.FullAddress</p>
+                                        @if (!string.IsNullOrEmpty(SelectedAddress.Phone))
+                                        {
+                                            <p>@SelectedAddress.Phone</p>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-6 border border-gray-200 rounded-md overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                <h4 class="font-medium">@Localizer["EstimatedCosts"]</h4>
+                            </div>
+                            <div class="p-4">
+                                @if (IsCalculatingCost)
+                                {
+                                    <div class="flex items-center justify-center py-4">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                                        <span>@Localizer["CalculatingCosts"]...</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="space-y-2">
+                                        @foreach (var (item, index) in Items.Select((item, index) => (item, index)))
+                                        {
+                                            <div class="flex justify-between text-sm">
+                                                <span class="text-gray-600">@(index + 1). @item.Name</span>
+                                                <span>$@(ItemCosts.ContainsKey(index) ? ItemCosts[index].ToString("F2") : "0.00") USD</span>
+                                            </div>
+                                        }
+                                        <div class="border-t border-gray-200 pt-2 mt-2 flex justify-between font-medium">
+                                            <span>@Localizer["Total"]</span>
+                                            <span>$@TotalCost.ToString("F2") USD</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 bg-yellow-50 p-3 rounded-md border border-yellow-100 text-sm text-yellow-800">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p>@Localizer["CostDisclaimer"]</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex items-center">
+                                <input id="terms-checkbox" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @bind="AcceptedTerms" />
+                                <label for="terms-checkbox" class="ml-2 block text-sm text-gray-700">
+                                    @Localizer["AcceptTerms"] <a href="/terms" target="_blank" class="text-blue-500 hover:underline">@Localizer["TermsLink"]</a>
+                                </label>
+                            </div>
+                            @if (ValidationErrors.ContainsKey("AcceptedTerms"))
+                            {
+                                <p class="mt-1 text-sm text-red-600">@ValidationErrors["AcceptedTerms"]</p>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="mt-8 flex justify-between">
+                    @if (CurrentStep > 1)
+                    {
+                        <button @onclick="PreviousStep" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            @Localizer["Previous"]
+                        </button>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+
+                    @if (CurrentStep < 4)
+                    {
+                        <button @onclick="NextStep" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                            @Localizer["Next"]
+                        </button>
+                    }
+                    else
+                    {
+                        <button @onclick="SubmitRequest" disabled="@IsBusy" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            @if (IsBusy)
+                            {
+                                <span class="flex items-center">
+                                    <span class="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    @Localizer["Processing"]...
+                                </span>
+                            }
+                            else
+                            {
+                                @Localizer["SubmitRequest"]
+                            }
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private int CurrentStep { get; set; } = 1;
+    private ForwardRequest Request { get; set; } = new ForwardRequest();
+    private List<ForwardItem> Items { get; set; } = new();
+    private List<Address> Addresses { get; set; } = new();
+    private Dictionary<int, List<IBrowserFile>> ItemFiles { get; set; } = new();
+    private Dictionary<int, decimal> ItemCosts { get; set; } = new();
+    private Dictionary<string, string> ValidationErrors { get; set; } = new();
+    private Dictionary<string, string> ItemValidationErrors { get; set; } = new();
+    private int? SelectedAddressId { get; set; }
+    private Address? SelectedAddress => Addresses.FirstOrDefault(a => a.Id == SelectedAddressId);
+    private bool IsLoading { get; set; } = false;
+    private bool IsLoadingAddresses { get; set; } = false;
+    private bool IsBusy { get; set; } = false;
+    private bool IsCalculatingCost { get; set; } = false;
+    private decimal TotalCost { get; set; } = 0;
+    private bool AcceptedTerms { get; set; } = false;
+    private string UserId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener ID del usuario autenticado
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            return;
+        }
+
+        // Inicializar la solicitud
+        Request = new ForwardRequest
+        {
+            UserId = UserId,
+            Status = ForwardRequestStatus.Draft
+        };
+
+        // Agregar un elemento inicial vacío
+        AddItem();
+    }
+
+    private string GetStepTitle()
+    {
+        return CurrentStep switch
+        {
+            1 => Localizer["ShipmentDetails"],
+            2 => Localizer["ItemDetails"],
+            3 => Localizer["ShippingAddress"],
+            4 => Localizer["ReviewAndConfirm"],
+            _ => string.Empty
+        };
+    }
+
+    private async Task NextStep()
+    {
+        if (await ValidateCurrentStep())
+        {
+            CurrentStep++;
+            
+            if (CurrentStep == 3)
+            {
+                await LoadAddresses();
+            }
+            else if (CurrentStep == 4)
+            {
+                await CalculateEstimatedCosts();
+            }
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (CurrentStep > 1)
+        {
+            CurrentStep--;
+        }
+    }
+
+    private void AddItem()
+    {
+        Items.Add(new ForwardItem());
+        StateHasChanged();
+    }
+
+    private void RemoveItem(int index)
+    {
+        if (index >= 0 && index < Items.Count)
+        {
+            Items.RemoveAt(index);
+            if (ItemFiles.ContainsKey(index))
+            {
+                ItemFiles.Remove(index);
+            }
+            if (ItemCosts.ContainsKey(index))
+            {
+                ItemCosts.Remove(index);
+            }
+        }
+    }
+
+    private async Task LoadAddresses()
+    {
+        IsLoadingAddresses = true;
+        try
+        {
+            Addresses = await DbContext.Addresses
+                .Where(a => a.UserId == UserId && !a.IsDeleted)
+                .OrderByDescending(a => a.IsDefault)
+                .ThenBy(a => a.Name)
+                .ToListAsync();
+
+            // Si hay una dirección predeterminada, seleccionarla automáticamente
+            var defaultAddress = Addresses.FirstOrDefault(a => a.IsDefault);
+            if (defaultAddress != null)
+            {
+                SelectedAddressId = defaultAddress.Id;
+            }
+            // Si no hay dirección predeterminada pero hay direcciones, seleccionar la primera
+            else if (Addresses.Any())
+            {
+                SelectedAddressId = Addresses.First().Id;
+            }
+        }
+        finally
+        {
+            IsLoadingAddresses = false;
+        }
+    }
+
+    private void SelectAddress(int addressId)
+    {
+        SelectedAddressId = addressId;
+    }
+
+    private void CreateNewAddress()
+    {
+        // Guardar el estado actual de la solicitud en sessionStorage
+        SaveRequestState();
+        
+        // Redirigir a la página de creación de dirección con URL de retorno
+        NavigationManager.NavigateTo($"/addresses/new?returnUrl={Uri.EscapeDataString("/request/new")}");
+    }
+
+    private async Task SaveRequestState()
+    {
+        // Guardar el estado de la solicitud en sessionStorage
+        var requestState = new
+        {
+            Request = Request,
+            Items = Items,
+            CurrentStep = CurrentStep,
+            SelectedAddressId = SelectedAddressId
+        };
+        
+        var json = System.Text.Json.JsonSerializer.Serialize(requestState);
+        await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "requestState", json);
+    }
+
+    private async Task RestoreRequestState()
+    {
+        // Recuperar el estado guardado de sessionStorage
+        var json = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "requestState");
+        if (!string.IsNullOrEmpty(json))
+        {
+            try
+            {
+                var state = System.Text.Json.JsonSerializer.Deserialize<dynamic>(json);
+                // Restaurar estado
+                // Nota: Esto requeriría una implementación más completa con JsonConverter
+                await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "requestState");
+            }
+            catch (Exception) 
+            {
+                // Ignorar errores de deserialización
+            }
+        }
+    }
+
+    private async Task<bool> ValidateCurrentStep()
+    {
+        ValidationErrors.Clear();
+        ItemValidationErrors.Clear();
+        
+        if (CurrentStep == 1)
+        {
+            // Validar detalles de envío
+            if (string.IsNullOrWhiteSpace(Request.OriginalCarrier))
+            {
+                ValidationErrors["OriginalCarrier"] = Localizer["RequiredField"];
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Request.OriginalTrackingNumber))
+            {
+                ValidationErrors["OriginalTrackingNumber"] = Localizer["RequiredField"];
+                return false;
+            }
+        }
+        else if (CurrentStep == 2)
+        {
+            // Validar elementos
+            if (!Items.Any())
+            {
+                ValidationErrors["Items"] = Localizer["AtLeastOneItem"];
+                return false;
+            }
+
+            bool isValid = true;
+            for (int i = 0; i < Items.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(Items[i].Name))
+                {
+                    ItemValidationErrors[$"Name_{i}"] = Localizer["RequiredField"];
+                    isValid = false;
+                }
+
+                if (Items[i].DeclaredValue <= 0)
+                {
+                    ItemValidationErrors[$"DeclaredValue_{i}"] = Localizer["ValueMustBePositive"];
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+        else if (CurrentStep == 3)
+        {
+            // Validar dirección de envío
+            if (!SelectedAddressId.HasValue)
+            {
+                ValidationErrors["ShippingAddressId"] = Localizer["SelectAddress"];
+                return false;
+            }
+
+            Request.ShippingAddressId = SelectedAddressId.Value;
+        }
+
+        return true;
+    }
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e, int itemIndex)
+    {
+        if (!ItemFiles.ContainsKey(itemIndex))
+        {
+            ItemFiles[itemIndex] = new List<IBrowserFile>();
+        }
+
+        foreach (var file in e.GetMultipleFiles(10))
+        {
+            if (file.Size > 10 * 1024 * 1024) // 10MB limit
+            {
+                // Ignorar archivos demasiado grandes
+                continue;
+            }
+
+            ItemFiles[itemIndex].Add(file);
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double size = bytes;
+        
+        while (size >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            size /= 1024;
+        }
+
+        return $"{size:0.##} {sizes[order]}";
+    }
+
+    private async Task CalculateEstimatedCosts()
+    {
+        if (!Items.Any()) return;
+
+        IsCalculatingCost = true;
+        TotalCost = 0;
+        ItemCosts.Clear();
+
+        try
+        {
+            for (int i = 0; i < Items.Count; i++)
+            {
+                var item = Items[i];
+                
+                // Calcular costo de envío
+                var shippingCost = await ShippingCalculator.CalculateShippingCostAsync(item);
+                
+                // Calcular tarifas de aduana
+                var customsFees = await ShippingCalculator.CalculateCustomsFeesAsync(item);
+                
+                // Sumar costos
+                var itemTotal = shippingCost + customsFees;
+                ItemCosts[i] = itemTotal;
+                TotalCost += itemTotal;
+            }
+        }
+        finally
+        {
+            IsCalculatingCost = false;
+        }
+    }
+
+    private async Task SubmitRequest()
+    {
+        // Validar antes de enviar
+        ValidationErrors.Clear();
+
+        if (!AcceptedTerms)
+        {
+            ValidationErrors["AcceptedTerms"] = Localizer["AcceptTermsRequired"];
+            return;
+        }
+
+        IsBusy = true;
+
+        try
+        {
+            // Asignar los elementos a la solicitud
+            Request.Items = Items;
+            
+            // Crear la solicitud
+            var createdRequest = await ForwardingService.CreateRequestAsync(Request);
+            
+            // Procesar adjuntos
+            if (ItemFiles.Any())
+            {
+                foreach (var kvp in ItemFiles)
+                {
+                    var itemIndex = kvp.Key;
+                    var files = kvp.Value;
+                    
+                    if (itemIndex < Items.Count && files.Any())
+                    {
+                        var item = createdRequest.Items.ElementAt(itemIndex);
+                        
+                        foreach (var file in files)
+                        {
+                            var fileBytes = new byte[file.Size];
+                            await file.OpenReadStream(10 * 1024 * 1024).ReadAsync(fileBytes); // 10MB limit
+                            
+                            // Determinar la ruta de guardado
+                            var fileName = Path.GetFileName(file.Name);
+                            var contentType = file.ContentType;
+                            var filePath = $"uploads/{createdRequest.Id}/{item.Id}/{fileName}";
+                            
+                            // Guardar archivo
+                            var attachment = new Attachment
+                            {
+                                ForwardItemId = item.Id,
+                                FileName = fileName,
+                                ContentType = contentType,
+                                FilePath = filePath,
+                                FileSize = file.Size
+                            };
+                            
+                            await DbContext.Attachments.AddAsync(attachment);
+                            
+                            // Guardar archivo físicamente (esto sería implementado en un servicio real)
+                            // await fileService.SaveFileAsync(fileBytes, filePath);
+                        }
+                    }
+                }
+                
+                await DbContext.SaveChangesAsync();
+            }
+            
+            // Redirigir a la página de la solicitud
+            NavigationManager.NavigateTo($"/request/{createdRequest.Id}/success");
+        }
+        catch (Exception ex)
+        {
+            // Manejar errores
+            ValidationErrors["General"] = Localizer["RequestCreationError"];
+            Console.WriteLine($"Error creating request: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}
