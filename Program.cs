@@ -31,7 +31,10 @@ builder.Services.AddServerSideBlazor()
 
 // Configuración de la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+});
 
 // Configuración de Identity con más opciones
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

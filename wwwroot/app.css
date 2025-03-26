@@ -162,3 +162,15 @@ body {
         border: 1px solid #ddd !important;
     }
 }
+/* Aplicado cuando el modo oscuro está activo */
+html.dark [class*="text-gray-"] {
+    color: #f8fafc;
+}
+
+html.dark [class*="bg-white"] {
+    background-color: #1e293b;
+}
+
+html.dark [class*="border-gray-"] {
+    border-color: #334155;
+}

@@ -1,0 +1,16 @@
+{
+  "name": "fastyboxweb",
+  "version": "1.0.0",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "css:build": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/site.css",
+    "css:watch": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/site.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "tailwindcss": "^3.3.3"
+  }
+}

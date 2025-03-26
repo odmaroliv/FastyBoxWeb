@@ -19,11 +19,13 @@
                     <Authorized>
                         <CultureSelector />
                         <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
-                        <NavLink href="/dashboard" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")">
+                        <NavLink href="/dashboard" class="@($"px-3 py-2 rounded-md {(IsLightTheme ? "hover:bg-gray-100" : "hover:bg-gray-700")}")" ActiveClass="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                            
                             @Localizer["Dashboard"]
                         </NavLink>
                         <AuthorizeView Roles="Administrator" Context="adminAuth">
-                            <NavLink href="/admin" class="px-3 py-2 rounded-md text-blue-500 hover:underline">
+                            <NavLink href="/admin" class="px-3 py-2 rounded-md text-blue-500 hover:underline" ActiveClass="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                
                                 @Localizer["Admin"]
                             </NavLink>
                         </AuthorizeView>
@@ -106,7 +108,7 @@
                             <a href="/Identity/Account/LogOut" class="block px-3 py-2 rounded-md @GetHoverClass()" data-force-load>
                                 @Localizer["LogOut"]
                             </a>
-                            <div class="flex items-center justify-between px-3 py-2">
+                            <div class="flex items-center justify-between px-3 py-2" data-menu-exception>
                                 <CultureSelector />
                                 <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
                             </div>
@@ -118,7 +120,7 @@
                             <a href="/Identity/Account/Register" class="block px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 text-center" data-force-load>
                                 @Localizer["Register"]
                             </a>
-                            <div class="flex items-center justify-between px-3 py-2">
+                            <div class="flex items-center justify-between px-3 py-2" data-menu-exception>
                                 <CultureSelector />
                                 <ThemeToggle IsLightTheme="@IsLightTheme" OnThemeChanged="@ToggleTheme" />
                             </div>
@@ -237,10 +239,26 @@
         objRef?.Dispose();
     }
 
-    private void ToggleTheme()
+    private async Task ToggleTheme()
     {
         IsLightTheme = !IsLightTheme;
-        JSRuntime.InvokeVoidAsync("toggleTheme", !IsLightTheme);
+        // Importante: Espera a que la función JS termine
+        await JSRuntime.InvokeVoidAsync("toggleTheme", !IsLightTheme);
+        StateHasChanged(); // Forzar actualización de la UI
+    }
+
+    private async Task HandleThemeChanged(bool newIsLightTheme)
+    {
+        // Actualiza el estado
+        IsLightTheme = newIsLightTheme;
+
+        // No es necesario llamar a JS aquí, ya lo hicimos en el componente hijo
+
+        // Actualiza la UI
+        StateHasChanged();
+
+        // Loguea para depuración
+        Console.WriteLine($"Theme changed in MainLayout: {(IsLightTheme ? "light" : "dark")}");
     }
 
     private void ToggleUserMenu()

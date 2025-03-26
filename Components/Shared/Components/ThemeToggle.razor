@@ -1,12 +1,11 @@
 ﻿@using FastyBoxWeb.Resources
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<SharedResources> Localizer
+@inject IJSRuntime JSRuntime
 
-<div class="flex items-center">
-    <label for="theme-toggle" class="sr-only">@Localizer["ToggleTheme"]</label>
+<div class="flex items-center" @onclick="ToggleManually" style="cursor: pointer;">
     <div class="relative inline-block w-12 h-6">
-        <input id="theme-toggle" type="checkbox" class="hidden" checked="@(!IsLightTheme)" @onchange="HandleToggle" />
-        <div class="toggle-background block w-12 h-6 rounded-full transition-all duration-200 ease-out cursor-pointer @(IsLightTheme ? "bg-gray-200" : "bg-blue-600")">
+        <div class="toggle-background block w-12 h-6 rounded-full transition-all duration-200 ease-out @(IsLightTheme ? "bg-gray-200" : "bg-blue-600")">
             <div class="toggle-dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all duration-200 ease-out transform @(IsLightTheme ? "" : "translate-x-6")">
             </div>
         </div>
@@ -32,10 +31,20 @@
     public bool IsLightTheme { get; set; }
 
     [Parameter]
-    public EventCallback OnThemeChanged { get; set; }
+    public EventCallback<bool> OnThemeChanged { get; set; }
 
-    private async Task HandleToggle()
+    private async Task ToggleManually()
     {
-        await OnThemeChanged.InvokeAsync();
+        // Toggle directamente y notifica con el nuevo valor
+        bool newThemeValue = !IsLightTheme;
+
+        // Aplica el cambio directamente con JS para mayor respuesta
+        await JSRuntime.InvokeVoidAsync("toggleTheme", !newThemeValue);
+
+        // Notifica al componente padre con el nuevo valor
+        await OnThemeChanged.InvokeAsync(newThemeValue);
+
+        // Loguea para depuración
+        Console.WriteLine($"Theme toggled: {(newThemeValue ? "light" : "dark")}");
     }
 }

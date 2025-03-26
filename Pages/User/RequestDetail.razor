@@ -687,10 +687,16 @@ else
 
         try
         {
+            // Muestra un indicador de carga
+            await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'wait';");
+
             // Calcular importe pendiente
             var amountDue = Request.FinalTotal - Request.TotalPaid;
             if (amountDue <= 0)
                 return;
+
+            // Registra para debugging
+            Console.WriteLine($"Iniciando proceso de pago para solicitud {Request.Id}, monto: {amountDue}");
 
             // Crear sesión de pago con Stripe
             var session = await PaymentService.CreateCheckoutSessionAsync(
@@ -699,16 +705,32 @@ else
                 PaymentType.Additional,
                 UserId);
 
-            // Inicializar Stripe
-            await JSRuntime.InvokeVoidAsync("initializeStripe", "pk_test_your_publishable_key");
+            if (session == null || string.IsNullOrEmpty(session.Id))
+            {
+                throw new Exception("No se pudo crear la sesión de pago");
+            }
 
-            // Redirigir al checkout
-            await JSRuntime.InvokeVoidAsync("redirectToStripeCheckout", session.Id);
+            Console.WriteLine($"Sesión de Stripe creada exitosamente: {session.Id}");
+
+            // Redirigir al checkout de Stripe
+            var result = await JSRuntime.InvokeAsync<bool>("redirectToStripeCheckout", session.Id);
+
+            if (!result)
+            {
+                throw new Exception("Error al redirigir al formulario de pago");
+            }
         }
         catch (Exception ex)
         {
-            // Manejar errores
-            Console.WriteLine($"Error creating payment: {ex.Message}");
+            // Restaura el cursor
+            await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'default';");
+
+            // Registra el error detallado
+            Console.WriteLine($"ERROR en proceso de pago: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
+            // Muestra mensaje al usuario
+            await JSRuntime.InvokeVoidAsync("alert", $"Error en el proceso de pago: {ex.Message}");
         }
     }
 

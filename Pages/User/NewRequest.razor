@@ -558,13 +558,30 @@
 
         // Inicializar la solicitud
         Request = new ForwardRequest
-        {
-            UserId = UserId,
-            Status = ForwardRequestStatus.Draft
-        };
+            {
+                UserId = UserId,
+                Status = ForwardRequestStatus.Draft
+            };
 
-        // Agregar un elemento inicial vacío
-        AddItem();
+        // Intentar restaurar el estado guardado
+        await RestoreRequestState();
+
+        // Si no hay elementos (porque es nuevo o no se restauró el estado), agregar uno inicial
+        if (!Items.Any())
+        {
+            AddItem();
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Si estamos en el paso 3 (selección de dirección), cargar las direcciones
+            if (CurrentStep == 3)
+            {
+                await LoadAddresses();
+            }
+        }
     }
 
     private string GetStepTitle()
@@ -660,46 +677,145 @@
         SelectedAddressId = addressId;
     }
 
-    private void CreateNewAddress()
+    private async Task CreateNewAddress()
     {
-        // Guardar el estado actual de la solicitud en sessionStorage
-        SaveRequestState();
-        
+        // Guardar el estado actual de la solicitud
+        await SaveRequestState();
+
         // Redirigir a la página de creación de dirección con URL de retorno
         NavigationManager.NavigateTo($"/addresses/new?returnUrl={Uri.EscapeDataString("/request/new")}");
     }
 
+
+
     private async Task SaveRequestState()
     {
-        // Guardar el estado de la solicitud en sessionStorage
+        // Crear un objeto anónimo para guardar todos los datos importantes
         var requestState = new
         {
-            Request = Request,
-            Items = Items,
-            CurrentStep = CurrentStep,
-            SelectedAddressId = SelectedAddressId
+            Step = CurrentStep,
+            Request = new
+            {
+                OriginalCarrier = Request.OriginalCarrier,
+                OriginalTrackingNumber = Request.OriginalTrackingNumber,
+                Notes = Request.Notes
+            },
+            Items = Items.Select(item => new
+            {
+                Name = item.Name,
+                Vendor = item.Vendor,
+                Url = item.Url,
+                DeclaredValue = item.DeclaredValue,
+                DeclaredWeight = item.DeclaredWeight,
+                DeclaredLength = item.DeclaredLength,
+                DeclaredWidth = item.DeclaredWidth,
+                DeclaredHeight = item.DeclaredHeight
+            }).ToList(),
+            SelectedAddressId = SelectedAddressId,
+            AcceptedTerms = AcceptedTerms
         };
-        
+
+        // Serializar a JSON
         var json = System.Text.Json.JsonSerializer.Serialize(requestState);
-        await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "requestState", json);
+
+        // Guardar en sessionStorage
+        await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "requestFormState", json);
     }
 
     private async Task RestoreRequestState()
     {
-        // Recuperar el estado guardado de sessionStorage
-        var json = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "requestState");
+        // Recuperar datos del sessionStorage
+        var json = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "requestFormState");
+
         if (!string.IsNullOrEmpty(json))
         {
             try
             {
-                var state = System.Text.Json.JsonSerializer.Deserialize<dynamic>(json);
-                // Restaurar estado
-                // Nota: Esto requeriría una implementación más completa con JsonConverter
-                await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "requestState");
+                // Deserializar usando un tipo anónimo similar al que usamos para guardar
+                var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                // Usamos dynamic para manejar la estructura anidada
+                var state = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+
+                // Restaurar paso actual
+                if (state.TryGetProperty("Step", out var stepProperty))
+                {
+                    CurrentStep = stepProperty.GetInt32();
+                }
+
+                // Restaurar datos de la solicitud
+                if (state.TryGetProperty("Request", out var requestProperty))
+                {
+                    if (requestProperty.TryGetProperty("OriginalCarrier", out var carrier))
+                        Request.OriginalCarrier = carrier.GetString();
+
+                    if (requestProperty.TryGetProperty("OriginalTrackingNumber", out var tracking))
+                        Request.OriginalTrackingNumber = tracking.GetString();
+
+                    if (requestProperty.TryGetProperty("Notes", out var notes) && notes.ValueKind != System.Text.Json.JsonValueKind.Null)
+                        Request.Notes = notes.GetString();
+                }
+
+                // Restaurar items
+                if (state.TryGetProperty("Items", out var itemsProperty) && itemsProperty.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    Items.Clear();
+
+                    foreach (var itemElement in itemsProperty.EnumerateArray())
+                    {
+                        var item = new ForwardItem();
+
+                        if (itemElement.TryGetProperty("Name", out var name))
+                            item.Name = name.GetString();
+
+                        if (itemElement.TryGetProperty("Vendor", out var vendor) && vendor.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.Vendor = vendor.GetString();
+
+                        if (itemElement.TryGetProperty("Url", out var url) && url.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.Url = url.GetString();
+
+                        if (itemElement.TryGetProperty("DeclaredValue", out var value))
+                            item.DeclaredValue = value.GetDecimal();
+
+                        if (itemElement.TryGetProperty("DeclaredWeight", out var weight) && weight.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.DeclaredWeight = weight.GetDecimal();
+
+                        if (itemElement.TryGetProperty("DeclaredLength", out var length) && length.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.DeclaredLength = length.GetDecimal();
+
+                        if (itemElement.TryGetProperty("DeclaredWidth", out var width) && width.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.DeclaredWidth = width.GetDecimal();
+
+                        if (itemElement.TryGetProperty("DeclaredHeight", out var height) && height.ValueKind != System.Text.Json.JsonValueKind.Null)
+                            item.DeclaredHeight = height.GetDecimal();
+
+                        Items.Add(item);
+                    }
+                }
+
+                // Restaurar dirección seleccionada
+                if (state.TryGetProperty("SelectedAddressId", out var addressId) && addressId.ValueKind != System.Text.Json.JsonValueKind.Null)
+                {
+                    SelectedAddressId = addressId.GetInt32();
+                }
+
+                // Restaurar aceptación de términos
+                if (state.TryGetProperty("AcceptedTerms", out var terms))
+                {
+                    AcceptedTerms = terms.GetBoolean();
+                }
+
+                // Limpiar estado guardado después de restaurar
+                await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "requestFormState");
+
+                Console.WriteLine("Estado del formulario restaurado exitosamente");
             }
-            catch (Exception) 
+            catch (Exception ex)
             {
-                // Ignorar errores de deserialización
+                Console.WriteLine($"Error al restaurar el estado del formulario: {ex.Message}");
             }
         }
     }

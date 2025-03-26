@@ -161,18 +161,54 @@ namespace FastyBoxWeb.Services.Notification
         {
             try
             {
+                // Validar parámetros de entrada
+                if (string.IsNullOrEmpty(to) || string.IsNullOrEmpty(subject))
+                {
+                    _logger.LogWarning("No se puede enviar email: destinatario o asunto vacíos");
+                    return; // Salir sin error
+                }
+
                 var emailSettings = _configuration.GetSection("EmailSettings");
+
+                // Validar que la configuración exista
                 var fromEmail = emailSettings["FromEmail"];
                 var fromName = emailSettings["FromName"];
                 var smtpServer = emailSettings["SmtpServer"];
-                var smtpPort = int.Parse(emailSettings["SmtpPort"]);
+                var smtpPortString = emailSettings["SmtpPort"];
                 var smtpUsername = emailSettings["SmtpUsername"];
                 var smtpPassword = emailSettings["SmtpPassword"];
-                var enableSsl = bool.Parse(emailSettings["EnableSsl"]);
+                var enableSslString = emailSettings["EnableSsl"];
+
+                // Validar que todos los valores de configuración necesarios existan
+                if (string.IsNullOrEmpty(fromEmail) ||
+                    string.IsNullOrEmpty(smtpServer) ||
+                    string.IsNullOrEmpty(smtpPortString) ||
+                    string.IsNullOrEmpty(smtpUsername) ||
+                    string.IsNullOrEmpty(smtpPassword))
+                {
+                    _logger.LogWarning("Configuración de email incompleta - email no enviado");
+                    return; // Salir sin error
+                }
+
+                // Intentar convertir valores numéricos y booleanos con manejo de errores
+                if (!int.TryParse(smtpPortString, out int smtpPort))
+                {
+                    _logger.LogWarning("Puerto SMTP inválido: {SmtpPort} - email no enviado", smtpPortString);
+                    return; // Salir sin error
+                }
+
+                bool enableSsl = true; // Valor predeterminado seguro
+                if (!string.IsNullOrEmpty(enableSslString))
+                {
+                    if (!bool.TryParse(enableSslString, out enableSsl))
+                    {
+                        _logger.LogWarning("Valor EnableSsl inválido: {EnableSsl} - usando valor predeterminado (true)", enableSslString);
+                    }
+                }
 
                 using var message = new MailMessage
                 {
-                    From = new MailAddress(fromEmail!, fromName),
+                    From = new MailAddress(fromEmail, fromName ?? "FastyBox"),
                     Subject = subject,
                     Body = htmlBody,
                     IsBodyHtml = true
@@ -183,19 +219,30 @@ namespace FastyBoxWeb.Services.Notification
                 using var client = new SmtpClient(smtpServer, smtpPort)
                 {
                     Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-                    EnableSsl = enableSsl
+                    EnableSsl = enableSsl,
+                    Timeout = 10000 // 10 segundos de timeout para evitar bloqueos largos
                 };
 
-                await client.SendMailAsync(message);
-                _logger.LogInformation($"Email enviado a {to}: {subject}");
+                // Enviar con timeout
+                var sendTask = client.SendMailAsync(message);
+                if (await Task.WhenAny(sendTask, Task.Delay(15000)) == sendTask)
+                {
+                    // El email se envió a tiempo
+                    await sendTask; // Para detectar excepciones
+                    _logger.LogInformation("Email enviado a {Recipient}: {Subject}", to, subject);
+                }
+                else
+                {
+                    // Timeout
+                    _logger.LogWarning("Timeout al enviar email a {Recipient}: {Subject}", to, subject);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error al enviar email a {to}: {ex.Message}");
-                // No lanzar excepción para evitar interrumpir el flujo de la aplicación
+                _logger.LogError(ex, "Error al enviar email a {Recipient}: {Message}", to, ex.Message);
+                // No propagar la excepción para mantener la resistencia del sistema
             }
         }
-
         private async Task<string> GetUSWarehouseAddressAsync()
         {
             var addressConfig = await _context.SystemConfigurations

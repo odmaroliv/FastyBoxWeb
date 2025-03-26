@@ -1,21 +1,44 @@
 // Manejo de menús y clics fuera
 window.setupClickListener = function (dotnetHelper) {
     document.addEventListener('click', function (event) {
-        // Verificar si el clic fue fuera de elementos interactivos
+        // Verificar si el clic fue en elementos del menú que no deberían cerrarlo
         let targetElement = event.target;
-        let isMenuOrButton = false;
-
-        // Recorrer hasta 5 niveles hacia arriba en el DOM para verificar si es un menú o botón
         for (let i = 0; i < 5 && targetElement != null; i++) {
-            if (targetElement.hasAttribute('data-menu-button') ||
-                targetElement.hasAttribute('data-menu-container')) {
-                isMenuOrButton = true;
+            if (targetElement.hasAttribute('data-menu-exception')) {
+                // Si tiene data-menu-exception, no cerramos el menú
+                console.log("Click on menu exception element, keeping menu open");
+                return;
+            }
+            targetElement = targetElement.parentElement;
+        }
+
+        // Verificar si el clic fue en un botón de menú (que alterna el menú)
+        targetElement = event.target;
+        let isMenuToggle = false;
+        for (let i = 0; i < 5 && targetElement != null; i++) {
+            if (targetElement.hasAttribute('data-menu-button')) {
+                isMenuToggle = true;
                 break;
             }
             targetElement = targetElement.parentElement;
         }
 
-        if (!isMenuOrButton) {
+        // Si no es un botón de alternancia de menú y no está dentro del contenedor del menú
+        // (o es un botón dentro del menú pero no tiene data-menu-exception)
+        targetElement = event.target;
+        let isInsideMenuContainer = false;
+        for (let i = 0; i < 10 && targetElement != null; i++) {
+            if (targetElement.hasAttribute('data-menu-container')) {
+                isInsideMenuContainer = true;
+                break;
+            }
+            targetElement = targetElement.parentElement;
+        }
+
+        // Solo cerramos si no es un toggle y no está dentro de un contenedor 
+        // o es un elemento dentro del menú que debe cerrarlo (como un enlace)
+        if (!isMenuToggle && (!isInsideMenuContainer ||
+            (isInsideMenuContainer && !event.target.closest('[data-menu-exception]')))) {
             dotnetHelper.invokeMethodAsync('CloseMenu');
         }
     });
@@ -113,3 +136,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // El evento será manejado por Blazor, no hacemos nada especial
     });
 });
+
+// Función para alternar el tema
+window.toggleTheme = function (isDark) {
+    console.log("Toggling theme to:", isDark ? "dark" : "light"); // Añade log para debug
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    }
+    return true; // Añade un valor de retorno para confirmar
+};
+
+window.redirectToStripeCheckout = function (sessionUrl) {
+    window.location.href = sessionUrl;
+}

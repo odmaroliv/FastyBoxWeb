@@ -9,11 +9,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FastyBox - @ViewData["Title"]</title>
     <base href="~/" />
+    <script>
+        // Aplica inmediatamente el tema almacenado para evitar parpadeo
+        let theme = localStorage.getItem('theme');
+        if (theme === 'dark' ||
+            (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <link href="css/app.min.css" rel="stylesheet" />
     <link href="FastyBoxWeb.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="css/site.css" rel="stylesheet" />
+    @* <script src="https://cdn.tailwindcss.com"></script> *@
+    
+    <link href="css/dark-mode.css" rel="stylesheet" />
     <script>
        
         document.addEventListener('click', function (e) {
@@ -24,7 +35,7 @@
             }
         });
     </script>
-    <script>
+    @* <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -46,8 +57,66 @@
                 }
             }
         }
+    </script> *@
+
+
+    <!-- Al final de _Layout.cshtml, antes de </body> -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        let stripeInstance = null;
+
+        // Inicializar Stripe
+        window.initializeStripe = async function () {
+            if (stripeInstance) return stripeInstance;
+
+            try {
+                // Obtener clave publicable del servidor
+                const response = await fetch('/api/stripe/config');
+                const { publishableKey } = await response.json();
+
+                console.log("Inicializando Stripe con clave publicable...");
+                stripeInstance = Stripe(publishableKey);
+                return stripeInstance;
+            } catch (error) {
+                console.error("Error inicializando Stripe:", error);
+                alert("Error inicializando el procesador de pagos. Por favor, inténtelo de nuevo.");
+                return null;
+            }
+        }
+
+        // Redirigir a Stripe Checkout
+        window.redirectToStripeCheckout = async function (sessionId) {
+            if (!sessionId) {
+                console.error("ID de sesión no proporcionado");
+                return false;
+            }
+
+            console.log("Redirigiendo a Stripe Checkout, SessionID:", sessionId);
+
+            try {
+                const stripe = await window.initializeStripe();
+                if (!stripe) return false;
+
+                const result = await stripe.redirectToCheckout({
+                    sessionId: sessionId
+                });
+
+                if (result.error) {
+                    console.error("Error de Stripe:", result.error.message);
+                    alert("Error durante el proceso de pago: " + result.error.message);
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error("Error redirigiendo a Stripe Checkout:", error);
+                alert("Error al procesar el pago. Por favor, inténtelo de nuevo.");
+                return false;
+            }
+        }
     </script>
 </head>
+
 <body>
     @RenderBody()
    

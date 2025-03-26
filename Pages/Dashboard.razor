@@ -59,35 +59,34 @@
                 }
                 else if (Requests.Any())
                 {
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    <th class="px-4 py-2">@Localizer["TrackingCode"]</th>
-                                    <th class="px-4 py-2">@Localizer["Date"]</th>
-                                    <th class="px-4 py-2">@Localizer["Status"]</th>
-                                    <th class="px-4 py-2 text-right">@Localizer["Actions"]</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach (var request in Requests)
-                                {
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 font-medium">@request.TrackingCode</td>
-                                        <td class="px-4 py-3 text-sm">@request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                                        <td class="px-4 py-3">
-                                            <StatusBadge Status="@request.Status" />
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            <a href="/request/@request.Id" class="text-blue-500 hover:underline">@Localizer["Details"]</a>
-                                        </td>
+                    <div class="overflow-x-auto -mx-4 sm:mx-0 sm:rounded-lg shadow">
+                        <div class="inline-block min-w-full align-middle">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-2 whitespace-nowrap">@Localizer["TrackingCode"]</th>
+                                        <th class="px-4 py-2 whitespace-nowrap">@Localizer["Date"]</th>
+                                        <th class="px-4 py-2 whitespace-nowrap">@Localizer["Status"]</th>
+                                        <th class="px-4 py-2 text-right whitespace-nowrap">@Localizer["Actions"]</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4 text-right">
-                        <a href="/requests" class="text-blue-500 hover:underline text-sm">@Localizer["ViewAllRequests"]</a>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    @foreach (var request in Requests)
+                                    {
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 font-medium whitespace-nowrap">@request.TrackingCode</td>
+                                            <td class="px-4 py-3 text-sm whitespace-nowrap">@request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <StatusBadge Status="@request.Status" />
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                                <a href="/request/@request.Id" class="text-blue-500 hover:underline">@Localizer["Details"]</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 }
                 else

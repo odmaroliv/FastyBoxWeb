@@ -1,10 +1,10 @@
 ﻿@inject NavigationManager Navigation
 @using System.Globalization
 
-<div>
-    <select @bind="Culture">
+<div data-menu-exception="true">
+    <select @bind="Culture" @onclick:stopPropagation @onchange:stopPropagation data-menu-exception="true">
         <option value="en-US">English</option>
-        <option value="es-MX">Espanol</option>
+        <option value="es-MX">Español</option>
     </select>
 </div>
 
@@ -28,7 +28,6 @@
                 var uri = new Uri(Navigation.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
                 var cultureEscaped = Uri.EscapeDataString(value.Name);
                 var uriEscaped = Uri.EscapeDataString(uri);
-
                 Navigation.NavigateTo($"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}", forceLoad: true);
             }
         }
