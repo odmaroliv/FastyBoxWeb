@@ -1,0 +1,391 @@
+﻿@page "/admin/users"
+@using FastyBoxWeb.Data
+@using FastyBoxWeb.Data.Entities
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Administrator")]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["UserManagement"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h1 class="text-2xl font-semibold mb-4">@Localizer["UserManagement"]</h1>
+
+            <div class="mb-4 md:mb-0 flex space-x-2">
+                <div class="relative">
+                    <input type="text"
+                           @bind="SearchTerm"
+                           @bind:event="oninput"
+                           @onkeyup="HandleSearchKeyUp"
+                           class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="@Localizer["Search"]..." />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button @onclick="ResetFilters" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-medium">@Localizer["UsersList"]</h2>
+            <div class="flex items-center space-x-2">
+                <select @bind="PageSize" @bind:event="onchange" class="px-3 py-1.5 border border-gray-300 rounded-md text-sm">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span class="text-sm text-gray-500">@Localizer["PerPage"]</span>
+            </div>
+        </div>
+
+        @if (IsLoading)
+        {
+            <div class="flex justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        }
+        else if (!Users.Any())
+        {
+            <div class="p-6 text-center">
+                <p class="text-gray-500">@Localizer["NoUsersFound"]</p>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" @onclick='() => SortBy("Name")'>
+                                <div class="flex items-center">
+                                    @Localizer["Name"]
+                                    @if (SortColumn == "Name")
+                                    {
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            @if (SortDirection == "ASC")
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                            }
+                                            else
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            }
+                                        </svg>
+                                    }
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                @Localizer["Email"]
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" @onclick='() => SortBy("CreatedAt")'>
+                                <div class="flex items-center">
+                                    @Localizer["JoinDate"]
+                                    @if (SortColumn == "CreatedAt")
+                                    {
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            @if (SortDirection == "ASC")
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                            }
+                                            else
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            }
+                                        </svg>
+                                    }
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" @onclick='() => SortBy(" RequestCount")'>
+                                <div class="flex items-center">
+                                    @Localizer["Requests"]
+                                    @if (SortColumn == "RequestCount")
+                                    {
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            @if (SortDirection == "ASC")
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                            }
+                                            else
+                                            {
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            }
+                                        </svg>
+                                    }
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                @Localizer["Status"]
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                @Localizer["Actions"]
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var user in Users)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span class="text-blue-800 font-medium">@(user.FullName.Substring(0, 1).ToUpper())</span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">@user.FullName</div>
+                                            <div class="text-sm text-gray-500">ID: @user.Id.Substring(0, 8)...</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a href="mailto:@user.Email" class="text-blue-500 hover:underline">@user.Email</a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                    @user.RequestCount
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if (!user.EmailConfirmed)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            @Localizer["Unverified"]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            @Localizer["Active"]
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="/admin/user/@user.Id" class="text-blue-600 hover:text-blue-900 mr-3">@Localizer["View"]</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                    @Localizer["Showing"] @(((CurrentPage - 1) * PageSize) + 1)-@(Math.Min(CurrentPage * PageSize, TotalCount)) @Localizer["Of"] @TotalCount @Localizer["Results"]
+                </div>
+                <div class="flex space-x-1">
+                    <button @onclick="PreviousPage" disabled="@(CurrentPage <= 1)" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium @(CurrentPage <= 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50")">
+                        @Localizer["Previous"]
+                    </button>
+                    <button @onclick="NextPage" disabled="@(CurrentPage >= TotalPages)" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium @(CurrentPage >= TotalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50")">
+                        @Localizer["Next"]
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private List<UserViewModel> Users { get; set; } = new();
+    private string SearchTerm { get; set; } = string.Empty;
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 10;
+    private int TotalCount { get; set; }
+    private int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+    private string SortColumn { get; set; } = "CreatedAt";
+    private string SortDirection { get; set; } = "DESC";
+    private System.Timers.Timer SearchTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SearchTimer = new System.Timers.Timer(300);
+        SearchTimer.Elapsed += async (sender, e) => await SearchTimerElapsed();
+        SearchTimer.AutoReset = false;
+
+        await LoadUsers();
+    }
+
+    public class UserViewModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public bool EmailConfirmed { get; set; }
+        public int RequestCount { get; set; }
+    }
+
+    private async Task LoadUsers()
+    {
+        IsLoading = true;
+
+        try
+        {
+            // Consulta base
+            var query = DbContext.Users.AsQueryable();
+
+            // Aplicar filtro de búsqueda si existe
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                var searchTermLower = SearchTerm.ToLower();
+                query = query.Where(u =>
+                    u.FullName.ToLower().Contains(searchTermLower) ||
+                    u.Email.ToLower().Contains(searchTermLower));
+            }
+
+            // Obtener el total de registros
+            TotalCount = await query.CountAsync();
+
+            // Aplicar ordenación
+            query = SortColumn switch
+            {
+                "Name" => SortDirection == "ASC"
+                    ? query.OrderBy(u => u.FullName)
+                    : query.OrderByDescending(u => u.FullName),
+                "CreatedAt" => SortDirection == "ASC"
+                    ? query.OrderBy(u => u.CreatedAt)
+                    : query.OrderByDescending(u => u.CreatedAt),
+                _ => SortDirection == "ASC"
+                    ? query.OrderBy(u => u.CreatedAt)
+                    : query.OrderByDescending(u => u.CreatedAt)
+            };
+
+            // Aplicar paginación
+            var usersPage = await query
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
+
+            // Obtener conteo de solicitudes por usuario
+            var userIds = usersPage.Select(u => u.Id).ToList();
+            var requestCounts = await DbContext.ForwardRequests
+                .Where(r => userIds.Contains(r.UserId))
+                .GroupBy(r => r.UserId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var requestCountLookup = requestCounts.ToDictionary(r => r.UserId, r => r.Count);
+
+            // Mapear a ViewModel
+            Users = usersPage.Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    CreatedAt = u.CreatedAt,
+                    EmailConfirmed = u.EmailConfirmed,
+                    RequestCount = requestCountLookup.GetValueOrDefault(u.Id, 0)
+                }).ToList();
+
+            // Si ordena por recuento de solicitudes, hacer ordenamiento en memoria
+            if (SortColumn == "RequestCount")
+            {
+                Users = SortDirection == "ASC"
+                    ? Users.OrderBy(u => u.RequestCount).ToList()
+                    : Users.OrderByDescending(u => u.RequestCount).ToList();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SortBy(string column)
+    {
+        if (SortColumn == column)
+        {
+            // Si ya se está ordenando por esta columna, cambiar dirección
+            SortDirection = SortDirection == "ASC" ? "DESC" : "ASC";
+        }
+        else
+        {
+            // Si es una nueva columna, usar orden descendente
+            SortColumn = column;
+            SortDirection = "DESC";
+        }
+
+        CurrentPage = 1; // Reiniciar a la primera página
+        _ = LoadUsers();
+    }
+
+    private async Task HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SearchTimer.Stop();
+            await SearchUsers();
+        }
+        else
+        {
+            // Reiniciar el temporizador
+            SearchTimer.Stop();
+            SearchTimer.Start();
+        }
+    }
+
+    private async Task SearchTimerElapsed()
+    {
+        await InvokeAsync(async () =>
+        {
+            await SearchUsers();
+        });
+    }
+
+    private async Task SearchUsers()
+    {
+        CurrentPage = 1; // Reiniciar a la primera página
+        await LoadUsers();
+    }
+
+    private void ResetFilters()
+    {
+        SearchTerm = string.Empty;
+        CurrentPage = 1;
+        SortColumn = "CreatedAt";
+        SortDirection = "DESC";
+        _ = LoadUsers();
+    }
+
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            _ = LoadUsers();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            _ = LoadUsers();
+        }
+    }
+
+    public void Dispose()
+    {
+        SearchTimer?.Dispose();
+    }
+}

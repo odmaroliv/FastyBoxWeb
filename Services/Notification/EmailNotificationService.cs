@@ -1,10 +1,13 @@
 ﻿using FastyBoxWeb.Data;
 using FastyBoxWeb.Data.Entities;
 using FastyBoxWeb.Data.Enums;
+using FastyBoxWeb.Resources;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 
 namespace FastyBoxWeb.Services.Notification
 {
@@ -15,6 +18,9 @@ namespace FastyBoxWeb.Services.Notification
         Task SendPaymentConfirmationAsync(Data.Entities.Payment payment);
         Task SendWelcomeEmailAsync(ApplicationUser user);
         Task SendAdminAlertAsync(string subject, string message);
+        Task SendDocumentsRequiredNotificationAsync(ForwardRequest request, List<string> documentsRequired);
+        Task SendGenericEmailAsync(string to, string subject, string htmlBody);
+
     }
 
     public class EmailNotificationService : INotificationService
@@ -23,17 +29,25 @@ namespace FastyBoxWeb.Services.Notification
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<EmailNotificationService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IStringLocalizerFactory _localizerFactory;
+        private readonly IWebHostEnvironment _environment;
+        private readonly string LOGO;
 
         public EmailNotificationService(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             ILogger<EmailNotificationService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IStringLocalizerFactory localizerFactory,
+            IWebHostEnvironment environment)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
             _configuration = configuration;
+            _localizerFactory = localizerFactory;
+            _environment = environment;
+            LOGO = $"{_configuration["AppUrl"]}/logo.svg";
         }
 
         public async Task SendRequestCreatedNotificationAsync(ForwardRequest request)
@@ -45,21 +59,40 @@ namespace FastyBoxWeb.Services.Notification
                 return;
             }
 
-            var subject = "Solicitud de reenvío creada";
-            var body = $@"
-                <h2>¡Gracias por crear una solicitud de reenvío!</h2>
-                <p>Su código de seguimiento es: <strong>{request.TrackingCode}</strong></p>
-                <p>Total estimado: ${request.EstimatedTotal:F2} USD</p>
-                <p>Puede seguir el estado de su solicitud en nuestra plataforma.</p>
-                <p>Equipo FastyBox</p>
-            ";
+            // Obtener el localizador en el idioma del usuario
+            var localizer = GetUserLocalizer(user.PreferredLanguage);
+
+            var subject = localizer["RequestCreatedSubject"];
+            var body = GetEmailTemplate("request-created-template");
+
+
+            // Reemplazar placeholders con valores localizados y datos de la solicitud
+            body = body.Replace("{{GREETING}}", string.Format(localizer["Greeting"], user.FirstName))
+                       .Replace("{{TITLE}}", localizer["RequestCreatedTitle"])
+                       .Replace("{{MESSAGE}}", localizer["RequestCreatedMessage"])
+                       .Replace("{{TRACKING_CODE_LABEL}}", localizer["TrackingCode"])
+                       .Replace("{{TRACKING_CODE}}", request.TrackingCode)
+                       .Replace("{{ESTIMATED_TOTAL_LABEL}}", localizer["EstimatedTotal"])
+                       .Replace("{{ESTIMATED_TOTAL}}", $"${request.EstimatedTotal:F2} USD")
+                       .Replace("{{STATUS_LABEL}}", localizer["Status"])
+                       .Replace("{{STATUS}}", GetLocalizedStatusName(localizer, request.Status))
+                       .Replace("{{FOLLOW_STATUS_MESSAGE}}", localizer["FollowStatusMessage"])
+                       .Replace("{{ACTION_BUTTON_TEXT}}", localizer["ViewRequest"])
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/request/{request.Id}")
+                       .Replace("{{SUPPORT_MESSAGE}}", localizer["SupportMessage"])
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
 
             await SendEmailAsync(user.Email!, subject, body);
 
             // Notificar al administrador
             await SendAdminAlertAsync(
-                "Nueva solicitud de reenvío",
-                $"Se ha creado una nueva solicitud de reenvío con código {request.TrackingCode} por {user.FullName}.");
+                localizer["NewRequestSubject"],
+                string.Format(localizer["NewRequestAdminMessage"], request.TrackingCode, user.FullName));
+        }
+        public async Task SendGenericEmailAsync(string to, string subject, string htmlBody)
+        {
+            await SendEmailAsync(to, subject, htmlBody);
         }
 
         public async Task SendStatusUpdateNotificationAsync(ForwardRequest request)
@@ -71,16 +104,34 @@ namespace FastyBoxWeb.Services.Notification
                 return;
             }
 
-            var statusInfo = GetStatusInfo(request.Status);
+            // Obtener el localizador en el idioma del usuario
+            var localizer = GetUserLocalizer(user.PreferredLanguage);
 
-            var subject = $"Actualización de estado: {statusInfo.Name}";
-            var body = $@"
-                <h2>El estado de su solicitud ha cambiado</h2>
-                <p>Su solicitud con código <strong>{request.TrackingCode}</strong> ahora está en estado <strong>{statusInfo.Name}</strong>.</p>
-                <p>{statusInfo.Description}</p>
-                <p>Puede ver más detalles en nuestra plataforma.</p>
-                <p>Equipo FastyBox</p>
-            ";
+            // Obtener la información del último cambio de estado
+            var lastStatusChange = request.StatusHistory
+                .OrderByDescending(sh => sh.CreatedAt)
+                .FirstOrDefault();
+
+            var statusInfo = GetLocalizedStatusInfo(localizer, request.Status);
+
+            var subject = string.Format(localizer["StatusUpdateSubject"], statusInfo.Name);
+            var body = GetEmailTemplate("status-update-template");
+
+
+            // Reemplazar placeholders con valores localizados y datos de la solicitud
+            body = body.Replace("{{GREETING}}", string.Format(localizer["Greeting"], user.FirstName))
+                       .Replace("{{TITLE}}", localizer["StatusUpdateTitle"])
+                       .Replace("{{MESSAGE}}", string.Format(localizer["StatusUpdateMessage"], request.TrackingCode, statusInfo.Name))
+                       .Replace("{{STATUS_LABEL}}", localizer["Status"])
+                       .Replace("{{STATUS}}", statusInfo.Name)
+                       .Replace("{{STATUS_DESCRIPTION}}", statusInfo.Description)
+                       .Replace("{{ADMIN_NOTES_LABEL}}", localizer["AdminNotes"])
+                       .Replace("{{ADMIN_NOTES}}", lastStatusChange?.Notes ?? localizer["NoAdminNotes"])
+                       .Replace("{{ACTION_BUTTON_TEXT}}", localizer["ViewRequestDetails"])
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/request/{request.Id}")
+                       .Replace("{{SUPPORT_MESSAGE}}", localizer["SupportMessage"])
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
 
             await SendEmailAsync(user.Email!, subject, body);
         }
@@ -101,15 +152,33 @@ namespace FastyBoxWeb.Services.Notification
                 return;
             }
 
-            var subject = "Confirmación de pago";
-            var body = $@"
-                <h2>¡Gracias por su pago!</h2>
-                <p>Hemos recibido su pago de <strong>${payment.Amount:F2} USD</strong> para la solicitud <strong>{request.TrackingCode}</strong>.</p>
-                <p>Tipo de pago: {GetPaymentTypeName(payment.Type)}</p>
-                <p>Estado del pago: {GetPaymentStatusName(payment.Status)}</p>
-                <p>ID de transacción: {payment.TransactionId}</p>
-                <p>Equipo FastyBox</p>
-            ";
+            // Obtener el localizador en el idioma del usuario
+            var localizer = GetUserLocalizer(user.PreferredLanguage);
+
+            var subject = localizer["PaymentConfirmationSubject"];
+            var body = GetEmailTemplate("payment-confirmation-template");
+
+
+
+            // Reemplazar placeholders con valores localizados y datos del pago
+            body = body.Replace("{{GREETING}}", string.Format(localizer["Greeting"], user.FirstName))
+                       .Replace("{{TITLE}}", localizer["PaymentConfirmationTitle"])
+                       .Replace("{{MESSAGE}}", localizer["PaymentConfirmationMessage"])
+                       .Replace("{{TRACKING_CODE_LABEL}}", localizer["TrackingCode"])
+                       .Replace("{{TRACKING_CODE}}", request.TrackingCode)
+                       .Replace("{{AMOUNT_LABEL}}", localizer["Amount"])
+                       .Replace("{{AMOUNT}}", $"${payment.Amount:F2} USD")
+                       .Replace("{{PAYMENT_TYPE_LABEL}}", localizer["PaymentType"])
+                       .Replace("{{PAYMENT_TYPE}}", GetLocalizedPaymentTypeName(localizer, payment.Type))
+                       .Replace("{{PAYMENT_STATUS_LABEL}}", localizer["PaymentStatus"])
+                       .Replace("{{PAYMENT_STATUS}}", GetLocalizedPaymentStatusName(localizer, payment.Status))
+                       .Replace("{{TRANSACTION_ID_LABEL}}", localizer["TransactionId"])
+                       .Replace("{{TRANSACTION_ID}}", payment.TransactionId ?? localizer["NotAvailable"])
+                       .Replace("{{ACTION_BUTTON_TEXT}}", localizer["ViewRequest"])
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/request/{request.Id}")
+                       .Replace("{{SUPPORT_MESSAGE}}", localizer["SupportMessage"])
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
 
             await SendEmailAsync(user.Email!, subject, body);
         }
@@ -118,20 +187,29 @@ namespace FastyBoxWeb.Services.Notification
         {
             var usWarehouseAddress = await GetUSWarehouseAddressAsync();
 
-            var subject = "¡Bienvenido a FastyBox!";
-            var body = $@"
-                <h2>¡Bienvenido a FastyBox!</h2>
-                <p>Estimado/a {user.FullName},</p>
-                <p>Gracias por registrarse en FastyBox, su servicio de reenvío de paquetes desde Estados Unidos a México.</p>
-                <p>Su dirección virtual en Estados Unidos es:</p>
-                <p style='padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;'>
-                    <strong>{user.FullName}</strong><br/>
-                    {usWarehouseAddress}<br/>
-                    <strong>ID de Cliente: {user.Id.Substring(0, 8).ToUpper()}</strong>
-                </p>
-                <p>Use esta dirección cuando realice compras en sitios de Estados Unidos y nosotros nos encargaremos del resto.</p>
-                <p>Equipo FastyBox</p>
-            ";
+            // Obtener el localizador en el idioma del usuario
+            var localizer = GetUserLocalizer(user.PreferredLanguage);
+
+            var subject = localizer["WelcomeSubject"];
+            var body = GetEmailTemplate("welcome-template");
+
+
+
+            // Reemplazar placeholders con valores localizados y datos del usuario
+            body = body.Replace("{{GREETING}}", string.Format(localizer["Greeting"], user.FirstName))
+                       .Replace("{{TITLE}}", localizer["WelcomeTitle"])
+                       .Replace("{{MESSAGE}}", localizer["WelcomeMessage"])
+                       .Replace("{{US_ADDRESS_LABEL}}", localizer["YourUSAddress"])
+                       .Replace("{{FULL_NAME}}", user.FullName)
+                       .Replace("{{ADDRESS}}", usWarehouseAddress)
+                       .Replace("{{CUSTOMER_ID_LABEL}}", localizer["CustomerID"])
+                       .Replace("{{CUSTOMER_ID}}", user.Id.Substring(0, 8).ToUpper())
+                       .Replace("{{ADDRESS_USAGE_INSTRUCTIONS}}", localizer["AddressUsageInstructions"])
+                       .Replace("{{ACTION_BUTTON_TEXT}}", localizer["GoToDashboard"])
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/dashboard")
+                       .Replace("{{SUPPORT_MESSAGE}}", localizer["SupportMessage"])
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
 
             await SendEmailAsync(user.Email!, subject, body);
         }
@@ -145,16 +223,67 @@ namespace FastyBoxWeb.Services.Notification
                 return;
             }
 
-            var body = $@"
-                <h2>Alerta del sistema</h2>
-                <p>{message}</p>
-                <p>Este es un mensaje automático del sistema FastyBox.</p>
-            ";
+            var body = GetEmailTemplate("admin-alert-template");
+
+
+
+            // Reemplazar placeholders con valores y datos de la alerta
+            body = body.Replace("{{TITLE}}", "Alerta del Sistema")
+                       .Replace("{{MESSAGE}}", message)
+                       .Replace("{{ALERT_NOTE}}", "Este es un mensaje automático del sistema FastyBox.")
+                       .Replace("{{ACTION_BUTTON_TEXT}}", "Ir al Panel de Administración")
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/admin")
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
 
             foreach (var admin in adminEmails)
             {
                 await SendEmailAsync(admin.Email!, $"FastyBox Admin: {subject}", body);
             }
+        }
+
+        public async Task SendDocumentsRequiredNotificationAsync(ForwardRequest request, List<string> documentsRequired)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId);
+            if (user == null)
+            {
+                _logger.LogWarning($"No se pudo enviar notificación de documentos: Usuario con ID {request.UserId} no encontrado");
+                return;
+            }
+
+            // Obtener el localizador en el idioma del usuario
+            var localizer = GetUserLocalizer(user.PreferredLanguage);
+
+            // Obtener la información del último cambio de estado
+            var lastStatusChange = request.StatusHistory
+                .OrderByDescending(sh => sh.CreatedAt)
+                .FirstOrDefault(sh => sh.Status == ForwardRequestStatus.DocumentsRequired);
+
+            var subject = localizer["DocumentsRequiredSubject"];
+            var body = GetEmailTemplate("documentos-solicitados-template");
+
+            // Crear la lista de documentos en HTML
+            var documentsList = new StringBuilder();
+            foreach (var doc in documentsRequired)
+            {
+                documentsList.AppendLine($"<li>{GetLocalizedDocumentName(localizer, doc)}</li>");
+            }
+
+            // Reemplazar placeholders con valores localizados y datos de la solicitud
+            body = body.Replace("{{GREETING}}", string.Format(localizer["Greeting"], user.FirstName))
+                       .Replace("{{TITLE}}", localizer["DocumentsRequiredTitle"])
+                       .Replace("{{MESSAGE}}", localizer["DocumentsRequiredMessage"])
+                       .Replace("{{DOCUMENTS_REQUIRED_LABEL}}", localizer["DocumentsRequiredLabel"])
+                       .Replace("{{DOCUMENTS_LIST}}", documentsList.ToString())
+                       .Replace("{{ADMIN_NOTES_LABEL}}", localizer["AdminNotes"])
+                       .Replace("{{ADMIN_NOTES}}", lastStatusChange?.Notes ?? localizer["NoAdminNotes"])
+                       .Replace("{{ACTION_BUTTON_TEXT}}", localizer["UploadDocuments"])
+                       .Replace("{{ACTION_BUTTON_URL}}", $"{_configuration["AppUrl"]}/request/{request.Id}/documents")
+                       .Replace("{{SUPPORT_MESSAGE}}", localizer["SupportMessage"])
+                       .Replace("{{COMPANY_NAME}}", "FastyBox")
+                       .Replace("{{LOGO_URL}}", LOGO);
+
+            await SendEmailAsync(user.Email!, subject, body);
         }
 
         private async Task SendEmailAsync(string to, string subject, string htmlBody)
@@ -243,55 +372,143 @@ namespace FastyBoxWeb.Services.Notification
                 // No propagar la excepción para mantener la resistencia del sistema
             }
         }
+
         private async Task<string> GetUSWarehouseAddressAsync()
         {
             var addressConfig = await _context.SystemConfigurations
                 .FirstOrDefaultAsync(c => c.Key == "USWarehouseAddress");
 
-            return addressConfig?.Value ?? "123 Shipping St, Miami, FL 33101, USA";
+            return addressConfig?.Value ?? "NA-Error";
         }
 
-        private (string Name, string Description) GetStatusInfo(ForwardRequestStatus status)
+        private (string Name, string Description) GetLocalizedStatusInfo(IStringLocalizer localizer, ForwardRequestStatus status)
         {
-            return status switch
-            {
-                ForwardRequestStatus.Draft => ("Borrador", "Su solicitud está en estado de borrador."),
-                ForwardRequestStatus.AwaitingArrival => ("Esperando Llegada", "Estamos esperando que su paquete llegue a nuestro almacén en EE.UU."),
-                ForwardRequestStatus.ReceivedInWarehouse => ("Recibido en Almacén", "¡Buenas noticias! Su paquete ha llegado a nuestro almacén en EE.UU."),
-                ForwardRequestStatus.InReview => ("En Revisión", "Estamos revisando su paquete y verificando las dimensiones y peso."),
-                ForwardRequestStatus.DocumentsRequired => ("Documentos Requeridos", "Se requieren documentos adicionales para su envío. Por favor revise su cuenta para subir los documentos solicitados."),
-                ForwardRequestStatus.AwaitingPayment => ("Esperando Pago", "Por favor complete el pago para continuar con el proceso de envío."),
-                ForwardRequestStatus.Processing => ("En Procesamiento", "Su paquete está siendo procesado para envío."),
-                ForwardRequestStatus.InTransitToMexico => ("En Tránsito a México", "Su paquete está en camino a México."),
-                ForwardRequestStatus.Delivered => ("Entregado", "¡Su paquete ha sido entregado exitosamente!"),
-                ForwardRequestStatus.Cancelled => ("Cancelado", "Su solicitud ha sido cancelada."),
-                _ => ("Desconocido", "El estado de su solicitud ha cambiado.")
-            };
+            string statusKey = $"Status{status}";
+            string descriptionKey = $"Status{status}Description";
+
+            return (
+                Name: localizer[statusKey],
+                Description: localizer[descriptionKey]
+            );
         }
 
-        private string GetPaymentTypeName(PaymentType type)
+        private string GetLocalizedStatusName(IStringLocalizer localizer, ForwardRequestStatus status)
         {
-            return type switch
-            {
-                PaymentType.Initial => "Pago Inicial",
-                PaymentType.Additional => "Pago Adicional",
-                PaymentType.Complete => "Pago Completo",
-                _ => "Desconocido"
-            };
+            return localizer[$"Status{status}"];
         }
 
-        private string GetPaymentStatusName(PaymentStatus status)
+        private string GetLocalizedPaymentTypeName(IStringLocalizer localizer, PaymentType type)
         {
-            return status switch
+            return localizer[$"PaymentType{type}"];
+        }
+
+        private string GetLocalizedPaymentStatusName(IStringLocalizer localizer, PaymentStatus status)
+        {
+            return localizer[$"PaymentStatus{status}"];
+        }
+
+        private string GetLocalizedDocumentName(IStringLocalizer localizer, string documentType)
+        {
+            return localizer[documentType];
+        }
+
+        private IStringLocalizer GetUserLocalizer(string language)
+        {
+            // Si el idioma no está especificado, usar español por defecto
+            if (string.IsNullOrEmpty(language))
             {
-                PaymentStatus.Pending => "Pendiente",
-                PaymentStatus.Processing => "Procesando",
-                PaymentStatus.Succeeded => "Completado",
-                PaymentStatus.Failed => "Fallido",
-                PaymentStatus.Refunded => "Reembolsado",
-                _ => "Desconocido"
-            };
+                language = "es-MX";
+            }
+
+            // Asegurarnos de que el idioma esté en un formato válido (es-MX o en-US)
+            if (!language.Contains("-"))
+            {
+                // Si solo tiene el código de idioma, añadir la región por defecto
+                if (language.Equals("es", StringComparison.OrdinalIgnoreCase))
+                {
+                    language = "es-MX";
+                }
+                else if (language.Equals("en", StringComparison.OrdinalIgnoreCase))
+                {
+                    language = "en-US";
+                }
+            }
+
+            try
+            {
+                // Obtener el localizador para el recurso SharedResources en el idioma del usuario
+                return _localizerFactory.Create(typeof(SharedResources));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear el localizador para el idioma {Language}", language);
+
+                // En caso de error, intentar con el localizador predeterminado
+                return _localizerFactory.Create(typeof(SharedResources));
+            }
+        }
+
+        private string GetEmailTemplate(string templateName)
+        {
+            // Intentamos cargar la plantilla desde archivos
+            string templatePath = Path.Combine(_environment.WebRootPath, "EmailTemplates", $"{templateName}.html");
+
+            // Si existe el archivo físico, lo cargamos
+            if (File.Exists(templatePath))
+            {
+                return File.ReadAllText(templatePath);
+            }
+
+            // Si no existe el archivo, usamos las plantillas embebidas en las clases específicas
+            _logger.LogWarning($"No se encontró el archivo de plantilla {templateName}.html - usando plantilla embebida");
+
+            // Aquí deberíamos devolver la plantilla embebida adecuada,
+            // pero como ya tienes estos archivos por separado, simplemente devolvemos una plantilla básica
+            return GetDefaultTemplate();
+        }
+
+        // Método para obtener la plantilla por defecto (genérica)
+        private string GetDefaultTemplate()
+        {
+            return @"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>{{TITLE}}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background-color: #0068d1; padding: 20px; text-align: center; }
+        .header img { max-width: 200px; height: auto; }
+        .content { padding: 30px; }
+        h1 { color: #0068d1; font-size: 24px; margin-top: 0; }
+        p { font-size: 16px; line-height: 1.5; margin-bottom: 20px; }
+        .button { display: inline-block; background-color: #0068d1; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: 600; margin-top: 10px; }
+        .button:hover { background-color: #0051a3; }
+        .footer { background-color: #f7f7f7; padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        @media only screen and (max-width: 600px) {
+            .container { width: 100%; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <img src='{{LOGO_URL}}' alt='FastyBox'>
+        </div>
+        <div class='content'>
+            <h1>{{TITLE}}</h1>
+            <p>{{MESSAGE}}</p>
+        </div>
+        <div class='footer'>
+            &copy; 2025 {{COMPANY_NAME}}. Todos los derechos reservados.
+        </div>
+    </div>
+</body>
+</html>";
         }
     }
 }
-

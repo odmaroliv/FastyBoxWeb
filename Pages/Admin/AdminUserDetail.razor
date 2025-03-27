@@ -1,0 +1,451 @@
+﻿@page "/admin/user/{Id}"
+@using FastyBoxWeb.Data
+@using FastyBoxWeb.Data.Entities
+@using FastyBoxWeb.Data.Enums
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Administrator")]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@(User?.FullName ?? Localizer["UserDetails"]) - FastyBox</PageTitle>
+
+@if (IsLoading)
+{
+    <div class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+}
+else if (User == null)
+{
+    <div class="max-w-3xl mx-auto py-12 text-center">
+        <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">@Localizer["UserNotFound"]</h2>
+            <p>@Localizer["UserNotFoundDescription"]</p>
+        </div>
+        <a href="/admin/users" class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            @Localizer["BackToUsers"]
+        </a>
+    </div>
+}
+else
+{
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <div class="flex items-center">
+                        <a href="/admin/users" class="text-blue-500 hover:underline flex items-center mr-2">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            @Localizer["BackToUsers"]
+                        </a>
+                        <h1 class="text-2xl font-semibold">@User.FullName</h1>
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">
+                        @if (User.EmailConfirmed)
+                        {
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                @Localizer["VerifiedUser"]
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                                @Localizer["UnverifiedUser"]
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-2">
+                    <a href="mailto:@User.Email" class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        @Localizer["SendEmail"]
+                    </a>
+                    @if (!IsUserAdmin)
+                    {
+                        @if (IsUserLocked)
+                        {
+                            <button @onclick="UnlockUser" class="px-3 py-1.5 border border-green-500 rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                </svg>
+                                @Localizer["UnlockAccount"]
+                            </button>
+                        }
+                        else
+                        {
+                            <button @onclick="LockUser" class="px-3 py-1.5 border border-red-500 rounded-md shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                @Localizer["LockAccount"]
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["ProfileInformation"]</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-center mb-4">
+                            <div class="h-24 w-24 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-3xl font-medium text-blue-800">@User.FullName.Substring(0, 1).ToUpper()</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">@Localizer["Name"]</h3>
+                            <p>@User.FullName</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">@Localizer["Email"]</h3>
+                            <p>@User.Email</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">@Localizer["Phone"]</h3>
+                            <p>@(User.PhoneNumber ?? "-")</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">@Localizer["Roles"]</h3>
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                @foreach (var role in UserRoles)
+                                {
+                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        @role
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-500">@Localizer["AccountCreated"]</h3>
+                            <p>@User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["Statistics"]</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-blue-600">@UserStats.TotalRequests</p>
+                                <p class="text-sm text-blue-800">@Localizer["Requests"]</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-green-600">@UserStats.CompletedRequests</p>
+                                <p class="text-sm text-green-800">@Localizer["Completed"]</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-yellow-600">$@UserStats.TotalSpent.ToString("F2")</p>
+                                <p class="text-sm text-yellow-800">@Localizer["TotalSpent"]</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-purple-600">@UserStats.TotalAddresses</p>
+                                <p class="text-sm text-purple-800">@Localizer["Addresses"]</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["RecentRequests"]</h2>
+                    </div>
+                    <div class="p-6">
+                        @if (!UserRequests.Any())
+                        {
+                            <p class="text-center text-gray-500 py-4">@Localizer["NoRequestsFound"]</p>
+                        }
+                        else
+                        {
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                @Localizer["TrackingCode"]
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                @Localizer["Date"]
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                @Localizer["Items"]
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                @Localizer["Status"]
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                @Localizer["Amount"]
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach (var request in UserRequests)
+                                        {
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                                    <a href="/admin/request/@request.Id" class="text-blue-500 hover:underline">@request.TrackingCode</a>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    @request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    @request.ItemCount
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <StatusBadge Status="@request.Status" />
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 font-medium">
+                                                    $@request.FinalTotal.ToString("F2") USD
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (UserStats.TotalRequests > UserRequests.Count)
+                            {
+                                <div class="mt-4 text-center">
+                                    <a href="/admin/requests?userId=@Id" class="text-blue-500 hover:underline">
+                                        @Localizer["ViewAllRequests"] (@UserStats.TotalRequests)
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h2 class="text-lg font-medium">@Localizer["SavedAddresses"]</h2>
+                    </div>
+                    <div class="p-6">
+                        @if (!UserAddresses.Any())
+                        {
+                            <p class="text-center text-gray-500 py-4">@Localizer["NoAddressesFound"]</p>
+                        }
+                        else
+                        {
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach (var address in UserAddresses)
+                                {
+                                    <div class="border border-gray-200 rounded-md p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h3 class="font-medium">@address.Name</h3>
+                                                <p class="text-sm text-gray-600">@address.RecipientName</p>
+                                            </div>
+                                            @if (address.IsDefault)
+                                            {
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                                    @Localizer["Default"]
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="mt-2 text-sm text-gray-600">
+                                            <p>@address.Street @address.StreetNumber @(address.Interior != null ? address.Interior : "")</p>
+                                            <p>@address.Colony</p>
+                                            <p>@address.City, @address.State @address.PostalCode</p>
+                                            <p>@address.Country</p>
+                                            @if (!string.IsNullOrEmpty(address.Phone))
+                                            {
+                                                <p class="mt-1">@Localizer["Phone"]: @address.Phone</p>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private bool IsLoading { get; set; } = true;
+    private ApplicationUser User { get; set; }
+    private List<string> UserRoles { get; set; } = new();
+    private List<UserRequestModel> UserRequests { get; set; } = new();
+    private List<Address> UserAddresses { get; set; } = new();
+    private UserStatsModel UserStats { get; set; } = new();
+    private bool IsUserAdmin { get; set; } = false;
+    private bool IsUserLocked { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserData();
+    }
+
+    private async Task LoadUserData()
+    {
+        IsLoading = true;
+
+        try
+        {
+            // Cargar información del usuario
+            User = await UserManager.FindByIdAsync(Id);
+
+            if (User != null)
+            {
+                // Cargar roles
+                UserRoles = (await UserManager.GetRolesAsync(User)).ToList();
+                IsUserAdmin = UserRoles.Contains("Administrator");
+
+                // Verificar si la cuenta está bloqueada
+                IsUserLocked = await UserManager.IsLockedOutAsync(User);
+
+                // Cargar estadísticas de usuario
+                UserStats = await GetUserStats(Id);
+
+                // Cargar solicitudes recientes
+                UserRequests = await GetUserRequests(Id);
+
+                // Cargar direcciones
+                UserAddresses = await DbContext.Addresses
+                    .Where(a => a.UserId == Id)
+                    .OrderByDescending(a => a.IsDefault)
+                    .ThenBy(a => a.Name)
+                    .ToListAsync();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task<UserStatsModel> GetUserStats(string userId)
+    {
+        var stats = new UserStatsModel();
+
+        // Total de solicitudes
+        stats.TotalRequests = await DbContext.ForwardRequests
+            .CountAsync(r => r.UserId == userId);
+
+        // Solicitudes completadas
+        stats.CompletedRequests = await DbContext.ForwardRequests
+            .CountAsync(r => r.UserId == userId && r.Status == ForwardRequestStatus.Delivered);
+
+        // Total de direcciones
+        stats.TotalAddresses = await DbContext.Addresses
+            .CountAsync(a => a.UserId == userId);
+
+        // Total gastado (pagos exitosos)
+        stats.TotalSpent = await DbContext.Payments
+            .Where(p => p.UserId == userId && p.Status == PaymentStatus.Succeeded)
+            .SumAsync(p => p.Amount);
+
+        return stats;
+    }
+
+    private async Task<List<UserRequestModel>> GetUserRequests(string userId)
+    {
+        var requests = await DbContext.ForwardRequests
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(5)
+            .Select(r => new UserRequestModel
+                {
+                    Id = r.Id,
+                    TrackingCode = r.TrackingCode,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt,
+                    FinalTotal = r.FinalTotal,
+                    ItemCount = r.Items.Count
+                })
+            .ToListAsync();
+
+        return requests;
+    }
+
+    private async Task LockUser()
+    {
+        if (IsUserAdmin)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["CannotLockAdmin"]);
+            return;
+        }
+
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", Localizer["LockUserConfirmation"]);
+        if (!confirm) return;
+
+        // Bloquear la cuenta por 100 años (efectivamente permanente)
+        var result = await UserManager.SetLockoutEndDateAsync(User, DateTimeOffset.UtcNow.AddYears(100));
+
+        if (result.Succeeded)
+        {
+            IsUserLocked = true;
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["UserLockedSuccessfully"]);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["ErrorLockingUser"]);
+        }
+    }
+
+    private async Task UnlockUser()
+    {
+        var result = await UserManager.SetLockoutEndDateAsync(User, null);
+
+        if (result.Succeeded)
+        {
+            IsUserLocked = false;
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["UserUnlockedSuccessfully"]);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["ErrorUnlockingUser"]);
+        }
+    }
+
+    public class UserRequestModel
+    {
+        public int Id { get; set; }
+        public string TrackingCode { get; set; } = string.Empty;
+        public ForwardRequestStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public decimal FinalTotal { get; set; }
+        public int ItemCount { get; set; }
+    }
+
+    public class UserStatsModel
+    {
+        public int TotalRequests { get; set; }
+        public int CompletedRequests { get; set; }
+        public decimal TotalSpent { get; set; }
+        public int TotalAddresses { get; set; }
+    }
+}

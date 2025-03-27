@@ -1,6 +1,7 @@
 using FastyBoxWeb.Data;
 using FastyBoxWeb.Data.Entities;
 using FastyBoxWeb.Services;
+using FastyBoxWeb.Services.Email;
 using FastyBoxWeb.Services.Notification;
 using FastyBoxWeb.Services.Payment;
 using FastyBoxWeb.Services.Shipping;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,13 +23,32 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options =>
     {
-        // Configuración para mejorar la experiencia en caso de errores de conexión
         options.DetailedErrors = builder.Environment.IsDevelopment();
-        options.DisconnectedCircuitMaxRetained = 100;
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
-        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
-        options.MaxBufferedUnacknowledgedRenderBatches = 10;
+
+        // Aumentar estos valores para mayor estabilidad
+        options.DisconnectedCircuitMaxRetained = 200;  // Aumentado de 100
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(10);  // Aumentado de 5
+
+        // Tiempo de espera para operaciones JavaScript
+        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(10);  // Aumentado de 5
+
+        // Este es crítico - aumentar el buffer para evitar problemas de conexión
+        options.MaxBufferedUnacknowledgedRenderBatches = 50;  // Aumentado de 20
     });
+
+builder.Services.AddSignalR(options =>
+{
+    // Aumentar significativamente para operaciones de archivos grandes
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(15);  // Aumentado de 5
+
+    // Reducir el intervalo de keep-alive para detectar desconexiones más rápido
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);  // Reducido de 30
+
+    // Aumentar el tamaño máximo de mensaje considerablemente
+    options.MaximumReceiveMessageSize = 100 * 1024 * 1024;  // Aumentado a 100 MB
+
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+});
 
 // Configuración de la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -36,11 +57,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 });
 
-// Configuración de Identity con más opciones
+//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
-    options.SignIn.RequireConfirmedEmail = false; // Cambiar a true en producción
+    options.SignIn.RequireConfirmedEmail = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireDigit = true;
     options.Password.RequireUppercase = true;
@@ -56,13 +79,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
-// Configuración de la autenticación para Blazor Server
-builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-
-
-
-
-// Configure authentication cookies
+// Configura las cookies INMEDIATAMENTE después de AddIdentity
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -104,6 +121,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+// Configuración de la autenticación para Blazor Server
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+
+
+
+
+
+
 // Regístrar servicios de la aplicación
 builder.Services.AddScoped<IForwardingService, ForwardingService>();
 builder.Services.AddScoped<IShippingCalculatorService, ShippingCalculatorService>();
@@ -111,8 +136,14 @@ builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 builder.Services.AddScoped<IPaymentService, StripePaymentService>();
+// Registrar IEmailSender para la confirmación de email de Identity
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, IdentityEmailSender>();
 
-
+var uploadsDirectory = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsDirectory))
+{
+    Directory.CreateDirectory(uploadsDirectory);
+}
 
 // Configurar opciones de Stripe
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -154,7 +185,28 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
+    RequestPath = ""
+});
+
+
 app.UseStaticFiles();
+
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/uploads"))
+    {
+        // Solo bloqueamos acceso directo a uploads, no a otros archivos estáticos
+        context.Response.StatusCode = 403;
+        return;
+    }
+
+    await next();
+});
 
 app.UseRequestLocalization(localizationOptions);
 app.UseRouting();

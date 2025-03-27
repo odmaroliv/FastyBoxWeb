@@ -1,9 +1,11 @@
 ﻿@page "/request/new"
 @using FastyBoxWeb.Data
 @using FastyBoxWeb.Resources
+@using FastyBoxWeb.Services
 @using FastyBoxWeb.Services.Shipping
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Localization
 @using Microsoft.JSInterop
@@ -16,6 +18,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApplicationDbContext DbContext
 @inject IJSRuntime JSRuntime
+@inject IFileService FileService
 
 <PageTitle>@Localizer["NewForwardingRequest"] - FastyBox</PageTitle>
 
@@ -217,21 +220,51 @@
                                         </div>
                                     </div>
 
+                                    <!-- Reemplaza la sección de carga de archivos en Pages/User/NewRequest.razor -->
+
                                     <div class="mt-4">
                                         <label class="block text-sm font-medium text-gray-700 mb-1">@Localizer["Attachments"]</label>
-                                        <p class="text-xs text-gray-500 mb-2">@Localizer["AttachmentsHelp"]</p>
-                                        <InputFile OnChange="@(e => HandleFileSelection(e, index))" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                        <p class="text-xs text-gray-500 mb-2">@Localizer["AttachmentsHelp"] (@Localizer["MaxFiles", 4])</p>
+
+                                        <div class="border-2 border-dashed border-blue-300 rounded-md p-4 bg-blue-50 hover:bg-blue-100 transition-colors duration-200 cursor-pointer">
+                                            <div class="text-center">
+                                                <svg class="mx-auto h-12 w-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                </svg>
+                                                <p class="mt-1 text-sm text-blue-700">
+                                                    <span class="font-medium">@Localizer["ClickToUpload"]</span> @Localizer["OrDragAndDrop"]
+                                                </p>
+                                                <p class="mt-1 text-xs text-blue-500">
+                                                    @Localizer["FileSizeLimit", 10] <br>
+                                                    @Localizer["AllowedFileTypes", ".jpg", ".heic", ".jpeg", ".png", ".pdf", ".webp", ".bmp"]
+                                                </p>
+                                            </div>
+                                            <InputFile OnChange="@(e => HandleFileSelection(e, index))"
+                                                       class="sr-only"
+                                                       id="@($"file-upload-{index}")"
+                                                       multiple />
+                                        </div>
+
                                         @if (ItemFiles.ContainsKey(index) && ItemFiles[index].Any())
                                         {
-                                            <div class="mt-2 space-y-1">
+                                            <div class="mt-2 space-y-2">
+                                                <p class="text-sm font-medium text-gray-700">@Localizer["FilesSelected", ItemFiles[index].Count, 4]:</p>
                                                 @foreach (var file in ItemFiles[index])
                                                 {
-                                                    <div class="flex items-center text-xs text-gray-600">
-                                                        <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                        </svg>
-                                                        <span class="truncate">@file.Name</span>
-                                                        <span class="ml-2">(@FormatFileSize(file.Size))</span>
+                                                    <div class="flex items-center justify-between bg-gray-100 p-2 rounded-md text-sm">
+                                                        <div class="flex items-center">
+                                                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            <span class="truncate max-w-xs">@file.Name</span>
+                                                            <span class="ml-2 text-gray-500">(@FormatFileSize(file.Size))</span>
+                                                        </div>
+                                                        <button type="button" @onclick="() => RemoveFile(index, file)"
+                                                                class="text-red-500 hover:text-red-700">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 }
                                             </div>
@@ -258,6 +291,22 @@
                 {
                     <div>
                         <h3 class="text-lg font-medium mb-4">@Localizer["ShippingAddress"]</h3>
+
+                        @if (JustAddedAddress)
+                        {
+                            <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium">@Localizer["AddressAddedSuccessfully"]</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         @if (IsLoadingAddresses)
                         {
@@ -543,6 +592,9 @@
     private decimal TotalCost { get; set; } = 0;
     private bool AcceptedTerms { get; set; } = false;
     private string UserId { get; set; } = string.Empty;
+    private Dictionary<int, Dictionary<string, byte[]>> ItemFileData { get; set; } = new();
+
+    private bool JustAddedAddress { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -556,6 +608,23 @@
             return;
         }
 
+        // Verificar si venimos de crear una dirección por el parámetro de la URL
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        bool addressJustAdded = false;
+        int? newAddressId = null;
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("addressAdded", out var addressAdded) && addressAdded == "true")
+        {
+            CurrentStep = 3; // Forzar paso de dirección
+            addressJustAdded = true;
+
+            // Obtener el ID de la nueva dirección
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var id) && int.TryParse(id, out int addressId))
+            {
+                newAddressId = addressId;
+            }
+        }
+
         // Inicializar la solicitud
         Request = new ForwardRequest
             {
@@ -566,7 +635,14 @@
         // Intentar restaurar el estado guardado
         await RestoreRequestState();
 
-        // Si no hay elementos (porque es nuevo o no se restauró el estado), agregar uno inicial
+        // Si hay una dirección recién agregada, cargarla inmediatamente
+        if (addressJustAdded)
+        {
+            await LoadAddressesWithSelected(newAddressId);
+            JustAddedAddress = true; // Para mostrar mensaje de éxito
+        }
+
+        // Si no hay elementos, agregar uno inicial
         if (!Items.Any())
         {
             AddItem();
@@ -576,11 +652,51 @@
     {
         if (firstRender)
         {
-            // Si estamos en el paso 3 (selección de dirección), cargar las direcciones
             if (CurrentStep == 3)
             {
-                await LoadAddresses();
+                // Limpiar parámetros de URL para evitar problemas al recargar
+                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+                if (uri.Query.Contains("addressAdded"))
+                {
+                    // Limpiar URL sin recargar la página
+                    await JSRuntime.InvokeVoidAsync("history.replaceState",
+                        null, "", NavigationManager.Uri.Split('?')[0]);
+                }
             }
+        }
+    }
+
+    private async Task LoadAddressesWithSelected(int? selectedId = null)
+    {
+        IsLoadingAddresses = true;
+        try
+        {
+            Addresses = await DbContext.Addresses
+                .Where(a => a.UserId == UserId && !a.IsDeleted)
+                .OrderByDescending(a => a.Id) // Las más recientes primero
+                .ToListAsync();
+
+            if (Addresses.Any())
+            {
+                if (selectedId.HasValue && Addresses.Any(a => a.Id == selectedId.Value))
+                {
+                    SelectedAddressId = selectedId.Value;
+                }
+                else
+                {
+                    // Si no hay ID específico, seleccionar la primera
+                    SelectedAddressId = Addresses.First().Id;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando direcciones: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingAddresses = false;
+            StateHasChanged(); // Forzar actualización de UI
         }
     }
 
@@ -650,20 +766,28 @@
         {
             Addresses = await DbContext.Addresses
                 .Where(a => a.UserId == UserId && !a.IsDeleted)
-                .OrderByDescending(a => a.IsDefault)
+                .OrderByDescending(a => a.Id) // Ordena por ID descendente para que la más reciente esté primero
+                .ThenByDescending(a => a.IsDefault)
                 .ThenBy(a => a.Name)
                 .ToListAsync();
 
-            // Si hay una dirección predeterminada, seleccionarla automáticamente
-            var defaultAddress = Addresses.FirstOrDefault(a => a.IsDefault);
-            if (defaultAddress != null)
+            // Si hay una dirección más reciente, seleccionarla automáticamente
+            if (Addresses.Any())
             {
-                SelectedAddressId = defaultAddress.Id;
-            }
-            // Si no hay dirección predeterminada pero hay direcciones, seleccionar la primera
-            else if (Addresses.Any())
-            {
-                SelectedAddressId = Addresses.First().Id;
+                // Verifica si venimos de crear una dirección nueva
+                var addressAdded = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "addressAdded");
+                if (!string.IsNullOrEmpty(addressAdded))
+                {
+                    // Si venimos de crear una dirección, seleccionar la primera (más reciente)
+                    SelectedAddressId = Addresses.First().Id;
+                    await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "addressAdded");
+                }
+                else
+                {
+                    // Si no, comportamiento normal
+                    var defaultAddress = Addresses.FirstOrDefault(a => a.IsDefault);
+                    SelectedAddressId = defaultAddress?.Id ?? Addresses.First().Id;
+                }
             }
         }
         finally
@@ -679,8 +803,14 @@
 
     private async Task CreateNewAddress()
     {
-        // Guardar el estado actual de la solicitud
+        // Limpia sesión previa que podría estar causando problemas
+        await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "returnFromAddressCreation");
+
+        // Guarda solo lo esencial en sessionStorage
         await SaveRequestState();
+
+        // Marca que estamos en el flujo de creación de dirección
+        await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "returnFromAddressCreation", "true");
 
         // Redirigir a la página de creación de dirección con URL de retorno
         NavigationManager.NavigateTo($"/addresses/new?returnUrl={Uri.EscapeDataString("/request/new")}");
@@ -820,6 +950,23 @@
         }
     }
 
+    private void RemoveFile(int itemIndex, IBrowserFile file)
+    {
+        if (ItemFiles.ContainsKey(itemIndex))
+        {
+            ItemFiles[itemIndex].Remove(file);
+
+            // También eliminar los datos binarios
+            if (ItemFileData.ContainsKey(itemIndex) && ItemFileData[itemIndex].ContainsKey(file.Name))
+            {
+                ItemFileData[itemIndex].Remove(file.Name);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+
     private async Task<bool> ValidateCurrentStep()
     {
         ValidationErrors.Clear();
@@ -889,18 +1036,142 @@
             ItemFiles[itemIndex] = new List<IBrowserFile>();
         }
 
-        foreach (var file in e.GetMultipleFiles(10))
+        if (!ItemFileData.ContainsKey(itemIndex))
         {
-            if (file.Size > 10 * 1024 * 1024) // 10MB limit
+            ItemFileData[itemIndex] = new Dictionary<string, byte[]>();
+        }
+
+        // Limitar a un máximo de 4 archivos por ítem
+        var existingFileCount = ItemFiles[itemIndex].Count;
+        var remainingSlots = 4 - existingFileCount;
+
+        if (remainingSlots <= 0)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", Localizer["MaxFilesReached"]);
+            return;
+        }
+
+        // Mostrar un indicador de carga
+        await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'wait';");
+
+        var filesToAdd = e.GetMultipleFiles(remainingSlots);
+        var tasksToProcess = new List<Task>();
+
+        try
+        {
+            foreach (var file in filesToAdd)
             {
-                // Ignorar archivos demasiado grandes
-                continue;
+                // Verificación rápida de tamaño y tipo
+                if (file.Size > 10 * 1024 * 1024)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert",
+                        string.Format(Localizer["FileTooLarge"], file.Name, 10));
+                    continue;
+                }
+
+                string extension = Path.GetExtension(file.Name).ToLowerInvariant();
+                string[] allowedExtensions = { ".jpg", ".heic", ".jpeg", ".png", ".pdf", ".webp", ".bmp" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    await JSRuntime.InvokeVoidAsync("alert",
+                        string.Format(Localizer["FileTypeNotAllowed"], file.Name));
+                    continue;
+                }
+
+                // Cargar y guardar el archivo en memoria en un segundo plano
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var fileData = await ReadFileBytesAsync(file);
+
+                        // Verificar el tipo del archivo por sus bytes
+                        if (IsFileTypeValid(fileData, file.ContentType))
+                        {
+                            lock (ItemFileData)
+                            {
+                                ItemFileData[itemIndex][file.Name] = fileData;
+                                // Añadir a la lista UI
+                                ItemFiles[itemIndex].Add(file);
+                            }
+                        }
+                        else
+                        {
+                            // Archivo no válido, mostrar alerta
+                            await JSRuntime.InvokeVoidAsync("alert",
+                                string.Format(Localizer["InvalidFileContent"], file.Name));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error processing file {file.Name}: {ex.Message}");
+                        await JSRuntime.InvokeVoidAsync("alert",
+                            string.Format(Localizer["FileProcessingError"], file.Name));
+                    }
+                });
+
+                tasksToProcess.Add(task);
             }
 
-            ItemFiles[itemIndex].Add(file);
+            // Esperar a que todos los archivos se procesen en paralelo
+            await Task.WhenAll(tasksToProcess);
+        }
+        finally
+        {
+            // Restaurar el cursor
+            await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'default';");
+            StateHasChanged();
         }
     }
 
+    private async Task<byte[]> ReadFileBytesAsync(IBrowserFile file)
+    {
+        try
+        {
+            // Obtener información del archivo
+            var fileInfo = await JSRuntime.InvokeAsync<FileChunkInfo>(
+                "uploadFileInChunks",
+                file,
+                1024 * 1024); // 1MB chunks
+
+            if (fileInfo == null) return null;
+
+            // Preparar buffer para el archivo completo
+            byte[] completeFile = new byte[fileInfo.Size];
+            int position = 0;
+
+            // Cargar archivo en trozos
+            for (int i = 0; i < fileInfo.TotalChunks; i++)
+            {
+                var chunk = await JSRuntime.InvokeAsync<byte[]>(
+                    "readFileChunkAsync",
+                    file,
+                    i,
+                    1024 * 1024);
+
+                if (chunk != null)
+                {
+                    // Copiar el chunk al buffer completo
+                    Array.Copy(chunk, 0, completeFile, position, chunk.Length);
+                    position += chunk.Length;
+
+                    // Liberar memoria inmediatamente
+                    if (i % 3 == 0) // Cada 3 chunks
+                    {
+                        GC.Collect(0);
+                    }
+                }
+            }
+
+            return completeFile;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading file {file.Name}: {ex.Message}");
+            throw;
+        }
+    }
     private string FormatFileSize(long bytes)
     {
         string[] sizes = { "B", "KB", "MB", "GB" };
@@ -947,6 +1218,84 @@
             IsCalculatingCost = false;
         }
     }
+    private bool IsFileTypeValid(byte[] fileData, string contentType)
+    {
+        if (fileData == null || fileData.Length < 8)
+            return false;
+
+        string normalizedContentType = contentType.ToLowerInvariant().Trim();
+
+        // JPEG
+        if (normalizedContentType.Contains("jpeg") || normalizedContentType.Contains("jpg"))
+        {
+            return fileData.Length >= 3 &&
+                  fileData[0] == 0xFF &&
+                  fileData[1] == 0xD8 &&
+                  fileData[2] == 0xFF;
+        }
+        // PNG
+        else if (normalizedContentType.Contains("png"))
+        {
+            return fileData.Length >= 8 &&
+                  fileData[0] == 0x89 &&
+                  fileData[1] == 0x50 && // P
+                  fileData[2] == 0x4E && // N
+                  fileData[3] == 0x47 && // G
+                  fileData[4] == 0x0D && // CR
+                  fileData[5] == 0x0A && // LF
+                  fileData[6] == 0x1A && // EOF
+                  fileData[7] == 0x0A;   // LF
+        }
+        // WEBP, verifica "RIFF" luego "WEBP"
+        else if (normalizedContentType.Contains("webp"))
+        {
+            return fileData.Length >= 12 &&
+                  fileData[0] == 0x52 && // R
+                  fileData[1] == 0x49 && // I
+                  fileData[2] == 0x46 && // F
+                  fileData[3] == 0x46 && // F
+                  fileData[8] == 0x57 && // W
+                  fileData[9] == 0x45 && // E
+                  fileData[10] == 0x42 && // B
+                  fileData[11] == 0x50;  // P
+        }
+        // PDF - verifica "%PDF-"
+        else if (normalizedContentType.Contains("pdf"))
+        {
+            return fileData.Length >= 5 &&
+                  fileData[0] == 0x25 && // %
+                  fileData[1] == 0x50 && // P
+                  fileData[2] == 0x44 && // D
+                  fileData[3] == 0x46 && // F
+                  fileData[4] == 0x2D;   // -
+        }
+        // BMP
+        else if (normalizedContentType.Contains("bmp"))
+        {
+            return fileData.Length >= 2 &&
+                  fileData[0] == 0x42 && // B
+                  fileData[1] == 0x4D;   // M
+        }
+        // HEIC/HEIF suele tener una estructura más compleja, verificación básica
+        else if (normalizedContentType.Contains("heic") || normalizedContentType.Contains("heif"))
+        {
+            // Verificación simplificada
+            for (int i = 0; i < fileData.Length - 12; i++)
+            {
+                if (fileData[i] == 0x66 && // f
+                    fileData[i + 1] == 0x74 && // t
+                    fileData[i + 2] == 0x79 && // y
+                    fileData[i + 3] == 0x70) // p
+                {
+                    return true; // Encontramos bloque 'ftyp'
+                }
+            }
+            return false;
+        }
+
+        // Aceptamos el archivo si no reconocemos explícitamente el tipo
+        return true;
+    }
 
     private async Task SubmitRequest()
     {
@@ -965,55 +1314,86 @@
         {
             // Asignar los elementos a la solicitud
             Request.Items = Items;
-            
+
             // Crear la solicitud
             var createdRequest = await ForwardingService.CreateRequestAsync(Request);
-            
+
             // Procesar adjuntos
+            bool hasPendingAttachments = false;
+
             if (ItemFiles.Any())
             {
                 foreach (var kvp in ItemFiles)
                 {
-                    var itemIndex = kvp.Key;
-                    var files = kvp.Value;
-                    
-                    if (itemIndex < Items.Count && files.Any())
+                    int itemIndex = kvp.Key;
+                    List<IBrowserFile> files = kvp.Value;
+
+                    if (itemIndex < createdRequest.Items.Count && files.Any())
                     {
                         var item = createdRequest.Items.ElementAt(itemIndex);
-                        
-                        foreach (var file in files)
+
+                        // Procesar máximo 4 archivos por ítem
+                        foreach (var file in files.Take(4))
                         {
-                            var fileBytes = new byte[file.Size];
-                            await file.OpenReadStream(10 * 1024 * 1024).ReadAsync(fileBytes); // 10MB limit
-                            
-                            // Determinar la ruta de guardado
-                            var fileName = Path.GetFileName(file.Name);
-                            var contentType = file.ContentType;
-                            var filePath = $"uploads/{createdRequest.Id}/{item.Id}/{fileName}";
-                            
-                            // Guardar archivo
-                            var attachment = new Attachment
+                            try
                             {
-                                ForwardItemId = item.Id,
-                                FileName = fileName,
-                                ContentType = contentType,
-                                FilePath = filePath,
-                                FileSize = file.Size
-                            };
-                            
-                            await DbContext.Attachments.AddAsync(attachment);
-                            
-                            // Guardar archivo físicamente (esto sería implementado en un servicio real)
-                            // await fileService.SaveFileAsync(fileBytes, filePath);
+                                // Usar los datos binarios que ya tenemos en memoria
+                                if (ItemFileData.ContainsKey(itemIndex) &&
+                                    ItemFileData[itemIndex].ContainsKey(file.Name))
+                                {
+                                    byte[] fileData = ItemFileData[itemIndex][file.Name];
+
+                                    // Guardar el archivo físicamente
+                                    string filePath = await FileService.SaveFileDataAsync(
+                                        fileData, file.Name, file.ContentType, createdRequest.Id, item.Id);
+
+                                    // Crear el registro en la base de datos
+                                    var attachment = new Attachment
+                                        {
+                                            ForwardItemId = item.Id,
+                                            FileName = file.Name,
+                                            ContentType = file.ContentType,
+                                            FilePath = filePath,
+                                            FileSize = fileData.Length
+                                        };
+
+                                    await DbContext.Attachments.AddAsync(attachment);
+                                }
+                                else
+                                {
+                                    // Esto no debería ocurrir, pero por seguridad lo manejamos
+                                    hasPendingAttachments = true;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error al guardar archivo {file.Name}: {ex.Message}");
+                                hasPendingAttachments = true;
+                            }
                         }
                     }
                 }
-                
-                await DbContext.SaveChangesAsync();
+
+                // Guardar los registros de archivos en la base de datos
+                try
+                {
+                    await DbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al guardar los registros de archivos: {ex.Message}");
+                    hasPendingAttachments = true;
+                }
             }
-            
+
             // Redirigir a la página de la solicitud
-            NavigationManager.NavigateTo($"/request/{createdRequest.Id}/success");
+            string redirectUrl = $"/request/{createdRequest.Id}/success";
+            if (hasPendingAttachments)
+            {
+                redirectUrl += "?warning=attachments";
+            }
+
+            NavigationManager.NavigateTo(redirectUrl);
         }
         catch (Exception ex)
         {
@@ -1024,6 +1404,15 @@
         finally
         {
             IsBusy = false;
+            StateHasChanged();
         }
+    }
+    public class FileChunkInfo
+    {
+        public string Name { get; set; }
+        public long Size { get; set; }
+        public string Type { get; set; }
+        public long LastModified { get; set; }
+        public int TotalChunks { get; set; }
     }
 }

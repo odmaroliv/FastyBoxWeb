@@ -32,6 +32,15 @@
             }
         });
     </script>
+    <script src="~/js/file-upload.js"></script>
+    <script>
+        // Re-inicializar los file uploaders después de cada renderizado Blazor
+        window._blazorInitFileUploaders = function () {
+            if (window.initFileUploaders) {
+                window.initFileUploaders();
+            }
+        };
+    </script>
 </head>
 
 <body>

@@ -90,23 +90,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-4 text-sm">
-                            <p>@address.Street @address.StreetNumber @address.Interior</p>
-                            <p>@address.Colony</p>
-                            <p>@address.City, @address.State @address.PostalCode</p>
-                            <p>@address.Country</p>
-                            @if (!string.IsNullOrEmpty(address.Phone))
-                            {
-                                <p class="mt-1">@Localizer["Phone"]: @address.Phone</p>
-                            }
-                        </div>
-                        @if (!string.IsNullOrEmpty(address.AdditionalInstructions))
-                        {
-                            <div class="mt-2 text-sm">
-                                <p class="text-gray-500 font-medium">@Localizer["AdditionalInstructions"]:</p>
-                                <p class="text-gray-600">@address.AdditionalInstructions</p>
-                            </div>
-                        }
                     </div>
                     <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
                         @if (address.IsDefault)
@@ -195,30 +178,6 @@
         await LoadAddresses();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Create a reference to this component
-            var reference = DotNetObjectReference.Create(this);
-
-            // Call the JavaScript function and pass the reference
-            await JSRuntime.InvokeVoidAsync("setupClickListener", reference);
-
-            // Store the reference so you can dispose of it later
-            _dotNetReference = reference;
-        }
-    }
-
-    // Add this to your component's fields
-    private DotNetObjectReference<AddressList>? _dotNetReference;
-
-    // And this to properly clean up
-    public void Dispose()
-    {
-        _dotNetReference?.Dispose();
-    }
-
     private async Task LoadAddresses()
     {
         IsLoading = true;
@@ -239,29 +198,8 @@
 
     private void ToggleMenu(int addressId)
     {
-        if (OpenMenuId == addressId)
-        {
-            OpenMenuId = null;
-        }
-        else
-        {
-            OpenMenuId = addressId;
-        }
-    }
-
-    [JSInvokable]
-    public void CloseMenu()
-    {
-        if (OpenMenuId.HasValue)
-        {
-            OpenMenuId = null;
-            StateHasChanged();
-        }
-    }
-
-    private void CreateNewAddress()
-    {
-        NavigationManager.NavigateTo("/addresses/new");
+        OpenMenuId = OpenMenuId == addressId ? null : addressId;
+        StateHasChanged();  // Re-renderizar el componente
     }
 
     private void EditAddress(int addressId)
@@ -337,5 +275,15 @@
             IsDeleteModalVisible = false;
             AddressToDeleteId = null;
         }
+    }
+
+    private void CreateNewAddress()
+    {
+        NavigationManager.NavigateTo("/addresses/new");
+    }
+
+    public void Dispose()
+    {
+        // Dispose any resources if needed
     }
 }

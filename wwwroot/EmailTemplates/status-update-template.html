@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>{{TITLE}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background-color: #0068d1;
+            padding: 20px;
+            text-align: center;
+        }
+
+            .header img {
+                max-width: 200px;
+                height: auto;
+            }
+
+        .content {
+            padding: 30px;
+        }
+
+        h1 {
+            color: #0068d1;
+            font-size: 24px;
+            margin-top: 0;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .status-box {
+            background-color: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+            .status-box h3 {
+                color: #0068d1;
+                margin-top: 0;
+                margin-bottom: 15px;
+                font-size: 18px;
+            }
+
+            .status-box p {
+                margin: 8px 0;
+            }
+
+        .notes-box {
+            background-color: #fffcf4;
+            border: 1px solid #f0e8c5;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+            .notes-box h3 {
+                color: #947a00;
+                margin-top: 0;
+                margin-bottom: 10px;
+                font-size: 16px;
+            }
+
+        .button {
+            display: inline-block;
+            background-color: #ccd7e3;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+            .button:hover {
+                background-color: #0051a3;
+            }
+
+        .footer {
+            background-color: #f7f7f7;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100%;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class="header" style="background-color: #0068d1; padding: 20px; text-align: center;">
+            <h1 style="color: white; font-size: 28px; margin: 0; font-family: 'Segoe UI', Arial, sans-serif;">FastyBox</h1>
+        </div>
+        <div class='content'>
+            <p>{{GREETING}},</p>
+            <h1>{{TITLE}}</h1>
+            <p>{{MESSAGE}}</p>
+
+            <div class='status-box'>
+                <h3>{{STATUS_LABEL}}: {{STATUS}}</h3>
+                <p>{{STATUS_DESCRIPTION}}</p>
+            </div>
+
+            <div class='notes-box'>
+                <h3>{{ADMIN_NOTES_LABEL}}</h3>
+                <p>{{ADMIN_NOTES}}</p>
+            </div>
+
+            <a href='{{ACTION_BUTTON_URL}}' class='button'>{{ACTION_BUTTON_TEXT}}</a>
+
+            <p>{{SUPPORT_MESSAGE}}</p>
+        </div>
+        <div class='footer'>
+            &copy; 2025 {{COMPANY_NAME}}. Todos los derechos reservados.
+        </div>
+    </div>
+</body>
+</html>

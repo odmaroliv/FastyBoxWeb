@@ -1,0 +1,254 @@
+﻿@page "/admin/reports"
+@using FastyBoxWeb.Data
+@using FastyBoxWeb.Data.Entities
+@using FastyBoxWeb.Data.Enums
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Administrator")]
+@inject IStringLocalizer<SharedResources> Localizer
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["AdminReports"] - FastyBox</PageTitle>
+
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold mb-4">@Localizer["AdminReports"]</h1>
+
+        <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="font-medium">@Localizer["RequestsByStatus"]</h2>
+            </div>
+            <div class="p-6">
+                @if (IsLoading)
+                {
+                    <div class="flex justify-center py-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @foreach (var status in Enum.GetValues<ForwardRequestStatus>())
+                            {
+                                <div class="border rounded-lg p-4 text-center @GetStatusColor(status)">
+                                    <h3 class="text-xl font-bold text-white">@StatusCounts.GetValueOrDefault(status, 0)</h3>
+                                    <p class="text-sm text-white">@GetStatusName(status)</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="font-medium">@Localizer["MonthlyRequests"]</h2>
+            </div>
+            <div class="p-6">
+                @if (IsLoading)
+                {
+                    <div class="flex justify-center py-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                }
+                else
+                {
+                    <div style="height: 300px;" class="w-full">
+                        <!-- Aquí iría un gráfico de líneas, implementado con la librería que prefieras -->
+                        <p class="text-center text-gray-500">@Localizer["ChartPlaceholder"]</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="font-medium">@Localizer["TopClients"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else if (!TopClients.Any())
+                    {
+                        <p class="text-center text-gray-500 py-4">@Localizer["NoData"]</p>
+                    }
+                    else
+                    {
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-2">@Localizer["Client"]</th>
+                                        <th class="px-4 py-2 text-right">@Localizer["Requests"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach (var client in TopClients)
+                                    {
+                                        <tr class="text-sm">
+                                            <td class="px-4 py-2 whitespace-nowrap">
+                                                <a href="/admin/user/@client.UserId" class="text-blue-500 hover:underline">@client.FullName</a>
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-right">
+                                                @client.RequestCount
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="font-medium">@Localizer["RecentRequests"]</h2>
+                </div>
+                <div class="p-6">
+                    @if (IsLoading)
+                    {
+                        <div class="flex justify-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    }
+                    else if (!RecentRequests.Any())
+                    {
+                        <p class="text-center text-gray-500 py-4">@Localizer["NoData"]</p>
+                    }
+                    else
+                    {
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-2">@Localizer["Code"]</th>
+                                        <th class="px-4 py-2">@Localizer["Date"]</th>
+                                        <th class="px-4 py-2">@Localizer["Status"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach (var request in RecentRequests)
+                                    {
+                                        <tr class="text-sm">
+                                            <td class="px-4 py-2 whitespace-nowrap">
+                                                <a href="/admin/request/@request.Id" class="text-blue-500 hover:underline">@request.TrackingCode</a>
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap">
+                                                @request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap">
+                                                <StatusBadge Status="@request.Status" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private Dictionary<ForwardRequestStatus, int> StatusCounts { get; set; } = new();
+    private List<TopClientModel> TopClients { get; set; } = new();
+    private List<ForwardRequest> RecentRequests { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReportData();
+    }
+
+    private async Task LoadReportData()
+    {
+        IsLoading = true;
+
+        try
+        {
+            // Obtener conteo por estado
+            var statuses = await DbContext.ForwardRequests
+                .GroupBy(r => r.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            StatusCounts = statuses.ToDictionary(s => s.Status, s => s.Count);
+
+            // Obtener los clientes con más solicitudes
+            TopClients = await DbContext.ForwardRequests
+                .Include(r => r.User)
+                .GroupBy(r => r.UserId)
+                .Select(g => new TopClientModel
+                    {
+                        UserId = g.Key,
+                        FullName = g.First().User.FullName,
+                        RequestCount = g.Count()
+                    })
+                .OrderByDescending(c => c.RequestCount)
+                .Take(5)
+                .ToListAsync();
+
+            // Obtener solicitudes recientes
+            RecentRequests = await DbContext.ForwardRequests
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private string GetStatusName(ForwardRequestStatus status)
+    {
+        return status switch
+        {
+            ForwardRequestStatus.Draft => Localizer["StatusDraft"],
+            ForwardRequestStatus.AwaitingArrival => Localizer["StatusAwaitingArrival"],
+            ForwardRequestStatus.ReceivedInWarehouse => Localizer["StatusReceivedInWarehouse"],
+            ForwardRequestStatus.InReview => Localizer["StatusInReview"],
+            ForwardRequestStatus.AwaitingPayment => Localizer["StatusAwaitingPayment"],
+            ForwardRequestStatus.Processing => Localizer["StatusProcessing"],
+            ForwardRequestStatus.InTransitToMexico => Localizer["StatusInTransitToMexico"],
+            ForwardRequestStatus.Delivered => Localizer["StatusDelivered"],
+            ForwardRequestStatus.Cancelled => Localizer["StatusCancelled"],
+            _ => status.ToString()
+        };
+    }
+
+    private string GetStatusColor(ForwardRequestStatus status)
+    {
+        return status switch
+        {
+            ForwardRequestStatus.Draft => "bg-gray-500",
+            ForwardRequestStatus.AwaitingArrival => "bg-yellow-500",
+            ForwardRequestStatus.ReceivedInWarehouse => "bg-green-500",
+            ForwardRequestStatus.InReview => "bg-blue-500",
+            ForwardRequestStatus.AwaitingPayment => "bg-red-500",
+            ForwardRequestStatus.Processing => "bg-purple-500",
+            ForwardRequestStatus.InTransitToMexico => "bg-indigo-500",
+            ForwardRequestStatus.Delivered => "bg-green-500",
+            ForwardRequestStatus.Cancelled => "bg-red-500",
+            _ => "bg-gray-500"
+        };
+    }
+
+    public class TopClientModel
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public int RequestCount { get; set; }
+    }
+}

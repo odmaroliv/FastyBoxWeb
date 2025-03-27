@@ -1,0 +1,39 @@
+﻿@page
+@model ConfirmEmailModel
+@using System.Globalization
+@{
+    ViewData["Title"] = CultureInfo.CurrentUICulture.Name.StartsWith("es") ? "Confirmación de Email" : "Confirm Email";
+    var isSpanish = CultureInfo.CurrentUICulture.Name.StartsWith("es");
+    var isSuccess = Model.StatusMessage?.Contains("Error") != true;
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h2 class="mb-3 fw-bold">
+                        <span class="text-primary">Fasty</span><span>Box</span>
+                    </h2>
+                    <h4>@ViewData["Title"]</h4>
+                </div>
+
+                <div class="alert @(isSuccess ? "alert-success" : "alert-danger")" role="alert">
+                    <p class="mb-0">@Model.StatusMessage</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    @if (!isSuccess)
+                    {
+                        <a class="btn btn-primary" href="@Url.Page("/Account/Login", new { area = "Identity" })">
+                            @(isSpanish ? "Iniciar sesión" : "Log in")
+                        </a>
+                    }
+                    <a class="btn btn-outline-primary ms-2" href="@Url.Content("~/")">
+                        @(isSpanish ? "Volver al inicio" : "Back to home")
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

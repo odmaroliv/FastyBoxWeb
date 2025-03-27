@@ -1,18 +1,17 @@
-// Manejo de menús y clics fuera
+
 window.setupClickListener = function (dotnetHelper) {
     document.addEventListener('click', function (event) {
         // Verificar si el clic fue en elementos del menú que no deberían cerrarlo
         let targetElement = event.target;
         for (let i = 0; i < 5 && targetElement != null; i++) {
             if (targetElement.hasAttribute('data-menu-exception')) {
-                // Si tiene data-menu-exception, no cerramos el menú
                 console.log("Click on menu exception element, keeping menu open");
                 return;
             }
             targetElement = targetElement.parentElement;
         }
 
-        // Verificar si el clic fue en un botón de menú (que alterna el menú)
+        // Verificar si el clic fue en un botón de menú
         targetElement = event.target;
         let isMenuToggle = false;
         for (let i = 0; i < 5 && targetElement != null; i++) {
@@ -23,8 +22,6 @@ window.setupClickListener = function (dotnetHelper) {
             targetElement = targetElement.parentElement;
         }
 
-        // Si no es un botón de alternancia de menú y no está dentro del contenedor del menú
-        // (o es un botón dentro del menú pero no tiene data-menu-exception)
         targetElement = event.target;
         let isInsideMenuContainer = false;
         for (let i = 0; i < 10 && targetElement != null; i++) {
@@ -36,13 +33,27 @@ window.setupClickListener = function (dotnetHelper) {
         }
 
         // Solo cerramos si no es un toggle y no está dentro de un contenedor 
-        // o es un elemento dentro del menú que debe cerrarlo (como un enlace)
+        // o es un elemento dentro del menú que debe cerrarlo
         if (!isMenuToggle && (!isInsideMenuContainer ||
             (isInsideMenuContainer && !event.target.closest('[data-menu-exception]')))) {
-            dotnetHelper.invokeMethodAsync('CloseMenu');
+
+            // Verificar que dotnetHelper aún no haya sido desechado
+            if (dotnetHelper) {
+                // Intentar invocar el método solo si dotnetHelper está disponible
+                try {
+                    if (dotnetHelper.invokeMethodAsync) {
+                        dotnetHelper.invokeMethodAsync('CloseMenu').catch(error => {
+                            console.error('Error invocando CloseMenu:', error);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error invoking CloseMenu:', error);
+                }
+            }
         }
     });
 };
+
 
 // Función para alternar el tema
 window.toggleTheme = function (isDark) {

@@ -209,12 +209,12 @@
 
 @code {
     [Parameter]
-    public string? AddressId { get; set; }
+    public int? AddressId { get; set; }
 
     private Address Address { get; set; } = new();
     private bool IsLoading { get; set; } = true;
     private bool IsSaving { get; set; } = false;
-    private bool IsEditMode => !string.IsNullOrEmpty(AddressId) && int.TryParse(AddressId, out _);
+    private bool IsEditMode => AddressId.HasValue && AddressId.Value > 0;
     private string UserId { get; set; } = string.Empty;
     private string? ReturnUrl { get; set; }
 
@@ -248,9 +248,9 @@
         }
 
         // Si estamos en modo edición, cargar la dirección
-        if (IsEditMode && int.TryParse(AddressId, out var addressId))
+        if (IsEditMode && AddressId.HasValue)
         {
-            await LoadAddress(addressId);
+            await LoadAddress(AddressId.Value);
         }
         else
         {
@@ -303,6 +303,19 @@
         try
         {
             Address.UserId = UserId;
+
+            if (!string.IsNullOrEmpty(ReturnUrl))
+            {
+                // Añadir parámetro para forzar la actualización
+                if (ReturnUrl.Contains("?"))
+                    NavigationManager.NavigateTo($"{ReturnUrl}&addressAdded=true&id={Address.Id}");
+                else
+                    NavigationManager.NavigateTo($"{ReturnUrl}?addressAdded=true&id={Address.Id}");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/addresses");
+            }
 
             // Si esta dirección está marcada como predeterminada, desmarcar las demás
             if (Address.IsDefault)
