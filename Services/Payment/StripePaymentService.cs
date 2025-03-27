@@ -1,4 +1,5 @@
 ﻿using FastyBoxWeb.Data;
+using FastyBoxWeb.Data.Entities;
 using FastyBoxWeb.Data.Enums;
 using FastyBoxWeb.Services.Notification;
 using FastyBoxWeb.Services.Shipping;
@@ -16,6 +17,7 @@ namespace FastyBoxWeb.Services.Payment
         Task<Data.Entities.Payment?> GetPaymentByTransactionIdAsync(string transactionId);
         Task<Data.Entities.Payment> UpdatePaymentStatusAsync(string transactionId, PaymentStatus status);
         Task<List<Data.Entities.Payment>> GetPaymentsForRequestAsync(int requestId);
+        Task<ForwardRequest> GetRequestWithPaymentsAsync(int requestId);
     }
 
     public class StripePaymentService : IPaymentService
@@ -67,62 +69,120 @@ namespace FastyBoxWeb.Services.Payment
             // Convertir a centavos para Stripe
             var amountInCents = (long)(amount * 100);
 
-            // Crear opciones de sesión
-            var options = new Stripe.Checkout.SessionCreateOptions
+            // Usar URLs configuradas directamente para evitar problemas
+            string successUrl = EnsureValidUrl(_stripeSettings.SuccessUrl);
+            string cancelUrl = EnsureValidUrl(_stripeSettings.CancelUrl);
+
+            _logger.LogInformation($"URLs de redirección: Success={successUrl}, Cancel={cancelUrl}");
+
+            try
             {
-                PaymentMethodTypes = new List<string> { "card" },
-                LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+                // Crear opciones de sesión
+                var options = new Stripe.Checkout.SessionCreateOptions
                 {
-                    new Stripe.Checkout.SessionLineItemOptions
+                    PaymentMethodTypes = new List<string> { "card" },
+                    LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
                     {
-                        PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                        new Stripe.Checkout.SessionLineItemOptions
                         {
-                            UnitAmount = amountInCents,
-                            Currency = _stripeSettings.Currency,
-                            ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                            PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
                             {
-                                Name = $"FastyBox Envío #{request.TrackingCode}",
-                                Description = description
-                            }
-                        },
-                        Quantity = 1
+                                UnitAmount = amountInCents,
+                                Currency = _stripeSettings.Currency,
+                                ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = $"FastyBox Envío #{request.TrackingCode}",
+                                    Description = description
+                                }
+                            },
+                            Quantity = 1
+                        }
+                    },
+                    Mode = "payment",
+                    SuccessUrl = successUrl,
+                    CancelUrl = cancelUrl,
+                    ClientReferenceId = requestId.ToString(),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "RequestId", requestId.ToString() },
+                        { "UserId", userId },
+                        { "PaymentType", ((int)type).ToString() }
                     }
-                },
-                Mode = "payment",
-                SuccessUrl = $"{_stripeSettings.SuccessUrl}?session_id={{CHECKOUT_SESSION_ID}}",
-                CancelUrl = _stripeSettings.CancelUrl,
-                ClientReferenceId = requestId.ToString(),
-                CustomerEmail = _context.Users.Where(u => u.Id == userId).Select(u => u.Email).FirstOrDefault(),
-                Metadata = new Dictionary<string, string>
+                };
+
+                // Obtener email del usuario si está disponible
+                var userEmail = await _context.Users
+                    .Where(u => u.Id == userId)
+                    .Select(u => u.Email)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrEmpty(userEmail))
                 {
-                    { "RequestId", requestId.ToString() },
-                    { "UserId", userId },
-                    { "PaymentType", ((int)type).ToString() }
+                    options.CustomerEmail = userEmail;
                 }
-            };
 
-            // Crear sesión de pago
-            var service = new Stripe.Checkout.SessionService();
-            var session = await service.CreateAsync(options);
+                // Crear sesión de pago
+                var service = new Stripe.Checkout.SessionService();
+                var session = await service.CreateAsync(options);
 
-            // Registrar el pago en nuestra base de datos
-            var payment = new Data.Entities.Payment
+                _logger.LogInformation($"Sesión de Stripe creada: {session.Id} para solicitud {requestId}");
+
+                // Registrar el pago en nuestra base de datos
+                var payment = new Data.Entities.Payment
+                {
+                    ForwardRequestId = requestId,
+                    UserId = userId,
+                    Amount = amount,
+                    Status = PaymentStatus.Pending,
+                    Type = type,
+                    TransactionId = session.Id,
+                    PaymentMethod = "Stripe",
+                    Notes = description
+                };
+
+                await _context.Payments.AddAsync(payment);
+                await _context.SaveChangesAsync();
+
+                return session;
+            }
+            catch (StripeException ex)
             {
-                ForwardRequestId = requestId,
-                UserId = userId,
-                Amount = amount,
-                Status = PaymentStatus.Pending,
-                Type = type,
-                TransactionId = session.Id,
-                PaymentMethod = "Stripe",
-                Notes = description
-            };
-
-            await _context.Payments.AddAsync(payment);
-            await _context.SaveChangesAsync();
-
-            return session;
+                _logger.LogError(ex, $"Error de Stripe al crear sesión para solicitud {requestId}");
+                throw new Exception($"Error de Stripe: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al crear sesión de pago para solicitud {requestId}");
+                throw;
+            }
         }
+
+        public async Task<ForwardRequest> GetRequestWithPaymentsAsync(int requestId)
+        {
+            return await _context.ForwardRequests
+                .Include(r => r.Payments)
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+        }
+
+        // Método para garantizar que la URL sea válida
+        private string EnsureValidUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                // Usar una URL de fallback en caso de que la configurada sea nula o vacía
+                return "https://localhost:5001/payment/success?session_id={CHECKOUT_SESSION_ID}";
+            }
+
+            // Verificar que la URL sea absoluta y válida
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                _logger.LogWarning($"URL no válida en configuración: {url}, usando URL fallback");
+                return "https://localhost:5001/payment/success?session_id={CHECKOUT_SESSION_ID}";
+            }
+
+            return url;
+        }
+
 
         public async Task<string> GetClientSecretAsync(int requestId, decimal amount, PaymentType type, string userId)
         {
@@ -254,10 +314,73 @@ namespace FastyBoxWeb.Services.Payment
                 throw new KeyNotFoundException($"No se encontró pago con transactionId {transactionId}");
             }
 
+
+            // Actualizar el estado del pago
+            payment.Status = status;
+            payment.ModifiedAt = DateTime.UtcNow;
+            payment.ModifiedBy = "System";
+
+            _context.Update(payment);
+            await _context.SaveChangesAsync();
+
+            // Si el pago es exitoso, verificar si completa el total de la solicitud
+            if (status == PaymentStatus.Succeeded && payment.ForwardRequestId > 0)
+            {
+                await UpdateRequestStatusIfPaidInFull(payment.ForwardRequestId);
+            }
+
+
             payment.Status = status;
             await _context.SaveChangesAsync();
 
             return payment;
+        }
+
+        private async Task UpdateRequestStatusIfPaidInFull(int requestId)
+        {
+            try
+            {
+                // Obtener la solicitud con todos sus pagos
+                var request = await _context.ForwardRequests
+                    .Include(r => r.Payments)
+                    .FirstOrDefaultAsync(r => r.Id == requestId);
+
+                if (request != null && request.Status == ForwardRequestStatus.AwaitingPayment)
+                {
+                    // Calcular el total pagado (considerando solo pagos exitosos)
+                    decimal totalPaid = request.Payments
+                        .Where(p => p.Status == PaymentStatus.Succeeded)
+                        .Sum(p => p.Amount);
+
+                    // Verificar si el pago está completo
+                    if (totalPaid >= request.FinalTotal)
+                    {
+                        // Cambiar el estado de la solicitud a Processing
+                        request.Status = ForwardRequestStatus.Processing;
+                        request.ModifiedAt = DateTime.UtcNow;
+                        request.ModifiedBy = "System";
+
+                        // Agregar entrada en el historial de estados
+                        request.StatusHistory.Add(new RequestStatusHistory
+                        {
+                            Status = ForwardRequestStatus.Processing,
+                            Notes = "Automatically moved to processing after payment completed",
+                            CreatedAt = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        });
+
+                        _context.Update(request);
+                        await _context.SaveChangesAsync();
+
+                        // Aquí podrías agregar código para notificar al usuario si es necesario
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error pero no propagar la excepción para no interrumpir el proceso de pago
+                _logger.LogError(ex, "Error updating request status after payment: {Message}", ex.Message);
+            }
         }
 
         public async Task<List<Data.Entities.Payment>> GetPaymentsForRequestAsync(int requestId)

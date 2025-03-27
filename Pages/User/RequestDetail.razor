@@ -687,49 +687,37 @@ else
 
         try
         {
-            // Muestra un indicador de carga
-            await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'wait';");
-
             // Calcular importe pendiente
             var amountDue = Request.FinalTotal - Request.TotalPaid;
             if (amountDue <= 0)
                 return;
 
-            // Registra para debugging
-            Console.WriteLine($"Iniciando proceso de pago para solicitud {Request.Id}, monto: {amountDue}");
+            // Mostrar el modal de procesamiento de pago mediante JS
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('payment-processing-modal').style.display = 'flex';");
 
-            // Crear sesión de pago con Stripe
-            var session = await PaymentService.CreateCheckoutSessionAsync(
+            // Llamada al método JS que maneja la creación de la sesión y la redirección
+            var result = await JSRuntime.InvokeAsync<bool>("createCheckoutSession",
                 Request.Id,
                 amountDue,
-                PaymentType.Additional,
-                UserId);
+                (int)PaymentType.Additional);
 
-            if (session == null || string.IsNullOrEmpty(session.Id))
-            {
-                throw new Exception("No se pudo crear la sesión de pago");
-            }
-
-            Console.WriteLine($"Sesión de Stripe creada exitosamente: {session.Id}");
-
-            // Redirigir al checkout de Stripe
-            var result = await JSRuntime.InvokeAsync<bool>("redirectToStripeCheckout", session.Id);
-
+            // Si devuelve false, hubo un error (el mensaje ya se habrá mostrado en el JS)
             if (!result)
             {
-                throw new Exception("Error al redirigir al formulario de pago");
+                // Ocultar el modal de procesamiento
+                await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('payment-processing-modal').style.display = 'none';");
             }
+            // Si devuelve true, la redirección a Stripe ya estará en marcha
         }
         catch (Exception ex)
         {
-            // Restaura el cursor
-            await JSRuntime.InvokeVoidAsync("eval", "document.body.style.cursor = 'default';");
+            // Ocultar el modal de procesamiento
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('payment-processing-modal').style.display = 'none';");
 
-            // Registra el error detallado
+            // Registrar el error
             Console.WriteLine($"ERROR en proceso de pago: {ex.Message}");
-            Console.WriteLine($"StackTrace: {ex.StackTrace}");
 
-            // Muestra mensaje al usuario
+            // Mostrar mensaje al usuario
             await JSRuntime.InvokeVoidAsync("alert", $"Error en el proceso de pago: {ex.Message}");
         }
     }

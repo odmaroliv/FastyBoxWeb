@@ -109,6 +109,9 @@ builder.Services.AddScoped<IForwardingService, ForwardingService>();
 builder.Services.AddScoped<IShippingCalculatorService, ShippingCalculatorService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddScoped<IPaymentService, StripePaymentService>();
+
 
 
 // Configurar opciones de Stripe
